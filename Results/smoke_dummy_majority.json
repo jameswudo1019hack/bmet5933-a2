@@ -1,0 +1,92 @@
+{
+  "model_name": "dummy_majority",
+  "n_test": 934,
+  "classes": [
+    "Cyst",
+    "Normal",
+    "Stone",
+    "Tumor"
+  ],
+  "accuracy": 0.4079229122055675,
+  "macro_f1": 0.14486692015209127,
+  "weighted_f1": 0.2363781438027699,
+  "per_class": {
+    "Cyst": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 279
+    },
+    "Normal": {
+      "precision": 0.4079229122055675,
+      "recall": 1.0,
+      "f1": 0.5794676806083651,
+      "support": 381
+    },
+    "Stone": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 103
+    },
+    "Tumor": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 171
+    }
+  },
+  "confusion_matrix": [
+    [
+      0,
+      279,
+      0,
+      0
+    ],
+    [
+      0,
+      381,
+      0,
+      0
+    ],
+    [
+      0,
+      103,
+      0,
+      0
+    ],
+    [
+      0,
+      171,
+      0,
+      0
+    ]
+  ],
+  "macro_f1_ci95": {
+    "mean": 0.14482189344346458,
+    "lo": 0.13629283489096572,
+    "hi": 0.15279455304716716
+  },
+  "per_class_f1_ci95": {
+    "Cyst": {
+      "mean": 0.0,
+      "lo": 0.0,
+      "hi": 0.0
+    },
+    "Normal": {
+      "mean": 0.5792875737738583,
+      "lo": 0.5451713395638629,
+      "hi": 0.6111782121886686
+    },
+    "Stone": {
+      "mean": 0.0,
+      "lo": 0.0,
+      "hi": 0.0
+    },
+    "Tumor": {
+      "mean": 0.0,
+      "lo": 0.0,
+      "hi": 0.0
+    }
+  }
+}
