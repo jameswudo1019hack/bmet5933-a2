@@ -46,6 +46,7 @@ from deep_learning.model import (
     unfreeze_last_blocks,
 )
 from shared.config import CLASSES, RESULTS_DIR, SEED
+from shared.data_efficiency import stratified_train_indices
 
 
 def resolve_device(prefer: str | None = None) -> torch.device:
@@ -115,18 +116,23 @@ def train(
     device: torch.device,
     smoke: bool = False,
     seed: int = SEED,
+    train_frac: float = 1.0,
 ) -> dict:
     seed_all(seed)
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"[train] device={device}  seed={seed}  smoke={smoke}  out={output_dir}")
+    print(f"[train] device={device}  seed={seed}  smoke={smoke}  train_frac={train_frac}  out={output_dir}")
 
     train_ds = KidneyCTDataset("train")
     val_ds = KidneyCTDataset("val")
+    if train_frac < 1.0:
+        idxs = stratified_train_indices(train_frac, seed=SEED)
+        train_ds = Subset(train_ds, idxs)
+        print(f"[train] subsetting train to {len(idxs)} samples ({train_frac:.0%})")
     if smoke:
         # 64 train / 32 val samples is enough to verify the pipeline runs
-        train_ds = Subset(train_ds, list(range(64)))
+        train_ds = Subset(train_ds, list(range(min(64, len(train_ds)))))
         val_ds = Subset(val_ds, list(range(32)))
 
     train_loader = DataLoader(
@@ -157,6 +163,8 @@ def train(
         "device": str(device),
         "seed": seed,
         "smoke": smoke,
+        "train_frac": train_frac,
+        "n_train_samples": len(train_ds),
         "classes": list(CLASSES),
         "config": {
             "batch_size": BATCH_SIZE,
@@ -261,10 +269,21 @@ def main() -> None:
     parser.add_argument("--device", default=None, help="override: cpu | mps | cuda")
     parser.add_argument("--output-dir", default=str(RESULTS_DIR / "dl_run"))
     parser.add_argument("--smoke", action="store_true", help="tiny run to verify pipeline")
+    parser.add_argument(
+        "--train-frac",
+        type=float,
+        default=1.0,
+        help="stratified fraction of the train split to use (for data-efficiency sweep)",
+    )
     args = parser.parse_args()
 
     device = resolve_device(args.device)
-    train(Path(args.output_dir), device=device, smoke=args.smoke)
+    train(
+        Path(args.output_dir),
+        device=device,
+        smoke=args.smoke,
+        train_frac=args.train_frac,
+    )
 
 
 if __name__ == "__main__":
