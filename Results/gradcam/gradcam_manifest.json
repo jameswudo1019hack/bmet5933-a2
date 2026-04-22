@@ -1,0 +1,50 @@
+[
+  {
+    "abs_path": "/Users/jameswu/Desktop/University/Year_5/Semester_1/BMET5933/Assignment2/Dataset/CT-KIDNEY-DATASET-Normal-Cyst-Tumor-Stone_medium/Cyst/Cyst- (1637).jpg",
+    "title_left": "Cyst  (correct)",
+    "title_right": "Grad-CAM @ Cyst  p=1.000",
+    "pred_idx": 0
+  },
+  {
+    "abs_path": "/Users/jameswu/Desktop/University/Year_5/Semester_1/BMET5933/Assignment2/Dataset/CT-KIDNEY-DATASET-Normal-Cyst-Tumor-Stone_medium/Normal/Normal- (3213).jpg",
+    "title_left": "Normal  (correct)",
+    "title_right": "Grad-CAM @ Normal  p=1.000",
+    "pred_idx": 1
+  },
+  {
+    "abs_path": "/Users/jameswu/Desktop/University/Year_5/Semester_1/BMET5933/Assignment2/Dataset/CT-KIDNEY-DATASET-Normal-Cyst-Tumor-Stone_medium/Stone/Stone- (162).jpg",
+    "title_left": "Stone  (correct)",
+    "title_right": "Grad-CAM @ Stone  p=1.000",
+    "pred_idx": 2
+  },
+  {
+    "abs_path": "/Users/jameswu/Desktop/University/Year_5/Semester_1/BMET5933/Assignment2/Dataset/CT-KIDNEY-DATASET-Normal-Cyst-Tumor-Stone_medium/Tumor/Tumor- (1409).jpg",
+    "title_left": "Tumor  (correct)",
+    "title_right": "Grad-CAM @ Tumor  p=1.000",
+    "pred_idx": 3
+  },
+  {
+    "abs_path": "/Users/jameswu/Desktop/University/Year_5/Semester_1/BMET5933/Assignment2/Dataset/CT-KIDNEY-DATASET-Normal-Cyst-Tumor-Stone_medium/Normal/Normal- (1903).jpg",
+    "title_left": "true Normal  (ERROR)",
+    "title_right": "Grad-CAM @ Cyst  p=0.864",
+    "pred_idx": 0
+  },
+  {
+    "abs_path": "/Users/jameswu/Desktop/University/Year_5/Semester_1/BMET5933/Assignment2/Dataset/CT-KIDNEY-DATASET-Normal-Cyst-Tumor-Stone_medium/Normal/Normal- (1844).jpg",
+    "title_left": "true Normal  (ERROR)",
+    "title_right": "Grad-CAM @ Stone  p=0.692",
+    "pred_idx": 2
+  },
+  {
+    "abs_path": "/Users/jameswu/Desktop/University/Year_5/Semester_1/BMET5933/Assignment2/Dataset/CT-KIDNEY-DATASET-Normal-Cyst-Tumor-Stone_medium/Tumor/Tumor- (1048).jpg",
+    "title_left": "true Tumor  (ERROR)",
+    "title_right": "Grad-CAM @ Stone  p=0.682",
+    "pred_idx": 2
+  },
+  {
+    "abs_path": "/Users/jameswu/Desktop/University/Year_5/Semester_1/BMET5933/Assignment2/Dataset/CT-KIDNEY-DATASET-Normal-Cyst-Tumor-Stone_medium/Stone/Stone- (244).jpg",
+    "title_left": "true Stone  (ERROR)",
+    "title_right": "Grad-CAM @ Normal  p=0.631",
+    "pred_idx": 1
+  }
+]
