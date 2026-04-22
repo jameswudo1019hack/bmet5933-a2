@@ -1,0 +1,36 @@
+# BMET 5933 Assignment 2 — Python 3.11 dependencies
+# Install: python3.11 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
+
+# Core numerics and data handling
+numpy>=1.26
+pandas>=2.1
+scipy>=1.12
+
+# Classical ML + metrics
+scikit-learn>=1.4
+scikit-image>=0.22
+xgboost>=2.0
+
+# Imaging
+pillow>=10.0
+
+# Statistics (McNemar's test, bootstrap CIs)
+statsmodels>=0.14
+
+# Visualisation
+matplotlib>=3.8
+seaborn>=0.13
+
+# Utilities
+pyyaml>=6.0
+tqdm>=4.66
+
+# Deep learning (Person B)
+# On Colab these are already installed; local installs will pull CPU wheels by default.
+# For CUDA builds, follow https://pytorch.org/get-started/locally/ instead of this file.
+torch>=2.2
+torchvision>=0.17
+
+# Notebooks
+jupyter
+ipykernel
