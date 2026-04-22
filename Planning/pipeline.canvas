@@ -1,0 +1,196 @@
+{
+  "nodes": [
+    {
+      "id": "dataset",
+      "type": "text",
+      "x": 720,
+      "y": 0,
+      "width": 360,
+      "height": 150,
+      "color": "3",
+      "text": "## Dataset\n\n**Islam et al. 2022** — Kidney CT\nMedium set, 6221 images\n_Natural imbalance_\nCyst 1854 · Normal 2538 · Stone 688 · Tumor 1141"
+    },
+    {
+      "id": "split",
+      "type": "text",
+      "x": 200,
+      "y": 240,
+      "width": 360,
+      "height": 190,
+      "color": "5",
+      "text": "## 1. Stratified split\n\n`shared/split.py`\n\n70 / 15 / 15 train / val / test\nseed = 42, class-stratified\n\n→ **split.csv** (committed)\nBoth pipelines load from this"
+    },
+    {
+      "id": "preproc",
+      "type": "text",
+      "x": 720,
+      "y": 240,
+      "width": 360,
+      "height": 190,
+      "color": "5",
+      "text": "## 2. Preprocessing\n\n`shared/preprocessing.py`\n\nGrayscale → centre-crop → 256×256 bilinear\n\nSame entry point for both pipelines;\nper-classifier transforms bolt on top"
+    },
+    {
+      "id": "evaluate",
+      "type": "text",
+      "x": 1240,
+      "y": 240,
+      "width": 360,
+      "height": 190,
+      "color": "5",
+      "text": "## 3. Evaluation harness\n\n`shared/evaluate.py` + `bootstrap.py`\n\nAccuracy, macro-F1, per-class P/R/F1\nROC-AUC OvR, confusion matrix\n1000× bootstrap 95% CI\nMcNemar's test (paired)"
+    },
+    {
+      "id": "classical_title",
+      "type": "text",
+      "x": 200,
+      "y": 510,
+      "width": 360,
+      "height": 70,
+      "color": "2",
+      "text": "## Classical ML — Person A"
+    },
+    {
+      "id": "dl_title",
+      "type": "text",
+      "x": 1240,
+      "y": 510,
+      "width": 360,
+      "height": 70,
+      "color": "6",
+      "text": "## Deep learning — Person B"
+    },
+    {
+      "id": "classical_features",
+      "type": "text",
+      "x": 200,
+      "y": 620,
+      "width": 360,
+      "height": 220,
+      "color": "2",
+      "text": "### Feature extraction\n\n- GLCM Haralick (48 features, 4 angles × 2 distances)\n- LBP histogram (P=8, R=1, 10 bins)\n- HOG (9 orientations, 8×8 cells)\n- First-order intensity stats\n\n→ PCA (retain 95% variance)"
+    },
+    {
+      "id": "dl_model",
+      "type": "text",
+      "x": 1240,
+      "y": 620,
+      "width": 360,
+      "height": 220,
+      "color": "6",
+      "text": "### Architecture\n\n**EfficientNet-B0** (torchvision)\nImageNet-1K pretrained weights\n5.3M params · 0.39 BFLOPs\n\nHead replaced:\n`Dropout(0.3) → Linear(1280, 4)`"
+    },
+    {
+      "id": "classical_clf",
+      "type": "text",
+      "x": 200,
+      "y": 880,
+      "width": 360,
+      "height": 200,
+      "color": "2",
+      "text": "### Classifier + tuning\n\nCandidates: SVM (RBF) · Random Forest · Gradient Boosting\n\nGrid-search + stratified 5-fold CV on train+val\n`class_weight='balanced'`"
+    },
+    {
+      "id": "dl_train",
+      "type": "text",
+      "x": 1240,
+      "y": 880,
+      "width": 360,
+      "height": 200,
+      "color": "6",
+      "text": "### Two-stage training\n\n**Stage 1** · freeze backbone\nAdam, LR 1e-3, 5 epochs\n\n**Stage 2** · unfreeze last 2 blocks\nAdamW, LR 1e-5, weight-decay 1e-4\nEarly stopping (patience 5, val macro-F1)"
+    },
+    {
+      "id": "classical_out",
+      "type": "text",
+      "x": 200,
+      "y": 1120,
+      "width": 360,
+      "height": 170,
+      "color": "2",
+      "text": "### Outputs\n\n`classical_predictions.npz`\n`classical_results.json`\n\nRuns locally in minutes\nInherently interpretable (feature importance)"
+    },
+    {
+      "id": "dl_support",
+      "type": "text",
+      "x": 1240,
+      "y": 1120,
+      "width": 360,
+      "height": 200,
+      "color": "6",
+      "text": "### Imbalance + augmentation\n\nInverse-frequency class weights\n(Stone × 1.78, Normal × 0.48)\n\nAug: hflip · rot ±15° · zoom 0.1 · brightness/contrast ±0.1\n**No vertical flip** (anatomy not top-bottom symmetric)"
+    },
+    {
+      "id": "dl_out",
+      "type": "text",
+      "x": 1240,
+      "y": 1360,
+      "width": 360,
+      "height": 170,
+      "color": "6",
+      "text": "### Outputs\n\n`dl_predictions.npz`\n`dl_results.json`\n`best_model.pt` (Drive, gitignored)\n\n**Current: macro-F1 0.974 [0.963, 0.986]**"
+    },
+    {
+      "id": "analysis_mcnemar",
+      "type": "text",
+      "x": 200,
+      "y": 1600,
+      "width": 380,
+      "height": 180,
+      "color": "4",
+      "text": "## Paired comparison\n\nMcNemar's test on the shared test set\n\nΔmacro-F1 with bootstrap CI\n(effect size leads, p-value secondary)\n\n**Apples-to-apples** — same 934 test images"
+    },
+    {
+      "id": "analysis_sweep",
+      "type": "text",
+      "x": 720,
+      "y": 1600,
+      "width": 380,
+      "height": 180,
+      "color": "4",
+      "text": "## Data-efficiency sweep\n\nTrain on 10 / 25 / 50 / 100 % of train\nStratified, same seed, shared across both pipelines\n\n**The paper's core contribution** —\nwhen does DL pull ahead of classical ML?"
+    },
+    {
+      "id": "analysis_gradcam",
+      "type": "text",
+      "x": 1240,
+      "y": 1600,
+      "width": 380,
+      "height": 180,
+      "color": "4",
+      "text": "## Grad-CAM (DL only)\n\nHook on `model.features[-1]`\n\n4 correct + 4 errors per class\nOverlay on original CT slices\n\nInterpretability story for the paper"
+    },
+    {
+      "id": "deliverables",
+      "type": "text",
+      "x": 620,
+      "y": 1860,
+      "width": 560,
+      "height": 180,
+      "color": "1",
+      "text": "## Deliverables · due 2026-05-15\n\n- IEEE ISBI paper · 6 pages (2-person team)\n- In-class demo · 7 minutes\n- Submission: one `.ipynb` per team member\n- Code: github.com/jameswudo1019hack/bmet5933-a2"
+    }
+  ],
+  "edges": [
+    {"id": "e1", "fromNode": "dataset", "fromSide": "bottom", "toNode": "split", "toSide": "top"},
+    {"id": "e2", "fromNode": "dataset", "fromSide": "bottom", "toNode": "preproc", "toSide": "top"},
+    {"id": "e3", "fromNode": "dataset", "fromSide": "bottom", "toNode": "evaluate", "toSide": "top"},
+    {"id": "e4", "fromNode": "split", "fromSide": "bottom", "toNode": "classical_title", "toSide": "top", "label": "split.csv"},
+    {"id": "e5", "fromNode": "split", "fromSide": "bottom", "toNode": "dl_title", "toSide": "top", "label": "split.csv"},
+    {"id": "e6", "fromNode": "classical_title", "fromSide": "bottom", "toNode": "classical_features", "toSide": "top"},
+    {"id": "e7", "fromNode": "classical_features", "fromSide": "bottom", "toNode": "classical_clf", "toSide": "top"},
+    {"id": "e8", "fromNode": "classical_clf", "fromSide": "bottom", "toNode": "classical_out", "toSide": "top"},
+    {"id": "e9", "fromNode": "dl_title", "fromSide": "bottom", "toNode": "dl_model", "toSide": "top"},
+    {"id": "e10", "fromNode": "dl_model", "fromSide": "bottom", "toNode": "dl_train", "toSide": "top"},
+    {"id": "e11", "fromNode": "dl_train", "fromSide": "bottom", "toNode": "dl_support", "toSide": "top"},
+    {"id": "e12", "fromNode": "dl_support", "fromSide": "bottom", "toNode": "dl_out", "toSide": "top"},
+    {"id": "e13", "fromNode": "classical_out", "fromSide": "bottom", "toNode": "analysis_mcnemar", "toSide": "top", "label": "predictions A"},
+    {"id": "e14", "fromNode": "dl_out", "fromSide": "bottom", "toNode": "analysis_mcnemar", "toSide": "top", "label": "predictions B"},
+    {"id": "e15", "fromNode": "classical_out", "fromSide": "bottom", "toNode": "analysis_sweep", "toSide": "top"},
+    {"id": "e16", "fromNode": "dl_out", "fromSide": "bottom", "toNode": "analysis_sweep", "toSide": "top"},
+    {"id": "e17", "fromNode": "dl_out", "fromSide": "bottom", "toNode": "analysis_gradcam", "toSide": "top"},
+    {"id": "e18", "fromNode": "analysis_mcnemar", "fromSide": "bottom", "toNode": "deliverables", "toSide": "top"},
+    {"id": "e19", "fromNode": "analysis_sweep", "fromSide": "bottom", "toNode": "deliverables", "toSide": "top"},
+    {"id": "e20", "fromNode": "analysis_gradcam", "fromSide": "bottom", "toNode": "deliverables", "toSide": "top"}
+  ]
+}
