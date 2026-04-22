@@ -5,6 +5,10 @@ Thumbs.db
 # Office application lockfiles (Word/Excel "~$filename" hidden files while a doc is open)
 ~$*
 
+# Obsidian per-user vault state (themes, plugin settings, workspace layout)
+# Partner doesn't need this; only the markdown content should be in git.
+Planning/.obsidian/
+
 # Python
 __pycache__/
 *.pyc
