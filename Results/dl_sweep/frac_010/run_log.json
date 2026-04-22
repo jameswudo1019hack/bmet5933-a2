@@ -1,0 +1,249 @@
+{
+  "device": "cuda",
+  "seed": 42,
+  "smoke": false,
+  "train_frac": 0.1,
+  "n_train_samples": 436,
+  "classes": [
+    "Cyst",
+    "Normal",
+    "Stone",
+    "Tumor"
+  ],
+  "config": {
+    "batch_size": 32,
+    "stage1_epochs": 5,
+    "stage1_lr": 0.001,
+    "stage2_epochs": 30,
+    "stage2_lr": 1e-05,
+    "stage2_unfreeze_blocks": 2,
+    "stage2_weight_decay": 0.0001,
+    "early_stopping_patience": 5,
+    "use_class_weights": true
+  },
+  "epochs": [
+    {
+      "stage": 1,
+      "epoch": 1,
+      "train_loss": 1.2923776786261743,
+      "val_loss": 1.1777452233006154,
+      "val_macro_f1": 0.4358775891619909
+    },
+    {
+      "stage": 1,
+      "epoch": 2,
+      "train_loss": 1.0803974090366188,
+      "val_loss": 1.0691577687508544,
+      "val_macro_f1": 0.5179496269012214
+    },
+    {
+      "stage": 1,
+      "epoch": 3,
+      "train_loss": 0.9317838205110043,
+      "val_loss": 0.9594155756768629,
+      "val_macro_f1": 0.5847086837582333
+    },
+    {
+      "stage": 1,
+      "epoch": 4,
+      "train_loss": 0.8191364418475999,
+      "val_loss": 0.8494959312792253,
+      "val_macro_f1": 0.6605012640149023
+    },
+    {
+      "stage": 1,
+      "epoch": 5,
+      "train_loss": 0.8141347563594853,
+      "val_loss": 0.7908314403936235,
+      "val_macro_f1": 0.7021879287193855
+    },
+    {
+      "stage": 2,
+      "epoch": 1,
+      "train_loss": 0.7493197250803676,
+      "val_loss": 0.7571720418378679,
+      "val_macro_f1": 0.7098874607022538,
+      "improved": true
+    },
+    {
+      "stage": 2,
+      "epoch": 2,
+      "train_loss": 0.7243462319767803,
+      "val_loss": 0.7464237342044169,
+      "val_macro_f1": 0.7132469080480507,
+      "improved": true
+    },
+    {
+      "stage": 2,
+      "epoch": 3,
+      "train_loss": 0.7401265075447363,
+      "val_loss": 0.7377498220070016,
+      "val_macro_f1": 0.711010265400515,
+      "improved": false
+    },
+    {
+      "stage": 2,
+      "epoch": 4,
+      "train_loss": 0.7468268302602505,
+      "val_loss": 0.737728580545307,
+      "val_macro_f1": 0.7114950029123869,
+      "improved": false
+    },
+    {
+      "stage": 2,
+      "epoch": 5,
+      "train_loss": 0.7080894096182027,
+      "val_loss": 0.7261864419795205,
+      "val_macro_f1": 0.7238856589147287,
+      "improved": true
+    },
+    {
+      "stage": 2,
+      "epoch": 6,
+      "train_loss": 0.7083959202153967,
+      "val_loss": 0.722515341046025,
+      "val_macro_f1": 0.7139725227991163,
+      "improved": false
+    },
+    {
+      "stage": 2,
+      "epoch": 7,
+      "train_loss": 0.7043058894096165,
+      "val_loss": 0.7140754684008164,
+      "val_macro_f1": 0.719675726669224,
+      "improved": false
+    },
+    {
+      "stage": 2,
+      "epoch": 8,
+      "train_loss": 0.6919939107851151,
+      "val_loss": 0.7116162210256181,
+      "val_macro_f1": 0.7263747230325655,
+      "improved": true
+    },
+    {
+      "stage": 2,
+      "epoch": 9,
+      "train_loss": 0.6740867096349734,
+      "val_loss": 0.7064096341168855,
+      "val_macro_f1": 0.7258589767271757,
+      "improved": false
+    },
+    {
+      "stage": 2,
+      "epoch": 10,
+      "train_loss": 0.6963659016364211,
+      "val_loss": 0.6854534796907764,
+      "val_macro_f1": 0.7282195808493597,
+      "improved": true
+    },
+    {
+      "stage": 2,
+      "epoch": 11,
+      "train_loss": 0.6826431723909641,
+      "val_loss": 0.686318086543992,
+      "val_macro_f1": 0.7322718460600212,
+      "improved": true
+    },
+    {
+      "stage": 2,
+      "epoch": 12,
+      "train_loss": 0.6601452406393279,
+      "val_loss": 0.6761628013479123,
+      "val_macro_f1": 0.73287806885181,
+      "improved": true
+    },
+    {
+      "stage": 2,
+      "epoch": 13,
+      "train_loss": 0.6553189065478263,
+      "val_loss": 0.6761072740692653,
+      "val_macro_f1": 0.7366870266872858,
+      "improved": true
+    },
+    {
+      "stage": 2,
+      "epoch": 14,
+      "train_loss": 0.6408572656298996,
+      "val_loss": 0.6725640260560609,
+      "val_macro_f1": 0.7388181549505529,
+      "improved": true
+    },
+    {
+      "stage": 2,
+      "epoch": 15,
+      "train_loss": 0.620998068687019,
+      "val_loss": 0.664262837146028,
+      "val_macro_f1": 0.7321822144345759,
+      "improved": false
+    },
+    {
+      "stage": 2,
+      "epoch": 16,
+      "train_loss": 0.6507758263054244,
+      "val_loss": 0.6543591018024297,
+      "val_macro_f1": 0.743599207718165,
+      "improved": true
+    },
+    {
+      "stage": 2,
+      "epoch": 17,
+      "train_loss": 0.6253235870545063,
+      "val_loss": 0.6580075020453149,
+      "val_macro_f1": 0.7370962616537677,
+      "improved": false
+    },
+    {
+      "stage": 2,
+      "epoch": 18,
+      "train_loss": 0.6567349669036515,
+      "val_loss": 0.6507826329426285,
+      "val_macro_f1": 0.7514611773371881,
+      "improved": true
+    },
+    {
+      "stage": 2,
+      "epoch": 19,
+      "train_loss": 0.5825095302468046,
+      "val_loss": 0.6407996076587946,
+      "val_macro_f1": 0.7441663638276304,
+      "improved": false
+    },
+    {
+      "stage": 2,
+      "epoch": 20,
+      "train_loss": 0.5833912401571186,
+      "val_loss": 0.6415981019206936,
+      "val_macro_f1": 0.741259507940311,
+      "improved": false
+    },
+    {
+      "stage": 2,
+      "epoch": 21,
+      "train_loss": 0.6030527561082752,
+      "val_loss": 0.6441528657391444,
+      "val_macro_f1": 0.7465337803916484,
+      "improved": false
+    },
+    {
+      "stage": 2,
+      "epoch": 22,
+      "train_loss": 0.6169934311044325,
+      "val_loss": 0.6373321548008561,
+      "val_macro_f1": 0.7494581600200212,
+      "improved": false
+    },
+    {
+      "stage": 2,
+      "epoch": 23,
+      "train_loss": 0.6208727130102455,
+      "val_loss": 0.6264987246510304,
+      "val_macro_f1": 0.743200241754702,
+      "improved": false
+    }
+  ],
+  "best_val_macro_f1": 0.7514611773371881,
+  "best_epoch": 23,
+  "wall_time_sec": 105.54594302177429,
+  "checkpoint": "Results/dl_sweep/frac_010/best_model.pt"
+}
