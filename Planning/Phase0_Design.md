@@ -38,7 +38,7 @@ The small set (3,110) would allow faster iteration but Stone would contain only 
 - **Test set is held out**: touched exactly once per model, at the very end of the study. All hyperparameter tuning uses the training set with stratified 5-fold cross-validation on the training fold only.
 
 ### Rationale
-- **Why 70/15/15 rather than 80/20 + in-train validation (as in Islam et al.)**: 15 % test (~930 images) gives Stone ~100 test samples, which is the floor for per-class 95 % bootstrap CIs of reasonable width [6]. Keeping validation as an explicit third partition — rather than carving it out of the training fold on each CV iteration — means both models can use an identical validation signal for hyperparameter selection and early stopping, eliminating a confound in the comparison.
+- **Why 70/15/15 rather than 80/20 + in-train validation (as in Islam et al.)**: 15 % test (~930 images) gives Stone ~100 test samples. As a practical rule of thumb consistent with the guidance in [6, 19], bootstrap confidence intervals narrow roughly with √n, so per-class test samples in the hundreds are required for usefully tight 95 % CIs on the minority class. Keeping validation as an explicit third partition — rather than carving it out of the training fold on each CV iteration — means both models can use an identical validation signal for hyperparameter selection and early stopping, eliminating a confound in the comparison.
 - **Why stratified**: with a ~7:1 Normal-to-Stone ratio, random splitting can (and in small runs, does) produce splits with badly skewed per-class test counts. Stratified splitting is the standard recommendation for imbalanced learning [7, 8].
 - **Why a fixed seed**: reproducibility is a CLAIM 2024 item (checklist items on data partitioning) [2] and a core TRIPOD+AI recommendation [3]. Seed locking is the cheapest possible action to satisfy it.
 - **Why the test set is touched once**: repeatedly evaluating on the test set during development causes "test-set leakage" — a well-documented source of over-optimistic results in ML pipelines [4, 9].
@@ -55,7 +55,7 @@ The small set (3,110) would allow faster iteration but Stone would contain only 
 - **Keep the natural class distribution** in all splits. Do not downsample or upsample in Phase 0.
 - Each classifier handles imbalance internally, with matched strategies:
   - **Person A (classical ML)**: `class_weight='balanced'` in the final classifier (SVM / RF / GBM), and stratified CV for tuning.
-  - **Person B (deep learning)**: inverse-frequency class weights in the cross-entropy loss, and weighted random sampling in the training DataLoader (one or both — both pipelines to be prototyped and the better-performing one reported).
+  - **Person B (deep learning)**: inverse-frequency class weights in the cross-entropy loss. Weighted random sampling in the DataLoader is an alternative with comparable effect per Buda et al. [11]; we use class weights for symmetry with Person A's pipeline and note weighted sampling as future work.
 - **Primary reporting metric is macro-F1**, not accuracy (§5).
 
 ### Rationale
@@ -99,18 +99,18 @@ Everything beyond this is classifier-specific:
 ### Decision
 For every reported experiment, both classifiers report:
 
-| Metric | Averaging | Role |
-|---|---|---|
-| **Macro-F1** | macro (equal weight per class) | **Primary** |
-| Accuracy | — | Secondary, for direct comparison to Islam et al. |
-| Per-class precision, recall, F1 | — | Required — failure-mode analysis |
-| Weighted F1 | support-weighted | Reported; sensitive to imbalance |
-| ROC-AUC | one-vs-rest, macro-averaged | Threshold-free comparison |
-| Confusion matrix | — | Required figure |
-| 95 % bootstrap CI on macro-F1 | 1000 resamples of the test set | Uncertainty quantification |
+| Metric                          | Averaging                      | Role                                             |
+| ------------------------------- | ------------------------------ | ------------------------------------------------ |
+| **Macro-F1**                    | macro (equal weight per class) | **Primary**                                      |
+| Accuracy                        | —                              | Secondary, for direct comparison to Islam et al. |
+| Per-class precision, recall, F1 | —                              | Required — failure-mode analysis                 |
+| Weighted F1                     | support-weighted               | Reported; sensitive to imbalance                 |
+| ROC-AUC                         | one-vs-rest, macro-averaged    | Threshold-free comparison                        |
+| Confusion matrix                | —                              | Required figure                                  |
+| 95 % bootstrap CI on macro-F1   | 1000 resamples of the test set | Uncertainty quantification                       |
 
 ### Rationale
-- **Macro-F1 as primary**: Grandini et al. [13] argue that macro-F1 is the appropriate default for imbalanced multi-class problems because it treats the minority class as first-class — exactly what we want clinically, since Stone and Tumor misses are more costly than Normal misses. Sokolova & Lapalme [14] make the same argument more formally.
+- **Macro-F1 as primary**: Grandini et al. [13] argue that macro-F1 is the appropriate default for imbalanced multi-class problems because it treats the minority class as first-class — exactly what we want clinically, since Stone and Tumor misses are more costly than Normal misses. Sokolova & Lapalme [14] make the same argument more formally. We compute macro-F1 as the arithmetic mean of per-class F1 scores (scikit-learn default), which Opitz & Burst [22] identify as the principled variant; a competing formulation (averaging per-class precision and recall separately before combining) can diverge by up to 0.5 and is not used here.
 - **Accuracy reported as secondary, not primary**: Accuracy is dominated by the Normal class (41 % of medium). A model that classified everything as Normal would score ~41 % accuracy — unacceptable clinically, unacceptable as a primary metric, but the Islam et al. comparison requires us to report it.
 - **Per-class metrics are mandatory, not optional**: the CLAIM 2024 checklist [2] explicitly requires reporting per-class performance for classification tasks.
 - **ROC-AUC one-vs-rest, macro-averaged**: Fawcett [17] establishes this as the default extension of ROC analysis to multi-class. Hand & Till's approach [18] is an alternative but is less commonly reported.
@@ -152,7 +152,7 @@ The project commits to the following reporting artefacts, produced automatically
 
 These will be repeated in the paper's Limitations section and must not be forgotten:
 
-1. **No patient identifiers**: Islam et al.'s Kaggle release does not include patient IDs. Because CT studies typically contain multiple axial/coronal slices per patient, it is possible that adjacent slices from the same patient fall in both train and test splits. Yagis et al. [9] demonstrated that slice-level splitting in 2D MRI CNN studies over-estimated accuracy by 29–55 % on four public datasets. Our numbers are therefore best treated as an **upper bound** on patient-level generalisation. This is a direct, honest limitation and is probably the single most important caveat in the paper.
+1. **No patient identifiers**: Islam et al.'s Kaggle release does not include patient IDs. Because CT studies typically contain multiple axial/coronal slices per patient, it is possible that adjacent slices from the same patient fall in both train and test splits. Yagis et al. [9] demonstrated that slice-level splitting in 2D MRI CNN studies over-estimated accuracy by 29–55 % on four public datasets; Veetil et al. [23] independently replicated the effect at +67 % on an external Parkinson's dataset. Our numbers are therefore best treated as an **upper bound** on patient-level generalisation. This is a direct, honest limitation and is probably the single most important caveat in the paper.
 2. **Single-source dataset**: all images from hospitals in Dhaka. Varoquaux & Cheplygina [4] repeatedly flag single-centre datasets as the primary driver of over-optimism in medical ML. No external validation is possible within the scope of a 3-week assignment.
 3. **Axial + coronal slices mixed**: the reference paper [5] does not document the ratio. Our model will see whatever mix exists in the data; we cannot condition on slice orientation without additional metadata we don't have.
 
@@ -214,3 +214,7 @@ These will be repeated in the paper's Limitations section and must not be forgot
 [20] A. Benavoli, G. Corani, J. Demšar, and M. Zaffalon, "Time for a Change: a Tutorial for Comparing Multiple Classifiers Through Bayesian Analysis," *Journal of Machine Learning Research*, vol. 18, pp. 1–36, 2017.
 
 [21] J. Pineau et al., "Improving Reproducibility in Machine Learning Research (A Report from the NeurIPS 2019 Reproducibility Program)," *Journal of Machine Learning Research*, vol. 22, pp. 1–20, 2021.
+
+[22] J. Opitz and S. Burst, "Macro F1 and Macro F1," arXiv:1911.03347, 2019.
+
+[23] I. K. Veetil et al., "An analysis of data leakage and generalizability in MRI based classification of Parkinson's Disease using explainable 2D Convolutional Neural Networks," *Digital Signal Processing*, 2024. [Supporting citation for §8 — reports +67 % accuracy inflation from slice-level leakage, independently replicating Yagis et al.]
