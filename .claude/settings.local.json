@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip install *)",
+      "Bash(python -c ' *)",
+      "Bash(python -m classical.train --smoke --output-dir Results/classical_smoke)",
+      "Bash(python -m classical.train --output-dir Results/classical_run)",
+      "Bash(python -m classical.predict --output-dir Results/classical_run)",
+      "Bash(echo \"DONE\")",
+      "PowerShell($lines = Get-Content \"c:\\\\Users\\\\alee7\\\\OneDrive\\\\Documents\\\\GitHub\\\\bmet5933-a2\\\\Results\\\\classical_run\\\\classical_train_log.txt\"; $lines.Count; $lines[-20..-1])"
+    ]
+  }
+}
