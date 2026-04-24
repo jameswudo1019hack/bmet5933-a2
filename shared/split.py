@@ -9,17 +9,25 @@ Splitting is two-stage stratified:
   1. (train+val) vs test, preserving class prior.
   2. train vs val within (train+val), preserving class prior.
 Both stages use the same seed from shared.config.
+
+CLI flags allow generating a separate split for the full dataset
+(`--dataset-root .../CT-KIDNEY-DATASET-Normal-Cyst-Tumor-Stone
+ --output split_full.csv`) without disturbing the committed `split.csv`
+for the medium-dataset comparison.
 """
 from __future__ import annotations
 
+import argparse
 import csv
 from collections import Counter
+from pathlib import Path
 
 from sklearn.model_selection import train_test_split
 
 from shared.config import (
     CLASSES,
     DATASET_ROOT,
+    REPO_ROOT,
     SEED,
     SPLIT_CSV,
     TEST_FRAC,
@@ -30,28 +38,30 @@ from shared.config import (
 _IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png"}
 
 
-def _collect() -> tuple[list[str], list[str]]:
+def _collect(dataset_root: Path) -> tuple[list[str], list[str]]:
     paths: list[str] = []
     labels: list[str] = []
     for cls in CLASSES:
-        cls_dir = DATASET_ROOT / cls
+        cls_dir = dataset_root / cls
         if not cls_dir.is_dir():
             raise FileNotFoundError(
                 f"Missing class folder: {cls_dir}\n"
-                f"Check DATASET_ROOT ({DATASET_ROOT}) or override it via "
-                f"BMET5933_DATASET_ROOT / config.local.yaml."
+                f"Check dataset_root ({dataset_root}) or override it via "
+                f"BMET5933_DATASET_ROOT / config.local.yaml / --dataset-root."
             )
         for p in sorted(cls_dir.iterdir()):
             if p.suffix.lower() in _IMAGE_SUFFIXES:
-                paths.append(str(p.relative_to(DATASET_ROOT)))
+                paths.append(str(p.relative_to(dataset_root)))
                 labels.append(cls)
     return paths, labels
 
 
-def make_split() -> None:
-    paths, labels = _collect()
+def make_split(dataset_root: Path | None = None, output: Path | None = None) -> None:
+    root = dataset_root or DATASET_ROOT
+    out = output or SPLIT_CSV
+    paths, labels = _collect(root)
     if not paths:
-        raise RuntimeError(f"No images found under {DATASET_ROOT}")
+        raise RuntimeError(f"No images found under {root}")
 
     trainval_paths, test_paths, trainval_labels, test_labels = train_test_split(
         paths,
@@ -77,13 +87,13 @@ def make_split() -> None:
     for p, l in zip(test_paths, test_labels, strict=True):
         rows.append((p, l, "test"))
 
-    SPLIT_CSV.parent.mkdir(parents=True, exist_ok=True)
-    with SPLIT_CSV.open("w", newline="") as f:
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with out.open("w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["filename", "class", "split"])
         w.writerows(rows)
 
-    print(f"Wrote {SPLIT_CSV}  ({len(rows)} rows)")
+    print(f"Wrote {out}  ({len(rows)} rows)  from  {root}")
     _print_summary(rows)
 
 
@@ -109,5 +119,23 @@ def _print_summary(rows: list[tuple[str, str, str]]) -> None:
     print(total_line)
 
 
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Generate a stratified split CSV")
+    parser.add_argument(
+        "--dataset-root",
+        default=None,
+        help=f"override dataset root (default resolved via shared.config: {DATASET_ROOT})",
+    )
+    parser.add_argument(
+        "--output",
+        default=None,
+        help=f"output CSV path (default: {SPLIT_CSV})",
+    )
+    args = parser.parse_args()
+    root = Path(args.dataset_root).expanduser().resolve() if args.dataset_root else None
+    out = Path(args.output).expanduser().resolve() if args.output else None
+    make_split(dataset_root=root, output=out)
+
+
 if __name__ == "__main__":
-    make_split()
+    main()

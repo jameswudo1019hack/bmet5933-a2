@@ -30,6 +30,7 @@ tqdm>=4.66
 # For CUDA builds, follow https://pytorch.org/get-started/locally/ instead of this file.
 torch>=2.2
 torchvision>=0.17
+timm>=1.0.9   # ConvNeXt V2 backbone for the Sprint 2 supplementary run
 
 # Notebooks
 jupyter

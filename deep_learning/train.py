@@ -117,43 +117,57 @@ def train(
     smoke: bool = False,
     seed: int = SEED,
     train_frac: float = 1.0,
+    model_name: str = "efficientnet_b0",
+    split_csv: str | None = None,
+    dataset_root: str | None = None,
+    image_size: int = 224,
+    batch_size: int | None = None,
+    stage2_weight_decay: float = STAGE2_WEIGHT_DECAY,
+    stage2_unfreeze_blocks: int = STAGE2_UNFREEZE_BLOCKS,
 ) -> dict:
     seed_all(seed)
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
+    batch_size = batch_size or BATCH_SIZE
 
-    print(f"[train] device={device}  seed={seed}  smoke={smoke}  train_frac={train_frac}  out={output_dir}")
+    print(f"[train] model={model_name}  image_size={image_size}  batch_size={batch_size}")
+    print(f"[train] device={device}  seed={seed}  smoke={smoke}  train_frac={train_frac}")
+    print(f"[train] split_csv={split_csv or 'default (medium split.csv)'}")
+    print(f"[train] out={output_dir}")
 
-    train_ds = KidneyCTDataset("train")
-    val_ds = KidneyCTDataset("val")
+    train_ds = KidneyCTDataset(
+        "train", split_csv=split_csv, dataset_root=dataset_root, image_size=image_size
+    )
+    val_ds = KidneyCTDataset(
+        "val", split_csv=split_csv, dataset_root=dataset_root, image_size=image_size
+    )
     if train_frac < 1.0:
         idxs = stratified_train_indices(train_frac, seed=SEED)
         train_ds = Subset(train_ds, idxs)
         print(f"[train] subsetting train to {len(idxs)} samples ({train_frac:.0%})")
     if smoke:
-        # 64 train / 32 val samples is enough to verify the pipeline runs
         train_ds = Subset(train_ds, list(range(min(64, len(train_ds)))))
-        val_ds = Subset(val_ds, list(range(32)))
+        val_ds = Subset(val_ds, list(range(min(32, len(val_ds)))))
 
     train_loader = DataLoader(
         train_ds,
-        batch_size=BATCH_SIZE,
+        batch_size=batch_size,
         shuffle=True,
         num_workers=NUM_WORKERS,
         pin_memory=(device.type == "cuda"),
     )
     val_loader = DataLoader(
         val_ds,
-        batch_size=BATCH_SIZE,
+        batch_size=batch_size,
         shuffle=False,
         num_workers=NUM_WORKERS,
         pin_memory=(device.type == "cuda"),
     )
 
-    model = build_model().to(device)
+    model = build_model(name=model_name, image_size=image_size).to(device)
 
     if USE_CLASS_WEIGHTS:
-        class_weights = compute_class_weights().to(device)
+        class_weights = compute_class_weights(split_csv=split_csv).to(device)
         print(f"[train] class weights: {class_weights.tolist()}")
     else:
         class_weights = None
@@ -167,13 +181,16 @@ def train(
         "n_train_samples": len(train_ds),
         "classes": list(CLASSES),
         "config": {
-            "batch_size": BATCH_SIZE,
+            "model_name": model_name,
+            "image_size": image_size,
+            "split_csv": str(split_csv) if split_csv else "split.csv",
+            "batch_size": batch_size,
             "stage1_epochs": STAGE1_EPOCHS if not smoke else 1,
             "stage1_lr": STAGE1_LR,
             "stage2_epochs": STAGE2_EPOCHS if not smoke else 1,
             "stage2_lr": STAGE2_LR,
-            "stage2_unfreeze_blocks": STAGE2_UNFREEZE_BLOCKS,
-            "stage2_weight_decay": STAGE2_WEIGHT_DECAY,
+            "stage2_unfreeze_blocks": stage2_unfreeze_blocks,
+            "stage2_weight_decay": stage2_weight_decay,
             "early_stopping_patience": EARLY_STOPPING_PATIENCE,
             "use_class_weights": USE_CLASS_WEIGHTS,
         },
@@ -215,12 +232,12 @@ def train(
             torch.save(model.state_dict(), ckpt_path)
 
     # Stage 2: unfreeze last blocks, fine-tune
-    unfreeze_last_blocks(model, STAGE2_UNFREEZE_BLOCKS)
+    unfreeze_last_blocks(model, stage2_unfreeze_blocks)
     print(f"[stage2] trainable params: {count_trainable(model):,}")
     optimizer = torch.optim.AdamW(
         [p for p in model.parameters() if p.requires_grad],
         lr=STAGE2_LR,
-        weight_decay=STAGE2_WEIGHT_DECAY,
+        weight_decay=stage2_weight_decay,
     )
     stage2_epochs = 1 if smoke else STAGE2_EPOCHS
     epochs_since_improvement = 0
@@ -270,10 +287,38 @@ def main() -> None:
     parser.add_argument("--output-dir", default=str(RESULTS_DIR / "dl_run"))
     parser.add_argument("--smoke", action="store_true", help="tiny run to verify pipeline")
     parser.add_argument(
-        "--train-frac",
-        type=float,
-        default=1.0,
+        "--train-frac", type=float, default=1.0,
         help="stratified fraction of the train split to use (for data-efficiency sweep)",
+    )
+    parser.add_argument(
+        "--model", default="efficientnet_b0",
+        choices=["efficientnet_b0", "convnextv2_base"],
+        help="backbone architecture",
+    )
+    parser.add_argument(
+        "--split-csv", default=None,
+        help="path to the split CSV (default: split.csv). Use split_full.csv for full-dataset runs.",
+    )
+    parser.add_argument(
+        "--dataset-root", default=None,
+        help="optional dataset root override (default: shared.config.DATASET_ROOT)",
+    )
+    parser.add_argument(
+        "--image-size", type=int, default=224,
+        help="CNN input resolution (224 for EfficientNet-B0, 384 for ConvNeXt V2)",
+    )
+    parser.add_argument(
+        "--batch-size", type=int, default=None,
+        help="override batch size (default comes from deep_learning.config)",
+    )
+    parser.add_argument(
+        "--stage2-weight-decay", type=float, default=STAGE2_WEIGHT_DECAY,
+        help="AdamW weight decay in stage 2 (default 1e-4; recommended 5e-2 for ConvNeXt V2)",
+    )
+    parser.add_argument(
+        "--stage2-unfreeze-blocks", type=int, default=STAGE2_UNFREEZE_BLOCKS,
+        help="number of last backbone stages to unfreeze in stage 2 "
+             "(default 2 for EfficientNet-B0; use 1 for ConvNeXt V2 Base where stages are much larger)",
     )
     args = parser.parse_args()
 
@@ -283,6 +328,13 @@ def main() -> None:
         device=device,
         smoke=args.smoke,
         train_frac=args.train_frac,
+        model_name=args.model,
+        split_csv=args.split_csv,
+        dataset_root=args.dataset_root,
+        image_size=args.image_size,
+        batch_size=args.batch_size,
+        stage2_weight_decay=args.stage2_weight_decay,
+        stage2_unfreeze_blocks=args.stage2_unfreeze_blocks,
     )
 
 

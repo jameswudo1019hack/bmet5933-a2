@@ -32,7 +32,8 @@ CI_LEVEL: float = 0.95
 
 REPO_ROOT: Path = Path(__file__).resolve().parents[1]
 RESULTS_DIR: Path = REPO_ROOT / "Results"
-SPLIT_CSV: Path = REPO_ROOT / "split.csv"
+SPLIT_CSV: Path = REPO_ROOT / "split.csv"             # medium dataset (primary comparison)
+SPLIT_CSV_FULL: Path = REPO_ROOT / "split_full.csv"   # full 12,446-image dataset (scale validation only)
 LOCAL_CONFIG: Path = REPO_ROOT / "config.local.yaml"
 
 _DEFAULT_DATASET_ROOT = (

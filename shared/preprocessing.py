@@ -31,17 +31,30 @@ def load_image(path: str | Path) -> np.ndarray:
     return np.asarray(img, dtype=np.uint8)
 
 
-def load_split(split_name: str) -> pd.DataFrame:
-    if not SPLIT_CSV.exists():
+def load_split(
+    split_name: str,
+    split_csv: str | Path | None = None,
+    dataset_root: str | Path | None = None,
+) -> pd.DataFrame:
+    """Load one split ('train' | 'val' | 'test') from a stratified split CSV.
+
+    Defaults to the primary split.csv + DATASET_ROOT (medium dataset).
+    For the Sprint 2 full-dataset ConvNeXt V2 run, pass
+    `split_csv=REPO_ROOT/"split_full.csv"` and `dataset_root=
+    REPO_ROOT/"Dataset"/"CT-KIDNEY-DATASET-Normal-Cyst-Tumor-Stone"`.
+    """
+    csv_path = Path(split_csv) if split_csv else SPLIT_CSV
+    root = Path(dataset_root) if dataset_root else DATASET_ROOT
+    if not csv_path.exists():
         raise FileNotFoundError(
-            f"{SPLIT_CSV} not found. Run `python -m shared.split` first."
+            f"{csv_path} not found. Run `python -m shared.split` first."
         )
     if split_name not in {"train", "val", "test"}:
         raise ValueError(
             f"split_name must be one of 'train'/'val'/'test', got {split_name!r}"
         )
-    df = pd.read_csv(SPLIT_CSV)
+    df = pd.read_csv(csv_path)
     sub = df[df["split"] == split_name].copy()
-    sub["abs_path"] = sub["filename"].map(lambda p: str(DATASET_ROOT / p))
+    sub["abs_path"] = sub["filename"].map(lambda p: str(root / p))
     sub["class_idx"] = sub["class"].map(CLASS_TO_IDX)
     return sub.reset_index(drop=True)
