@@ -1,0 +1,183 @@
+{
+  "model_name": "ensemble_w050",
+  "n_test": 934,
+  "classes": [
+    "Cyst",
+    "Normal",
+    "Stone",
+    "Tumor"
+  ],
+  "accuracy": 1.0,
+  "macro_f1": 1.0,
+  "weighted_f1": 1.0,
+  "per_class": {
+    "Cyst": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 279
+    },
+    "Normal": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 381
+    },
+    "Stone": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 103
+    },
+    "Tumor": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 171
+    }
+  },
+  "confusion_matrix": [
+    [
+      279,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      381,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      103,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      171
+    ]
+  ],
+  "roc_auc_ovr_macro": 1.0,
+  "macro_f1_ci95": {
+    "mean": 1.0,
+    "lo": 1.0,
+    "hi": 1.0
+  },
+  "per_class_f1_ci95": {
+    "Cyst": {
+      "mean": 1.0,
+      "lo": 1.0,
+      "hi": 1.0
+    },
+    "Normal": {
+      "mean": 1.0,
+      "lo": 1.0,
+      "hi": 1.0
+    },
+    "Stone": {
+      "mean": 1.0,
+      "lo": 1.0,
+      "hi": 1.0
+    },
+    "Tumor": {
+      "mean": 1.0,
+      "lo": 1.0,
+      "hi": 1.0
+    }
+  },
+  "ensemble_weight_dl": 0.5,
+  "weight_source": "fixed (a-priori default, not val-tuned)",
+  "val_tuned_weight": 0.0,
+  "val_tuned_macro_f1": 1.0,
+  "val_weight_grid": [
+    {
+      "w_dl": 0.0,
+      "val_macro_f1": 1.0
+    },
+    {
+      "w_dl": 0.05,
+      "val_macro_f1": 1.0
+    },
+    {
+      "w_dl": 0.1,
+      "val_macro_f1": 1.0
+    },
+    {
+      "w_dl": 0.15000000000000002,
+      "val_macro_f1": 1.0
+    },
+    {
+      "w_dl": 0.2,
+      "val_macro_f1": 1.0
+    },
+    {
+      "w_dl": 0.25,
+      "val_macro_f1": 1.0
+    },
+    {
+      "w_dl": 0.3,
+      "val_macro_f1": 1.0
+    },
+    {
+      "w_dl": 0.35,
+      "val_macro_f1": 1.0
+    },
+    {
+      "w_dl": 0.39999999999999997,
+      "val_macro_f1": 1.0
+    },
+    {
+      "w_dl": 0.44999999999999996,
+      "val_macro_f1": 1.0
+    },
+    {
+      "w_dl": 0.49999999999999994,
+      "val_macro_f1": 1.0
+    },
+    {
+      "w_dl": 0.5499999999999999,
+      "val_macro_f1": 1.0
+    },
+    {
+      "w_dl": 0.6,
+      "val_macro_f1": 1.0
+    },
+    {
+      "w_dl": 0.65,
+      "val_macro_f1": 1.0
+    },
+    {
+      "w_dl": 0.7000000000000001,
+      "val_macro_f1": 1.0
+    },
+    {
+      "w_dl": 0.7500000000000001,
+      "val_macro_f1": 0.9984528338074993
+    },
+    {
+      "w_dl": 0.8000000000000002,
+      "val_macro_f1": 0.9984528338074993
+    },
+    {
+      "w_dl": 0.8500000000000002,
+      "val_macro_f1": 0.9965162985628409
+    },
+    {
+      "w_dl": 0.9000000000000002,
+      "val_macro_f1": 0.9965162985628409
+    },
+    {
+      "w_dl": 0.9500000000000003,
+      "val_macro_f1": 0.9953412227140583
+    },
+    {
+      "w_dl": 1.0000000000000002,
+      "val_macro_f1": 0.9934121182250909
+    }
+  ]
+}

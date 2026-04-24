@@ -20,36 +20,42 @@ The most promising interventions exploit the top-2 / borderline-error structure:
 
 ## 1. Current state (test set)
 
-| Metric | Value | 95 % CI |
-|---|---|---|
-| Accuracy | 0.9797 | — |
-| Macro-F1 | **0.9745** | [0.9628, 0.9857] |
-| Weighted F1 | 0.9797 | — |
-| ROC-AUC (OvR macro) | 0.9995 | — |
-| Errors | 19 / 934 | (2.03 %) |
+
+| Metric              | Value      | 95 % CI          |
+| ------------------- | ---------- | ---------------- |
+| Accuracy            | 0.9797     | —                |
+| Macro-F1            | **0.9745** | [0.9628, 0.9857] |
+| Weighted F1         | 0.9797     | —                |
+| ROC-AUC (OvR macro) | 0.9995     | —                |
+| Errors              | 19 / 934   | (2.03 %)         |
+
 
 ### Per-class recall
 
-| Class | Support | DL recall | Classical recall | Δ |
-|---|---|---|---|---|
-| Cyst | 279 | 0.989 | 0.996 | +0.007 |
-| Normal | 381 | 0.979 | 1.000 | +0.021 |
-| **Stone** | **103** | **0.942** | **1.000** | **+0.058** |
-| Tumor | 171 | 0.988 | 0.994 | +0.006 |
+
+| Class     | Support | DL recall | Classical recall | Δ          |
+| --------- | ------- | --------- | ---------------- | ---------- |
+| Cyst      | 279     | 0.989     | 0.996            | +0.007     |
+| Normal    | 381     | 0.979     | 1.000            | +0.021     |
+| **Stone** | **103** | **0.942** | **1.000**        | **+0.058** |
+| Tumor     | 171     | 0.988     | 0.994            | +0.006     |
+
 
 ### Error direction breakdown (DL, 19 total)
 
-| True → Predicted | Count |
-|---|---|
+
+| True → Predicted   | Count |
+| ------------------ | ----- |
 | **Stone → Normal** | **5** |
-| Normal → Cyst | 3 |
-| Normal → Stone | 3 |
-| Cyst → Stone | 2 |
-| Normal → Tumor | 2 |
-| Stone → Cyst | 1 |
-| Tumor → Stone | 1 |
-| Cyst → Normal | 1 |
-| Tumor → Normal | 1 |
+| Normal → Cyst      | 3     |
+| Normal → Stone     | 3     |
+| Cyst → Stone       | 2     |
+| Normal → Tumor     | 2     |
+| Stone → Cyst       | 1     |
+| Tumor → Stone      | 1     |
+| Cyst → Normal      | 1     |
+| Tumor → Normal     | 1     |
+
 
 Dominant failure mode: **Stone class is under-predicted** (Stone→Normal) and **over-predicted on easier cases** (Normal/Cyst/Tumor → Stone, 6 of 19 errors).
 
@@ -63,11 +69,13 @@ Mean softmax probability on the predicted (wrong) class: **0.561** (vs 0.948 on 
 
 ### 2.2 True class is usually at rank 2
 
+
 | Rank of true class among DL predictions | Count / 19 |
-|---|---|
-| Rank 2 (top-2 hit) | **16** |
-| Rank 3 | 2 |
-| Rank 4 | 1 |
+| --------------------------------------- | ---------- |
+| Rank 2 (top-2 hit)                      | **16**     |
+| Rank 3                                  | 2          |
+| Rank 4                                  | 1          |
+
 
 **Top-2 accuracy = 99.6 %.** Every intervention that perturbs DL's decision toward a second-place prediction has a realistic shot at flipping the answer. This is exactly the regime where:
 
@@ -92,34 +100,42 @@ Each row has a rough estimate of F1 gain based on medical-imaging literature nor
 
 ### Tier 1 — Highest ROI (low effort, high expected gain)
 
-| # | Intervention | Rationale | Estimated gain | Effort |
-|---|---|---|---|---|
-| **T1.1** | **Test-Time Augmentation** | 16/19 errors have true class at rank 2; TTA averages softmax across augmented views and systematically tips borderline cases. Only needs an inference-time change, zero retraining. | **+0.5 to +1.0 macro-F1** | ~1 h (code only) |
-| **T1.2** | **Multi-seed ensemble** | Three or five seeds averaged. Historically +1–2 F1 on medical imaging. Directly addresses the uncertainty-on-errors pattern. | +1.0 to +2.0 macro-F1 | ~1 h implementation + 3–5 × 8 min Colab runs |
+
+| #        | Intervention               | Rationale                                                                                                                                                                           | Estimated gain            | Effort                                       |
+| -------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- | -------------------------------------------- |
+| **T1.1** | **Test-Time Augmentation** | 16/19 errors have true class at rank 2; TTA averages softmax across augmented views and systematically tips borderline cases. Only needs an inference-time change, zero retraining. | **+0.5 to +1.0 macro-F1** | ~1 h (code only)                             |
+| **T1.2** | **Multi-seed ensemble**    | Three or five seeds averaged. Historically +1–2 F1 on medical imaging. Directly addresses the uncertainty-on-errors pattern.                                                        | +1.0 to +2.0 macro-F1     | ~1 h implementation + 3–5 × 8 min Colab runs |
+
 
 ### Tier 2 — Medium ROI (moderate effort, targeted gain)
 
-| # | Intervention | Rationale | Estimated gain | Effort |
-|---|---|---|---|---|
-| **T2.1** | **WeightedRandomSampler** for Stone | Replace loss-weighting with per-epoch oversampling. Buda et al. [11] found oversampling marginally stronger than cost-sensitive loss for CNNs. Targets Stone's 0.942 recall directly. | **+1 to +2 on Stone F1** (smaller elsewhere) | ~30 min code + 1 retraining run |
-| **T2.2** | **Higher input resolution (288 × 288 or 320 × 320)** | Kidney stones are small features. Higher resolution retains more pixel-level evidence. EfficientNet-B0 handles 256–320 fine. | +0.3 to +1.0 macro-F1 | ~15 min code + 1 retraining (slower epoch) |
-| **T2.3** | **Focal Loss** (γ = 2) | Focuses gradient on hard examples. Given DL's high uncertainty on errors (mean 0.56 confidence), focal loss should penalise these more than the current weighted cross-entropy. Lin et al. 2017 standard setting. | +0.3 to +1.0 macro-F1, mostly on Stone | ~15 min code + 1 retraining |
+
+| #        | Intervention                                         | Rationale                                                                                                                                                                                                         | Estimated gain                               | Effort                                     |
+| -------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- | ------------------------------------------ |
+| **T2.1** | **WeightedRandomSampler** for Stone                  | Replace loss-weighting with per-epoch oversampling. Buda et al. [11] found oversampling marginally stronger than cost-sensitive loss for CNNs. Targets Stone's 0.942 recall directly.                             | **+1 to +2 on Stone F1** (smaller elsewhere) | ~30 min code + 1 retraining run            |
+| **T2.2** | **Higher input resolution (288 × 288 or 320 × 320)** | Kidney stones are small features. Higher resolution retains more pixel-level evidence. EfficientNet-B0 handles 256–320 fine.                                                                                      | +0.3 to +1.0 macro-F1                        | ~15 min code + 1 retraining (slower epoch) |
+| **T2.3** | **Focal Loss** (γ = 2)                               | Focuses gradient on hard examples. Given DL's high uncertainty on errors (mean 0.56 confidence), focal loss should penalise these more than the current weighted cross-entropy. Lin et al. 2017 standard setting. | +0.3 to +1.0 macro-F1, mostly on Stone       | ~15 min code + 1 retraining                |
+
 
 ### Tier 3 — Possible ROI (higher effort, uncertain gain)
 
-| # | Intervention | Rationale | Estimated gain | Effort |
-|---|---|---|---|---|
-| **T3.1** | **Label smoothing** (ε = 0.1) | Regularises over-confident predictions. Since DL is already appropriately uncertain on errors, this may or may not help. | 0 to +0.3 | Trivial code change, retraining |
-| **T3.2** | **Classical + DL soft-vote ensemble** | Error sets are disjoint. Weighted average of softmax from both models; weights tuned on val. | **+1 to +3 macro-F1** over DL alone, but competes with classical alone, not beats it. | ~30 min code, no retraining |
-| **T3.3** | **RadImageNet backbone** | Medical-domain pretraining. Mei et al. 2022 show +1–10 AUC over ImageNet on small medical sets. | +0.5 to +2.0 | ~3–4 h integration (replace torchvision weights, adjust normalisation) |
+
+| #        | Intervention                          | Rationale                                                                                                                | Estimated gain                                                                        | Effort                                                                 |
+| -------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| **T3.1** | **Label smoothing** (ε = 0.1)         | Regularises over-confident predictions. Since DL is already appropriately uncertain on errors, this may or may not help. | 0 to +0.3                                                                             | Trivial code change, retraining                                        |
+| **T3.2** | **Classical + DL soft-vote ensemble** | Error sets are disjoint. Weighted average of softmax from both models; weights tuned on val.                             | **+1 to +3 macro-F1** over DL alone, but competes with classical alone, not beats it. | ~30 min code, no retraining                                            |
+| **T3.3** | **RadImageNet backbone**              | Medical-domain pretraining. Mei et al. 2022 show +1–10 AUC over ImageNet on small medical sets.                          | +0.5 to +2.0                                                                          | ~3–4 h integration (replace torchvision weights, adjust normalisation) |
+
 
 ### Tier 4 — Unlikely to help significantly
 
-| # | Intervention | Why NOT |
-|---|---|---|
-| T4.1 | EfficientNet-B2 / B3 / larger backbones | Capacity is not the bottleneck (error confidence is, not representational failure) |
-| T4.2 | Vision Transformer (Swin) | Would chase Islam et al.'s 99.3 % number but break the paper's classical-vs-DL narrative |
+
+| #    | Intervention                             | Why NOT                                                                                      |
+| ---- | ---------------------------------------- | -------------------------------------------------------------------------------------------- |
+| T4.1 | EfficientNet-B2 / B3 / larger backbones  | Capacity is not the bottleneck (error confidence is, not representational failure)           |
+| T4.2 | Vision Transformer (Swin)                | Would chase Islam et al.'s 99.3 % number but break the paper's classical-vs-DL narrative     |
 | T4.3 | Aggressive augmentation (MixUp / CutMix) | Likely to hurt on small dataset; destroys the diagnostic detail CT classification depends on |
+
 
 ---
 
@@ -134,13 +150,13 @@ For a realistic 3-week-out budget focused on paper quality (not SOTA chasing):
 
 ### Sprint 2 (if Sprint 1 results justify more work, ~2 hours Colab)
 
-3. **T1.2 — Multi-seed ensemble**. 4 extra seeds × 8 min A100 = ~35 min compute.
-4. **T2.1 or T2.3 — Weighted sampler or focal loss**. Pick one (not both) and retrain. If Stone recall climbs, good ablation material.
+1. **T1.2 — Multi-seed ensemble**. 4 extra seeds × 8 min A100 = ~35 min compute.
+2. **T2.1 or T2.3 — Weighted sampler or focal loss**. Pick one (not both) and retrain. If Stone recall climbs, good ablation material.
 
 ### Sprint 3 (only if time permits, optional)
 
-5. **T2.2 — Resolution bump to 288**. Single run, probably marginal on top of TTA + ensemble.
-6. **T3.3 — RadImageNet**. Most effort, most uncertain payoff — good for a "future work" paragraph even if not implemented.
+1. **T2.2 — Resolution bump to 288**. Single run, probably marginal on top of TTA + ensemble.
+2. **T3.3 — RadImageNet**. Most effort, most uncertain payoff — good for a "future work" paragraph even if not implemented.
 
 ---
 
@@ -172,8 +188,9 @@ None of these block starting T1.1. Defaults are reasonable.
 
 ## 8. Checklist — before writing any code
 
-- [ ] Partner agreement on implementing T1.1 + T3.2 as Person B's additional work (not a joint responsibility)
-- [ ] Decide TTA augmentation set (see §7.1)
-- [ ] Decide soft-vote weights (see §7.2)
-- [ ] Ensure all new results go into `Results/dl_run_tta/` and `Results/ensemble/` — keep the original `Results/dl_run/` as the un-improved baseline for the comparison
-- [ ] Update `Phase2_Design.md` §11 limitations to note the dataset-artifact concern surfaced by the disjoint-error analysis
+- Partner agreement on implementing T1.1 + T3.2 as Person B's additional work (not a joint responsibility)
+- Decide TTA augmentation set (see §7.1)
+- Decide soft-vote weights (see §7.2)
+- Ensure all new results go into `Results/dl_run_tta/` and `Results/ensemble/` — keep the original `Results/dl_run/` as the un-improved baseline for the comparison
+- Update `Phase2_Design.md` §11 limitations to note the dataset-artifact concern surfaced by the disjoint-error analysis
+
