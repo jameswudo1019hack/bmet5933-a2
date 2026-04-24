@@ -2,7 +2,9 @@
 
 **Date**: 2026-04-24
 **Status**: infrastructure in progress
-Related: [[Sprint2_evaluation_ConvNeXtV2]] (the decision rationale), [[Sprint1_log]], [[DL_Improvements_Analysis]], [[Phase2_Design]]
+Related: [[Sprint2_evaluation_ConvNeXtV2]] (the decision rationale), [[Sprint1_log]], [[DL_Improvements_Analysis]], [[Phase2_Design]], [[Project_Framing_v2]]
+
+> **Framing note (added 2026-04-24).** This run is now read under the paradigm-comparison framing in [[Project_Framing_v2]]. The primary scientific output of the ConvNeXt V2 run is **not its test accuracy** — it is the answer to: *does a much larger, higher-resolution, more modern CNN attend to the same visual structure as EfficientNet-B0, or different structure?* The headline per-epoch and test metrics are secondary; the Grad-CAM attention-map comparison across architectures is the real experiment. Plan the post-run analysis accordingly.
 
 ---
 

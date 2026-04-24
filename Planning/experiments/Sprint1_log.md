@@ -10,7 +10,9 @@
 - TTA must not regress macro-F1 below baseline 0.9745
 - Ensemble must improve over either single model
 
-Related: [[DL_Improvements_Analysis]], [[Phase2_Design]], [[Phase0_Design]]
+Related: [[DL_Improvements_Analysis]], [[Phase2_Design]], [[Phase0_Design]], [[Project_Framing_v2]]
+
+> **Framing note (added 2026-04-24).** The Sprint 1 results below should be read under the paradigm-comparison framing in [[Project_Framing_v2]], not as a score-chasing exercise. The ensemble hitting 100 % test F1 is significant because it reveals dataset saturation and disjoint-error complementarity, not because it is "our best number". When writing paper prose from this log, foreground the disjoint-error analysis and the val-saturation observation; background the raw F1 deltas.
 
 ---
 

@@ -2,7 +2,13 @@
 
 **BMET 5933 Assignment 2 — Kidney CT Classification**
 Person B: deep learning classifier
-Status: draft v1, 2026-04-22
+Status: draft v1, 2026-04-22 (amended 2026-04-24 with framing update — see below)
+
+---
+
+## Framing update — 2026-04-24
+
+After Sprint 1 showed that the classical/DL soft-vote ensemble achieves 100 % test macro-F1, the project's framing shifted from *"who wins"* to *paradigm comparison through interpretability* — see **[[Project_Framing_v2]]** for the canonical statement. The design decisions below remain correct, but they should now be read as serving the interpretability analysis rather than chasing a score. In particular: fixed split + matched preprocessing + per-class bootstrap CIs + McNemar's paired test are all infrastructure for reasoning about *what each paradigm learns*, not for declaring a winner.
 
 ---
 
