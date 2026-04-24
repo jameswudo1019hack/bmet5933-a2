@@ -99,4 +99,54 @@ Status: pending (user runs after upload of full.zip).
 
 ### 5 — Results interpretation + paper paragraph
 
-Status: pending.
+Status: partial — numeric results in. Full interpretation blocked on iteration 6 (matched-data EfficientNet-B0 run).
+
+**2026-04-24 — test-set numbers for ConvNeXt V2 full**:
+
+| Metric | Value |
+|---|---|
+| Accuracy | 0.9968 |
+| Macro-F1 | 0.9953  [0.991, 0.998] |
+| ROC-AUC  | 0.99998 |
+| Errors   | 6 / 1867 (0.32 %) |
+| Per-class F1 | Cyst 0.995 · Normal **1.000** · Stone 0.988 · Tumor 0.999 |
+| Dominant error | Cyst ↔ Stone (5/6 of errors) |
+| Wall time | 53.8 min on A100 |
+| Early stopping | Did NOT fire; ran full 30 stage-2 epochs (under-trained ceiling) |
+
+Ties or beats Islam et al. 2022's Swin (99.30 % accuracy on balanced 1300/class) on every per-class F1, on the harder natural-imbalance test distribution.
+
+### 6 — Matched-data EfficientNet-B0 run (for fair architecture comparison)
+
+Status: planned 2026-04-24; user running on Colab now.
+
+**Why**: the ConvNeXt V2 full result is confounded — we cannot tell whether its gains over EfficientNet-B0 come from *architecture* (89M params @ 384) or from *data volume* (2× training images). Under framing v2, isolating these is essential for the interpretability analysis.
+
+**What**: retrain EfficientNet-B0 on `split_full.csv` with the same two-stage protocol as the medium-dataset run. Same architecture, same hyperparameters, only the training data changes.
+
+**Decompositions this enables**:
+
+| Comparison | Isolates |
+|---|---|
+| EffNet medium vs EffNet full | Data-volume effect (fixed architecture) |
+| EffNet full vs ConvNeXt V2 full | Architecture effect (fixed data) |
+| Classical medium vs EffNet/ConvNeXt full | Paradigm effect with caveat about split |
+
+**Why it matters under framing v2**: without this, the Grad-CAM cross-architecture comparison (next step) would be apples-to-oranges — different training distributions. With matched training data, the attention-map differences measure architecture-induced representational differences.
+
+**Expected artefacts**:
+- `Results/dl_run_full/best_model.pt`, `run_log.json`, `dl_results.json`, `dl_predictions.npz`
+- Enables paired McNemar's test on the 1867-sample full test set
+- Enables same-image Grad-CAM comparison across DL backbones
+
+### 7 — Grad-CAM cross-architecture interpretability (the central paper figure)
+
+Status: blocked on iteration 6.
+
+**Plan**: once both EffNet-B0-full and ConvNeXt V2-full checkpoints exist:
+1. Pick 6–8 test images from full test set, preferring cases where the two models disagree
+2. Generate Grad-CAM maps for both architectures on the same images (use last conv stage for both: `features[-1]` for EffNet, `stages[-1]` for ConvNeXt)
+3. Side-by-side overlays on the original CT slice
+4. Paragraph: what does each model attend to? Kidney tissue, margins, scanner text?
+
+This is the central figure of the paper's Discussion section under framing v2.
