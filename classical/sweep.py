@@ -92,7 +92,14 @@ def _rebuild_clf(model_name: str, best_params: dict, X: np.ndarray, y: np.ndarra
     return clf
 
 
-def run_sweep(run_dir: Path, sweep_out: Path, cache_dir: Path) -> list[dict]:
+def run_sweep(
+    run_dir: Path,
+    sweep_out: Path,
+    cache_dir: Path,
+    split_csv: Path | None = None,
+    dataset_root: Path | None = None,
+    n_jobs: int = 1,
+) -> list[dict]:
     """Train + evaluate at each fraction. Returns list of result dicts."""
     # Load best model type and params from full run
     log_path = run_dir / "run_log.json"
@@ -106,21 +113,27 @@ def run_sweep(run_dir: Path, sweep_out: Path, cache_dir: Path) -> list[dict]:
     model_name: str = run_log["best_model"]
     best_params: dict = run_log["best_params"]
     print(f"[sweep] using model={model_name}  params={best_params}")
+    print(f"[sweep] split_csv={split_csv or '(default split.csv)'}  "
+          f"dataset_root={dataset_root or '(default DATASET_ROOT)'}  "
+          f"n_jobs={n_jobs}")
 
     # Load full train + val + test feature sets
-    train_df_full = load_split("train")
-    val_df = load_split("val")
-    test_df = load_split("test")
+    train_df_full = load_split("train", split_csv=split_csv, dataset_root=dataset_root)
+    val_df = load_split("val", split_csv=split_csv, dataset_root=dataset_root)
+    test_df = load_split("test", split_csv=split_csv, dataset_root=dataset_root)
 
     print("[sweep] loading/extracting features …")
     X_train_full, y_train_full = build_feature_matrix(
-        train_df_full, cache_path=cache_dir / "train_frac100.npz", desc="train (100%)"
+        train_df_full,
+        cache_path=cache_dir / "train_frac100.npz",
+        desc="train (100%)",
+        n_jobs=n_jobs,
     )
     X_val, y_val = build_feature_matrix(
-        val_df, cache_path=cache_dir / "val.npz", desc="val"
+        val_df, cache_path=cache_dir / "val.npz", desc="val", n_jobs=n_jobs,
     )
     X_test, y_test = build_feature_matrix(
-        test_df, cache_path=cache_dir / "test.npz", desc="test"
+        test_df, cache_path=cache_dir / "test.npz", desc="test", n_jobs=n_jobs,
     )
 
     sweep_results: list[dict] = []
@@ -130,7 +143,10 @@ def run_sweep(run_dir: Path, sweep_out: Path, cache_dir: Path) -> list[dict]:
         out_dir = sweep_out / tag
         out_dir.mkdir(parents=True, exist_ok=True)
 
-        idxs = stratified_train_indices(frac, seed=SEED)
+        idxs = stratified_train_indices(
+            frac, seed=SEED,
+            split_csv=split_csv, dataset_root=dataset_root,
+        )
         X_tr = X_train_full[idxs]
         y_tr = y_train_full[idxs]
 
@@ -257,13 +273,41 @@ def main() -> None:
         default=str(RESULTS_DIR / "classical_sweep"),
         help="root directory for sweep results",
     )
+    parser.add_argument(
+        "--split-csv",
+        default=None,
+        help="override split CSV (e.g. split_full.csv); default split.csv",
+    )
+    parser.add_argument(
+        "--dataset-root",
+        default=None,
+        help="override image root directory (must match --split-csv)",
+    )
+    parser.add_argument(
+        "--features-cache-dir",
+        default=None,
+        help="override feature cache directory (default Results/classical_features)",
+    )
+    parser.add_argument(
+        "--n-jobs",
+        type=int,
+        default=1,
+        help="joblib worker count for feature extraction (-1 = all CPUs)",
+    )
     args = parser.parse_args()
 
-    cache_dir = RESULTS_DIR / FEATURES_CACHE_SUBDIR
+    cache_dir = (
+        Path(args.features_cache_dir)
+        if args.features_cache_dir
+        else RESULTS_DIR / FEATURES_CACHE_SUBDIR
+    )
     run_sweep(
         run_dir=Path(args.run_dir),
         sweep_out=Path(args.output_dir),
         cache_dir=cache_dir,
+        split_csv=Path(args.split_csv) if args.split_csv else None,
+        dataset_root=Path(args.dataset_root) if args.dataset_root else None,
+        n_jobs=args.n_jobs,
     )
 
 
