@@ -10,6 +10,8 @@ Stratification preserves per-class ratios to within ±1 image per class.
 """
 from __future__ import annotations
 
+from pathlib import Path
+
 import numpy as np
 
 from shared.config import CLASSES, SEED
@@ -17,16 +19,22 @@ from shared.preprocessing import load_split
 
 
 def stratified_train_indices(
-    fraction: float, seed: int = SEED
+    fraction: float,
+    seed: int = SEED,
+    split_csv: str | Path | None = None,
+    dataset_root: str | Path | None = None,
 ) -> list[int]:
     """Return sorted indices into the train split containing `fraction` of rows.
 
-    Stratified by class. Same (fraction, seed) => same indices.
+    Stratified by class. Same (fraction, seed, split_csv) => same indices.
+    `split_csv` and `dataset_root` default to the medium-split values configured
+    in shared.config; pass `split_csv=REPO_ROOT/"split_full.csv"` for the full
+    dataset sweep.
     """
     if not 0 < fraction <= 1.0:
         raise ValueError(f"fraction must be in (0, 1], got {fraction}")
 
-    train_df = load_split("train")
+    train_df = load_split("train", split_csv=split_csv, dataset_root=dataset_root)
     rng = np.random.default_rng(seed)
 
     chosen: list[int] = []
