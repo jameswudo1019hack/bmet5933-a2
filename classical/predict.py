@@ -31,7 +31,14 @@ from classical.config import (
 from classical.features import build_feature_matrix
 
 
-def predict(pipeline_path: Path, output_dir: Path, cache_dir: Path) -> dict:
+def predict(
+    pipeline_path: Path,
+    output_dir: Path,
+    cache_dir: Path,
+    split_csv: Path | None = None,
+    dataset_root: Path | None = None,
+    n_jobs: int = 1,
+) -> dict:
     # Load pipeline
     with open(pipeline_path, "rb") as f:
         pipeline = pickle.load(f)
@@ -42,12 +49,15 @@ def predict(pipeline_path: Path, output_dir: Path, cache_dir: Path) -> dict:
     model_name = pipeline["model_name"]
     print(f"[predict] loaded pipeline: {model_name}  "
           f"({pipeline['n_raw_features']} → {pipeline['n_pca_components']} dims)")
+    print(f"[predict] split_csv={split_csv or '(default split.csv)'}  "
+          f"dataset_root={dataset_root or '(default DATASET_ROOT)'}  "
+          f"n_jobs={n_jobs}")
 
     # Load / extract test features
-    test_df = load_split("test")
+    test_df = load_split("test", split_csv=split_csv, dataset_root=dataset_root)
     test_cache = cache_dir / "test.npz"
     X_test, y_true = build_feature_matrix(
-        test_df, cache_path=test_cache, desc="test features"
+        test_df, cache_path=test_cache, desc="test features", n_jobs=n_jobs,
     )
 
     # Inference
@@ -83,13 +93,41 @@ def main() -> None:
         default=default_run,
         help="directory for classical_results.json and classical_predictions.npz",
     )
+    parser.add_argument(
+        "--split-csv",
+        default=None,
+        help="override split CSV (e.g. split_full.csv); default split.csv",
+    )
+    parser.add_argument(
+        "--dataset-root",
+        default=None,
+        help="override image root directory (must match --split-csv)",
+    )
+    parser.add_argument(
+        "--features-cache-dir",
+        default=None,
+        help="override feature cache directory (default Results/classical_features)",
+    )
+    parser.add_argument(
+        "--n-jobs",
+        type=int,
+        default=1,
+        help="joblib worker count for feature extraction (-1 = all CPUs)",
+    )
     args = parser.parse_args()
 
-    cache_dir = RESULTS_DIR / FEATURES_CACHE_SUBDIR
+    cache_dir = (
+        Path(args.features_cache_dir)
+        if args.features_cache_dir
+        else RESULTS_DIR / FEATURES_CACHE_SUBDIR
+    )
     predict(
         pipeline_path=Path(args.pipeline),
         output_dir=Path(args.output_dir),
         cache_dir=cache_dir,
+        split_csv=Path(args.split_csv) if args.split_csv else None,
+        dataset_root=Path(args.dataset_root) if args.dataset_root else None,
+        n_jobs=args.n_jobs,
     )
 
 
