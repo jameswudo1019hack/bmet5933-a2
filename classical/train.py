@@ -185,6 +185,9 @@ def train(
     train_frac: float = 1.0,
     seed: int = SEED,
     cache_dir: Path | None = None,
+    split_csv: Path | None = None,
+    dataset_root: Path | None = None,
+    n_jobs: int = 1,
 ) -> dict:
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -193,13 +196,19 @@ def train(
         cache_dir = RESULTS_DIR / FEATURES_CACHE_SUBDIR
 
     print(f"[train] output={output_dir}  smoke={smoke}  train_frac={train_frac}")
+    print(f"[train] split_csv={split_csv or '(default split.csv)'}  "
+          f"dataset_root={dataset_root or '(default DATASET_ROOT)'}  "
+          f"n_jobs={n_jobs}")
 
     # ── Load split DataFrames ─────────────────────────────────────────────────
-    train_df = load_split("train")
-    val_df = load_split("val")
+    train_df = load_split("train", split_csv=split_csv, dataset_root=dataset_root)
+    val_df = load_split("val", split_csv=split_csv, dataset_root=dataset_root)
 
     if train_frac < 1.0:
-        idxs = stratified_train_indices(train_frac, seed=seed)
+        idxs = stratified_train_indices(
+            train_frac, seed=seed,
+            split_csv=split_csv, dataset_root=dataset_root,
+        )
         train_df = train_df.iloc[idxs].reset_index(drop=True)
         print(f"[train] subsampled train to {len(train_df)} images ({train_frac:.0%})")
 
@@ -217,11 +226,11 @@ def train(
 
     print("[train] extracting train features …")
     X_train, y_train = build_feature_matrix(
-        train_df, cache_path=train_cache, desc="train features"
+        train_df, cache_path=train_cache, desc="train features", n_jobs=n_jobs,
     )
     print("[train] extracting val features …")
     X_val, y_val = build_feature_matrix(
-        val_df, cache_path=val_cache, desc="val features"
+        val_df, cache_path=val_cache, desc="val features", n_jobs=n_jobs,
     )
 
     n_raw = X_train.shape[1]
@@ -362,12 +371,37 @@ def main() -> None:
         default=1.0,
         help="stratified fraction of train split (for data-efficiency sweep)",
     )
+    parser.add_argument(
+        "--split-csv",
+        default=None,
+        help="override split CSV (e.g. split_full.csv); default split.csv",
+    )
+    parser.add_argument(
+        "--dataset-root",
+        default=None,
+        help="override image root directory (must match --split-csv)",
+    )
+    parser.add_argument(
+        "--features-cache-dir",
+        default=None,
+        help="override feature cache directory (default Results/classical_features)",
+    )
+    parser.add_argument(
+        "--n-jobs",
+        type=int,
+        default=1,
+        help="joblib worker count for feature extraction (-1 = all CPUs)",
+    )
     args = parser.parse_args()
 
     train(
         output_dir=Path(args.output_dir),
         smoke=args.smoke,
         train_frac=args.train_frac,
+        cache_dir=Path(args.features_cache_dir) if args.features_cache_dir else None,
+        split_csv=Path(args.split_csv) if args.split_csv else None,
+        dataset_root=Path(args.dataset_root) if args.dataset_root else None,
+        n_jobs=args.n_jobs,
     )
 
 
