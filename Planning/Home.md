@@ -17,6 +17,7 @@ Kidney CT Classification · Islam et al. (2022) dataset · Due **Fri 15 May 2026
 - [[experiments/Sprint1_log]] — TTA ablation + ensemble (complete)
 - [[experiments/Sprint2_evaluation_ConvNeXtV2]] — ConvNeXtV2 decision rationale
 - [[experiments/Sprint2_ConvNeXtV2_on_full]] — ConvNeXtV2 on full dataset
+- [[experiments/Sprint3_classical_on_full]] — classical on full + paired McNemar's at matched scale
 
 ### Paper Writing
 - [[Results_Summary]] — all canonical numbers in one place ← start here when writing
@@ -34,8 +35,9 @@ Kidney CT Classification · Islam et al. (2022) dataset · Due **Fri 15 May 2026
 | Phase 1 — Classical ML (XGBoost) | Person A | ✅ Complete |
 | Phase 2 — EfficientNet-B0 + TTA | Person B | ✅ Complete |
 | Sprint 2 — ConvNeXtV2 (supplementary) | Person B | ✅ Complete |
+| Sprint 3 — Classical on full + paired McNemar's | Person B (running) | ✅ Complete |
 | Grad-CAM figures | Person B | ✅ Figures generated |
-| Data efficiency sweep | Both | ⚠️ Code exists, results not yet run |
+| Data efficiency sweep | Both | ✅ Both pipelines (medium DL + full classical) |
 | Feature importance (classical) | Person A | ⚠️ Not yet extracted |
 | Paper draft | Both | 🔴 Not started |
 | Submission notebooks (.ipynb) | Both | 🔴 Not started |
@@ -52,9 +54,13 @@ Full table → [[Results_Summary]]
 | Classical XGBoost | Medium (n=934) | **0.9976** | 2 / 934 |
 | EfficientNet-B0 + TTA hflip | Medium (n=934) | **0.9829** | 13 / 934 |
 | Ensemble equal-weight w=0.5 | Medium (n=934) | **1.0000** | 0 / 934 |
-| ConvNeXtV2 Base (supplementary) | Full (n=1867) | **0.9953** | 6 / 1867 |
+| Classical XGBoost (full) | Full (n=1867) | **0.9897** | 13 / 1867 |
+| EfficientNet-B0 (full, matched data) | Full (n=1867) | 0.9819 | 23 / 1867 |
+| ConvNeXtV2 Base | Full (n=1867) | **0.9953** | 6 / 1867 |
 
-Key finding: error sets are **disjoint** (both-wrong = 0). Each paradigm fails on different images. This is the scientific content — not the scores themselves.
+**Key findings (post-Sprint 3, two scales):**
+- **Medium scale** — error sets are **disjoint** (both-wrong = 0 between classical and DL). Equal-weight ensemble achieves 100 %. Classical fails on Cyst↔Tumor; DL fails on Cyst↔Stone.
+- **Full scale** — disjoint-error claim **does not survive**. Classical and ConvNeXt V2 share 2 `Stone→Cyst` errors; classical and EffNet-B0 share 4 `Stone→Cyst` errors. Paired McNemar's classical-vs-DL is no longer significant (p = 0.089 / 0.119). The narrower paradigm-stable asymmetry that survives: only DL pipelines make `Cyst→Stone` errors (9 EffNet + 3 ConvNeXt vs 0 classical) — Sprint 3 [[experiments/Sprint3_classical_on_full]].
 
 ---
 

@@ -1,7 +1,7 @@
 # Results Summary
 
 All canonical numbers in one place. Pull from here when writing the paper.
-Last updated: 2026-04-26
+Last updated: 2026-04-27 (Sprint 3 — classical on full)
 
 ---
 
@@ -176,6 +176,87 @@ Same full-dataset split as ConvNeXt V2, n = 1867 test. Trained with the same two
 | **p-value** | **0.0021** (ConvNeXt V2 > EfficientNet-B0) |
 
 Architecture effect is statistically significant at matched training data. **Data-volume effect on EfficientNet-B0 is approximately zero** (1.29 % error rate on medium + TTA → 1.23 % on full).
+
+---
+
+## Classical ML on full dataset (Sprint 3, 2026-04-27)
+
+Same full-dataset split as DL runs, n = 1,867 test. Trained with the same hyperparameter grids and selection criterion as the medium run (`classical/config.py`); only training data differs. Hyperparameters were **not** re-tuned to keep the comparison matched-protocol.
+
+| Metric | Value |
+|---|---|
+| Best model | XGBoost (`learning_rate=0.1, max_depth=6, n_estimators=200`) |
+| Accuracy | 0.9930 |
+| Macro-F1 | **0.9897** [0.9835, 0.9948] |
+| Weighted-F1 | 0.9930 |
+| ROC-AUC OvR | 0.9995 |
+| Errors | 13 / 1867 |
+| Wall time (local M-series, n_jobs=-1) | 172.7 s train + ~30 s predict + ~30 s sweep |
+
+### Per-classifier val performance — classical full
+
+| Model | Best params | CV macro-F1 | Val macro-F1 |
+|---|---|---|---|
+| SVM (linear) | `C=1.0` | 0.8388 | 0.8248 |
+| Random Forest | `max_depth=20, n_estimators=200, min_samples_split=5` | 0.9734 | 0.9789 |
+| **XGBoost (winner)** | `lr=0.1, max_depth=6, n_estimators=200` | **0.9884** | **0.9895** |
+
+SVM's collapse from 0.97 (medium) to 0.82 (full) is itself a finding — at this dataset scale linear SVM with PCA(50) ceiling does not scale. RF and XGB scale; SVM does not.
+
+### Per-class F1 — classical full
+
+| Class | Precision | Recall | F1 | Support |
+|---|---|---|---|---|
+| Cyst | 0.988 | 1.000 | 0.994 | 556 |
+| Normal | 0.993 | 0.999 | 0.996 | 762 |
+| Stone | 0.995 | 0.947 | **0.970** | 207 |
+| Tumor | 1.000 | 0.997 | 0.999 | 342 |
+
+### Confusion matrix — classical full (n_test=1867)
+
+|  | Pred Cyst | Pred Normal | Pred Stone | Pred Tumor |
+|---|---|---|---|---|
+| **True Cyst** | 556 | 0 | 0 | 0 |
+| **True Normal** | 0 | 761 | 1 | 0 |
+| **True Stone** | 6 | 5 | 196 | 0 |
+| **True Tumor** | 1 | 0 | 0 | 341 |
+
+**Note:** the medium-set classical errors were Cyst↔Tumor (1 each). The full-set classical errors are dominated by **Stone → (Cyst, Normal)** (11 / 13). Cyst↔Tumor confusion has *disappeared* at full scale.
+
+### Paired McNemar's at full scale (same 1,867 test set)
+
+`Results/classical_run_full/sprint3_comparison.json`:
+
+| Comparison | Both correct | Only A wrong | Only B wrong | Both wrong | Discordant | p-value |
+|---|---|---|---|---|---|---|
+| Classical (A) vs EfficientNet-B0-full (B) | 1835 | 9 | 19 | **4** | 28 | **0.089** (n.s.) |
+| Classical (A) vs ConvNeXt V2-full (B) | 1850 | 11 | 4 | **2** | 15 | **0.119** (n.s.) |
+| EfficientNet-B0-full (A) vs ConvNeXt V2-full (B) | 1839 | 22 | 5 | 1 | 27 | **0.0021** (sig.) |
+
+Critical: `both wrong > 0` between every classical-vs-DL pair. The "disjoint errors" headline from the medium-set Sprint 1 ensemble does **not** survive at full scale. All "both wrong" cases are `Stone → Cyst` confusions.
+
+### Disjoint-error analysis at full scale
+
+Top "only-A-wrong" failure pairs (where A errs, B is correct):
+
+- **Classical-full** (only-classical-wrong): Stone→Normal(5), Stone→Cyst(2–4), Normal→Stone(1), Tumor→Cyst(1)
+- **EfficientNet-B0-full** vs classical: **Cyst→Stone(9)**, Stone→Cyst(4), Normal→Stone(3), Normal→Tumor(2), Stone→Normal(1)
+- **ConvNeXt V2-full** vs classical: **Cyst→Stone(3)**, Tumor→Normal(1)
+
+**Surviving paradigm-stable claim:** only DL pipelines make `Cyst→Stone` errors at full scale. Classical makes **zero** `Cyst→Stone` errors across all 1,867 test images. This asymmetry is real even though the broader medium-set "disjoint errors" claim is not.
+
+### Data-efficiency sweep — classical on full
+
+`Results/classical_sweep_full/sweep_summary.json`:
+
+| Train fraction | n_train | Val macro-F1 | Test macro-F1 [95 % CI] |
+|---|---|---|---|
+| 10 % | 871 | 1.0000 | 0.9554 [0.9438, 0.9666] |
+| 25 % | 2,178 | 1.0000 | 0.9716 [0.9626, 0.9807] |
+| 50 % | 4,355 | 1.0000 | 0.9799 [0.9712, 0.9875] |
+| 100 % | 8,712 | 1.0000 | 0.9897 [0.9835, 0.9948] |
+
+Classical reaches 0.96 with only 871 training samples — substantially better than EfficientNet-B0 baseline at any matched fraction on the medium sweep. Classical is highly sample-efficient on this task. Curve plot: `Results/classical_sweep_full/data_efficiency_curve.png`.
 
 ---
 

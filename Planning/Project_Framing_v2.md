@@ -78,3 +78,34 @@ This means Phase 0 / Phase 2 methodology needs no changes — only its *expositi
 - **Abstract / Introduction**: foreground the reframed thesis in the first paragraph, explicitly. Do not let a reader get to "we achieved 100 %" without first encountering "the score is not the point".
 - **Section structure**: proposal — dedicate one full page to the per-method interpretability analysis (feature importance + Grad-CAM) rather than treating it as an add-on to the Evaluation section.
 - **Conclusion**: resist the temptation to say "our method performs well". Instead: "the score-level tie between paradigms combined with the disjoint-error pattern motivates our central claim about feature-space complementarity".
+
+---
+
+## Sprint 3 update — 2026-04-27
+
+The framing above was authored on 2026-04-24, when classical-on-full had not yet been run. The thesis paragraph and the rows in the "score-chasing reading vs paradigm-comparison reading" table reflect medium-set data only. Sprint 3 closed the medium/full asymmetry by retraining classical on `split_full.csv` (8,712 train, 1,867 test) — see [[experiments/Sprint3_classical_on_full]].
+
+**What Sprint 3 changed:**
+
+| v2 claim (medium-set) | Sprint 3 finding (full-set) | Verdict |
+|---|---|---|
+| Both-wrong = 0 between classical and DL → equal-weight ensemble achieves 100 % → "methods fail disjointly" | Classical ∩ EffNet-B0-full = 4 both-wrong, classical ∩ ConvNeXt V2-full = 2 both-wrong (all `Stone→Cyst`) | **Invalidated at full scale.** The 100 % ensemble was a medium-scale artefact, not a paradigm-level property |
+| Classical fails on Cyst↔Tumor — paradigm-stable across architectures | Classical-full failures: Stone→Cyst (6) + Stone→Normal (5) + Normal→Stone (1) + Tumor→Cyst (1). Cyst↔Tumor confusion has *disappeared* at full scale | **Invalidated.** Classical's failure pair is not paradigm-stable across dataset scales |
+| DL fails on Cyst↔Stone — architecture-stable across backbones | Both DL backbones still fail on Cyst↔Stone at full scale: EffNet `Cyst→Stone(9)`, ConvNeXt V2 `Cyst→Stone(3)`. **Classical makes 0 `Cyst→Stone` errors at full scale.** | **Survives in narrower form.** "Only DL pipelines make `Cyst→Stone` errors" is paradigm-stable and architecture-stable |
+| Direction of disagreement carries more information than magnitude | Direction of disagreement is itself dataset-scale-dependent (see rows above) | **Refined**: direction is informative *at a fixed scale* but *changes with scale*. Reporting at one scale alone risks overclaiming |
+| Classical's perfect Stone recall is a hard ceiling DL approaches but does not reach | Classical-full Stone recall = 0.947 (11 errors / 207). DL backbones now reach or exceed this — Stone is hard for *every* paradigm at full scale | **Invalidated.** Stone is not classical's privileged class at full scale |
+
+**The thesis as it stands cannot survive unrevised.** The replacement thesis is in [[Tutor_Meeting_Brief]] §1 (refreshed 2026-04-27) and is reproduced here for the canonical record:
+
+> We compared a classical machine-learning pipeline (handcrafted texture features + XGBoost) with two transfer-learned CNNs (EfficientNet-B0 and ConvNeXt V2 Base) on the Islam et al. 2022 kidney CT dataset, at *two* dataset scales (n=934 medium test set and n=1,867 full test set). All three achieve > 98 % macro-F1 at every scale, and at the medium scale the equal-weight soft-vote ensemble achieves 100 % — but only at the medium scale. The interesting finding is **scale-dependent**: on the medium dataset, classical and DL fail on disjoint image sets (both-wrong = 0); on the full dataset, classical and the two DL backbones share `Stone→Cyst` failures (both-wrong = 4 vs EffNet, 2 vs ConvNeXt V2), and paired McNemar's classical-vs-each-DL is no longer significant. A *narrower* paradigm-stable asymmetry survives at full scale: only DL pipelines make `Cyst→Stone` errors (9 + 3 across two backbones; classical makes zero). We argue this two-scale comparison — surfacing a result that *does not* replicate from medium to full — is the paper's most rigorous contribution: on saturated medical-imaging benchmarks, both the *magnitude* and *direction* of paradigm disagreement are dataset-scale-dependent, and reporting them at one scale alone risks overclaiming.
+
+**What does NOT change:**
+
+- The interpretability-led framing (feature importance + Grad-CAM) is still load-bearing — arguably more so, because the paper now needs to explain *why* the disjoint-error pattern fails to replicate, and only an interpretability story can do that honestly.
+- The dataset-saturation argument (Bingol 2023, Teke 2025, Islam Swin 99.30 %) is now strengthened — the gap-closing at full scale is consistent with that literature.
+- The patient-level leakage caveat (Yagis 2021, Veetil 2024) is unchanged and remains the single most important limitation.
+- The directives "every table of numbers followed by a paragraph on what those numbers say about the methods' internal representations" still apply.
+
+**What this means for the paper:**
+
+Lead the Discussion with the two-scale result. Frame it as a *positive* methodological contribution — "we ran the comparison at two dataset scales and found the headline result does not replicate" is a more rigorous report than "we ran the comparison at one scale and got a beautiful number". The narrower surviving asymmetry (`Cyst→Stone` is DL-exclusive) becomes the paper's positive paradigm-level finding. Sprint 3's "disjoint errors do not survive" becomes the paper's central methodological cautionary tale.

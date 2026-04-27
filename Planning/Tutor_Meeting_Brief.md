@@ -6,25 +6,39 @@
 
 Read [[Project_Framing_v2]] before the meeting for full context.
 
+> **Sprint 3 update (2026-04-27).** Classical XGBoost retrained on the full 12,446-image split (8,712 train, 1,867 test); now matched-test-set against EffNet-B0-full and ConvNeXt V2-full. Macro-F1 = 0.9897 (13 errors). **The medium-set "disjoint errors / 100 % ensemble" finding does not replicate at full scale** — classical and ConvNeXt V2 share 2 errors, classical and EffNet share 4, all `Stone→Cyst`. Paired McNemar's classical-vs-each-DL is no longer significant (p = 0.089 / 0.119). The narrower asymmetry that survives: only DL pipelines make `Cyst→Stone` errors at full scale (9 EffNet + 3 ConvNeXt vs 0 classical). Findings 1 and 2 below have been refreshed to reflect this; the paper headline framing (Q1) becomes load-bearing. See [[experiments/Sprint3_classical_on_full]] for the full analysis.
+
 ---
 
 ## 1. The reframed thesis (one paragraph, slightly compressed for verbal delivery)
 
-> We compared a classical machine-learning pipeline (handcrafted texture features + XGBoost) with two transfer-learned CNNs (EfficientNet-B0 and ConvNeXt V2 Base) on the Islam et al. 2022 kidney CT dataset. All three achieve > 97 % macro-F1 and an equal-weight soft-vote ensemble achieves 100 %. The interesting finding isn't the score — it's the structure of the *errors*. Classical and DL fail on **disjoint** sets of images (both-wrong = 0), and their dominant failure modes are paradigm-stable: classical fails on Cyst↔Tumor, both DL backbones fail on Cyst↔Stone, regardless of architecture scale. We argue this is evidence that paradigms are exploiting different aspects of the same visual signal — and that on saturated medical-imaging benchmarks, the *direction* of disagreement carries more information than the *magnitude*.
+> We compared a classical machine-learning pipeline (handcrafted texture features + XGBoost) with two transfer-learned CNNs (EfficientNet-B0 and ConvNeXt V2 Base) on the Islam et al. 2022 kidney CT dataset, at *two* dataset scales (n=934 medium test set and n=1,867 full test set). All three achieve > 98 % macro-F1 at every scale, and at the medium scale the equal-weight soft-vote ensemble achieves 100 % — but only at the medium scale. The interesting finding is **scale-dependent**: on the medium dataset, classical and DL fail on disjoint image sets (both-wrong = 0); on the full dataset, classical and the two DL backbones share `Stone→Cyst` failures (both-wrong = 4 vs EffNet, 2 vs ConvNeXt V2), and paired McNemar's classical-vs-each-DL is no longer significant. A *narrower* paradigm-stable asymmetry survives at full scale: only DL pipelines make `Cyst→Stone` errors (9 + 3 across two backbones; classical makes zero). We argue this two-scale comparison — surfacing a result that *does not* replicate from medium to full — is the paper's most rigorous contribution: on saturated medical-imaging benchmarks, both the *magnitude* and *direction* of paradigm disagreement are dataset-scale-dependent, and reporting them at one scale alone risks overclaiming.
 
 ---
 
 ## 2. Three key findings (numbered, with caveats)
 
-### Finding 1: paradigm-stable, architecture-stable disagreement
-On 934-image medium test set: classical = 0.998 acc, EfficientNet-B0 + TTA = 0.986 acc, ensemble = 1.000 acc. Disjoint errors (both-wrong = 0). On 1,867-image full test set, paired McNemar's confirms ConvNeXt V2 > EfficientNet-B0 (*p* = 0.0021), but **both DL backbones share the Cyst↔Stone failure mode** that classical does not have.
+### Finding 1: scale-dependent paradigm-stable disagreement (refreshed 2026-04-27 with Sprint 3)
 
-**Caveat 1:** the 100 % ensemble result is on a saturated dataset. Three other groups have approached 99 %+ on this dataset (Islam Swin 99.30 %, Bingol 2023 hybrid 99.37 %, Teke 2025 GLCM-only 99.98 % on a related kidney-CT task). The number is real but the dataset is easy.
+**At medium scale (n=934 test):** classical = 0.998 acc, EffNet-B0 + TTA = 0.986 acc, equal-weight ensemble = 1.000 acc. Errors are disjoint (both-wrong = 0). Classical fails on Cyst↔Tumor; DL fails on Cyst↔Stone.
 
-### Finding 2: architecture > data volume for EfficientNet-B0
-Matched-data control: EfficientNet-B0 trained on full dataset (8,712 train) vs medium (4,353 train). Doubling the data moves error rate from 1.29 % (medium + TTA) to 1.23 % (full) — essentially nothing. ConvNeXt V2 on the same full-dataset training reduces error rate to 0.32 % — 74 % reduction at matched data, *p* = 0.0021.
+**At full scale (n=1867 test, all three pipelines on the same test set):** classical-XGB-full = 0.993 acc / 0.9897 macro-F1, EffNet-B0-full = 0.988 acc, ConvNeXt V2-full = 0.997 acc. **Disjoint-error claim does NOT survive**: classical ∩ ConvNeXt V2 = 2 both-wrong (Stone→Cyst); classical ∩ EffNet-B0 = 4 both-wrong (Stone→Cyst). Paired McNemar's classical-vs-each-DL: p = 0.089 (vs EffNet) and 0.119 (vs ConvNeXt) — not significant. Sprint-2 result EffNet-vs-ConvNeXt-V2 reproduces (p = 0.0021).
 
-**Caveat 2:** test sets aren't comparable sample-for-sample (medium-test ≠ full-test), so cross-table comparisons in the paper are flagged as directional only. The paired McNemar's between EfficientNet-B0-full and ConvNeXt V2-full **is** valid (same 1,867 test images).
+**Surviving narrower asymmetry at full scale:** only DL pipelines make `Cyst→Stone` errors (9 EffNet + 3 ConvNeXt vs **0 classical**). Both DL backbones; zero classical. This is paradigm-stable and architecture-stable across the two CNNs.
+
+**Caveat 1:** the dataset is saturated. Three other groups have approached 99 %+ on it (Islam Swin 99.30 %, Bingol 2023 hybrid 99.37 %, Teke 2025 GLCM-only 99.98 % on a related kidney-CT task). The 100 % ensemble figure is real on the medium subset but is a medium-scale artefact.
+
+**Caveat 2 (Sprint 3-specific):** invalidating the "disjoint errors" claim by going from medium to full data is itself the paper's most defensible contribution if presented honestly. We will not bury this — we will lead with the two-scale comparison.
+
+### Finding 2: architecture > data volume for EfficientNet-B0; classical wins shrink at scale (refreshed 2026-04-27)
+
+**DL leg (unchanged from Sprint 2):** EffNet-B0 trained on full dataset (8,712 train) vs medium (4,353 train) — doubling the data moves error rate from 1.29 % (medium + TTA) to 1.23 % (full), essentially nothing. ConvNeXt V2 on the same full training reduces error rate to 0.32 % — 74 % reduction at matched data, *p* = 0.0021.
+
+**Classical leg (new from Sprint 3):** classical XGBoost trained on full (8,712 train) vs medium (4,353 train) — error rate 0.21 % (2/934) on medium-test → 0.70 % (13/1867) on full-test. Test sets differ so this is directional, **but** the matched-test-set comparison at full scale shows classical's lead over the DL backbones is no longer statistically significant (McNemar p = 0.089 / 0.119). On medium, classical was clearly best; on full, it is statistically tied with both DL backbones. Classical's advantage is dataset-scale-dependent.
+
+**Sample efficiency (sweep on full)**: classical reaches 0.96 macro-F1 with only 871 training samples (10 % of full). For reference, EfficientNet-B0-baseline at 4,353 medium-train samples = 0.97. Handcrafted features get to near-asymptote with substantially less data — consistent with the radiomics-vs-DL data-efficiency literature (Lambin 2017; Guiot 2021).
+
+**Caveat 2:** test sets aren't comparable sample-for-sample (medium-test ≠ full-test), so the cross-scale "classical 0.21 % → 0.70 %" reads as directional. The paired McNemar's at full scale (classical-vs-EffNet-full, classical-vs-ConvNeXt-full, EffNet-full-vs-ConvNeXt-full) **all use the same 1,867 test set** and are valid.
 
 ### Finding 3: cross-architecture Grad-CAM shows attention difference
 Grad-CAM on the same six paired-disagreement test images reveals EfficientNet-B0's attention is dispersed and frequently extends beyond the kidney silhouette; ConvNeXt V2's attention is consistently localised to kidney tissue. On the three Cyst → Stone errors unique to EfficientNet-B0, the smaller network peaks off-organ; ConvNeXt V2 fixates on the lesion and gets it right.
@@ -35,8 +49,8 @@ Grad-CAM on the same six paired-disagreement test images reveals EfficientNet-B0
 
 ## 3. Three specific questions for the tutor
 
-### Q1. Is the dataset-saturation framing defensible for an ISBI-style paper?
-We are reporting 100 % test accuracy as our headline ensemble number. Our argument is that this reflects *dataset saturation* (multiple groups have hit 99 %+) and *complementary feature spaces*, not method quality. **Is this an acceptable framing?** Or should we down-weight the 100 % claim and lead with the per-class / failure-mode analysis instead?
+### Q1. Is the dataset-saturation framing defensible for an ISBI-style paper? *(now load-bearing post-Sprint 3)*
+We *had* been reporting 100 % test accuracy on medium as our headline ensemble number. Sprint 3 (classical retrained on full at matched test-set) showed the disjoint-error result that made the 100 % ensemble work **does not replicate at full scale**. Our argument is now: (a) the 100 % medium-set ensemble is real but is a medium-scale artefact; (b) the deeper finding is that the disjoint-error pattern is dataset-scale-dependent — a result we *invalidated by going to more data*, which we believe is the paper's most rigorous contribution; (c) at full scale, only DL pipelines make `Cyst→Stone` errors, which is a narrower paradigm-stable claim that does survive across two CNN backbones. **Is this two-scale framing acceptable for ISBI?** We could alternatively suppress the 100 % claim entirely and lead only with the full-scale results, but that hides a real finding.
 
 ### Q2. Is the patient-level-leakage limitation strong enough to invalidate our results?
 The Islam dataset has no patient identifiers; we cannot prevent slices from the same patient appearing in both train and test. Yagis et al. 2021 quantified this effect at 29–55 % accuracy inflation in 2D MRI CNN studies; Veetil et al. 2024 replicated at +67 % on Parkinson's data. We are committed to flagging this as the single most important caveat in the paper. **Should we go further** — e.g., contact the dataset authors for patient IDs, switch to KiTS19 for a patient-stratified secondary evaluation, or add a "future work" section specifically on this?
@@ -69,6 +83,7 @@ Both share Cyst↔Stone as the dominant DL failure pair. Classical fails on Cyst
 | Phase 2: deep learning (Person B) | ✅ Done — EfficientNet-B0 medium + TTA, 0.986 accuracy |
 | Sprint 1: TTA + ensemble (Person B) | ✅ Done — ensemble = 1.000 accuracy |
 | Sprint 2: ConvNeXt V2 + matched-data EffNet-B0 (Person B) | ✅ Done — architecture significance *p* = 0.0021 |
+| Sprint 3: Classical on full + paired McNemar's at matched scale (Person B) | ✅ Done 2026-04-27 — see [[experiments/Sprint3_classical_on_full]] |
 | Cross-architecture Grad-CAM | ✅ Figure generated |
 | **Paper drafting** | 🔴 **Will start after this meeting** |
 | Submission notebooks (one per person) | 🔴 To do |
@@ -92,6 +107,6 @@ Both share Cyst↔Stone as the dominant DL failure pair. Classical fails on Cyst
 
 ## 7. One-liner if Sandhya asks "what's your contribution?"
 
-> *"We contribute a per-method failure-mode analysis to the active radiomics-vs-deep-learning literature on kidney CT, surfacing a paradigm-stable error structure (classical fails on Cyst↔Tumor, both DL backbones fail on Cyst↔Stone) that prior fusion-ensemble work has not analysed."*
+> *"We contribute a two-scale paradigm-comparison study on kidney CT (classical handcrafted texture features + XGBoost vs EfficientNet-B0 + ConvNeXt V2 transfer-learned CNNs), showing that the medium-set 'disjoint errors / 100 % ensemble' finding does not replicate at full dataset scale — and that the surviving paradigm-stable asymmetry is narrower than the medium results suggested: only the DL pipelines make `Cyst→Stone` errors, which both CNN backbones make and the classical pipeline never makes."*
 
 That's the sentence to lead with.
