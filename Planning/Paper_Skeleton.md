@@ -18,22 +18,27 @@ Numbers → [[Results_Summary]] · Framing → [[Project_Framing_v2]]
 
 ### What to cover
 - Clinical motivation: kidney disease burden, four conditions (cyst, stone, tumor, normal), value of automated CT classification
+- **Position the work within the radiomics-vs-deep-learning literature** [Lambin 2017; Guiot 2021] — not just "we tried two methods", but a *contribution to* an active sub-literature on paradigm comparison
 - Brief overview of the dataset: Islam et al. (2022), PACS-sourced, 12,446 images, 4 classes
 - Two paradigms compared: classical handcrafted-feature ML vs transfer-learned CNN
-- Key contrast with literature: Islam et al. tested Swin Transformer (99.30%), VGG16 (98.2%), ResNet-50 (73.8%) — we add EfficientNet-B0 (not in their comparison) and a classical XGBoost baseline
-- Forward pointer to finding: both paradigms near-ceiling, but disjoint error patterns reveal complementary representational strategies
+- Key contrast with literature: Islam et al. tested Swin Transformer (99.30%), VGG16 (98.2%), ResNet-50 (73.8%); subsequent independent work [Bingol 2023] reports 99.37 % on the same dataset — multiple groups approaching saturation. We add EfficientNet-B0, ConvNeXt V2, and a classical XGBoost baseline, and contribute the **per-method failure-mode analysis** that prior work has not performed.
+- Forward pointer to finding: both paradigms near-ceiling, but disjoint error patterns reveal complementary representational strategies that are paradigm-stable, not architecture-stable.
 
 ### Draft sentences
-> Kidney disease affects [X] million people worldwide, with conditions including cysts, stones, and tumours requiring accurate and timely diagnosis [CITE]. Automated classification from CT imaging could reduce radiologist workload and support earlier intervention [CITE]. The Islam et al. (2022) dataset [CITE] provides a well-curated benchmark of 12,446 kidney CT images across four classes, enabling reproducible algorithm comparison.
+> Kidney disease affects [X] million people worldwide, with conditions including cysts, stones, and tumours requiring accurate and timely diagnosis [CITE]. Automated classification from CT imaging could reduce radiologist workload and support earlier intervention [CITE]. Two computational paradigms have been pursued in parallel for medical imaging classification: **radiomics**, the high-throughput extraction of handcrafted quantitative features [Lambin et al. 2017], and **deep learning**, in which features are learned end-to-end from pixels. Both approaches are now standard in the field [Guiot et al. 2021; Zhang et al. 2023]; recent work has begun to combine them in fusion ensembles for cystic renal-mass classification [He et al. 2022; He et al. 2023].
 >
-> Prior work on this dataset has focused primarily on deep learning: Islam et al. reported 99.30% accuracy with a Swin Transformer and 98.2% with VGG16, but did not evaluate classical handcrafted-feature methods or examine failure-mode complementarity between paradigms. We compare a classical ML pipeline (texture features + XGBoost) with a transfer-learned EfficientNet-B0, asking not only which achieves higher accuracy but what each paradigm learns and where each fails.
+> The Islam et al. (2022) kidney CT dataset [CITE] provides a well-curated benchmark of 12,446 images across four classes (cyst, stone, tumour, normal). Prior work on this dataset has focused primarily on deep learning: Islam et al. reported 99.30% accuracy with a Swin Transformer and 98.20% with VGG16; subsequent independent evaluations report comparable saturation (e.g., Bingol et al. 2023, 99.37 %). However, no prior study has compared a handcrafted-feature classical pipeline with a deep model on this dataset, nor analysed the per-method failure-mode complementarity that such a comparison surfaces.
+>
+> We compare a classical ML pipeline (texture features + XGBoost) with two transfer-learned CNNs (EfficientNet-B0 and ConvNeXt V2 Base), asking not only which achieves higher accuracy but **what each paradigm learns and where each fails**. We find that on the medium-set comparison the two paradigms achieve near-identical scores, with disjoint error sets (both-wrong = 0); that an equal-weight soft-vote ensemble achieves perfect test classification by exploiting this complementarity; and that the classical and DL paradigms' failure modes (Cyst ↔ Tumor for classical, Cyst ↔ Stone for DL) are **paradigm-stable**: they persist when the DL backbone scales from 5 M to 89 M parameters at higher resolution. We argue that on saturated medical-imaging benchmarks, the *direction* of disagreement between paradigms carries more information than the *magnitude* — and that interpretability analysis is essential for distinguishing dataset saturation from method quality.
 
 ### Key references to cite
+- Lambin et al. 2017 — *Radiomics: the bridge between medical imaging and personalized medicine* (foundational radiomics)
+- Guiot et al. 2021 — radiomics review explicitly framing handcrafted-vs-DL as the two approaches
 - Islam et al. 2022 (dataset + Swin baseline)
-- LeCun et al. (deep learning overview)
-- Litjens et al. 2017 (medical image analysis survey)
-- Haralick et al. 1973 (GLCM features)
-- Tan & Le 2019 (EfficientNet)
+- Bingol et al. 2023 — independent reproduction at 99.37 % on the same dataset
+- He et al. 2022 / He et al. 2023 — radiomics + DL ensembles on cystic renal lesions
+- Tan & Le 2019 (EfficientNet); Woo et al. 2023 (ConvNeXt V2)
+- Haralick et al. 1973 (GLCM features); Ojala et al. 2002 (LBP)
 
 ---
 
@@ -143,7 +148,10 @@ The equal-weight ensemble achieves 0 errors not because the individual models ar
 Comparing EfficientNet-B0 across training-set sizes (1.29 % error rate on medium + TTA, 1.23 % on full) shows that doubling the training set produces no measurable improvement in this architecture — the 5.3 M-parameter capacity is already saturated. Comparing the two architectures on identical training data (EfficientNet-B0 1.23 % vs ConvNeXt V2 0.32 %) shows a 74 % error reduction with statistical significance (McNemar's *p* = 0.0021). The DL gains observed in Sprint 2 are therefore attributable to **architecture, not data volume**. This separation is consistent with the saturated-task regime in Mei et al. [RadImageNet 2022]: when a small medical-imaging dataset is approaching its solvability ceiling, capacity is the binding constraint on additional gains. Both DL architectures share the same dominant Cyst ↔ Stone failure mode (74 % and 83 % of total errors respectively), confirming that the DL ↔ classical gap is a paradigm-level distinction, not an architectural one.
 
 **Comparison with literature**
-Islam et al.'s Swin Transformer achieves 99.30% accuracy on their balanced subset. Our ConvNeXtV2 Base (supplementary, full dataset) achieves 99.53% macro-F1, consistent with but not directly comparable to their result (different splits, different class balance). Both results, alongside our classical ML performance, support the interpretation that this dataset is approaching a performance ceiling regardless of architecture — the remaining variance is in which images each paradigm fails on, not whether it fails.
+Islam et al.'s Swin Transformer achieves 99.30% accuracy on their balanced subset. Our ConvNeXt V2 Base (supplementary, full dataset) achieves 99.53% macro-F1, consistent with but not directly comparable to their result (different splits, different class balance). Independent work by Bingol et al. (2023) on this same dataset reports 99.37 % accuracy with a hybrid CNN model. Teke et al. (2025) achieve 99.98 % on a kidney CT classification task using **GLCM features alone with a Fine-KNN classifier** — direct corroboration that handcrafted texture features capture nearly all the discriminating signal on kidney CT classification. Together, these results support the interpretation that this benchmark is approaching a performance ceiling regardless of architectural sophistication; the remaining variance is in which images each paradigm fails on, not whether it fails.
+
+**Cross-task evidence — paradigm winners flip across anatomies**
+Whereas our results show classical ML edging out DL on kidney CT (medium set), Nishio et al. (2018) report the opposite finding for lung-nodule classification: a deep CNN (68% accuracy) outperformed an LBP+SVM classical pipeline (56%). Shulong Li et al. (2018) similarly found that combining handcrafted (GLCM, intensity, geometric) and CNN features in a fusion classifier beats either alone for lung-nodule malignancy prediction on LIDC/IDRI, with each component's value reflecting its complementary representational scope. The pattern in our data — paradigm-stable error structure with classical winning on texture-dominant minority classes — appears consistent with this broader medical-imaging-paradigm-comparison literature: which paradigm wins is dataset-dependent, but their errors are reliably *complementary*, supporting fusion-ensemble approaches as in He et al. (2022, 2023).
 
 **Compute and practicality**
 *(TODO: add training time, inference time, model size table)*
@@ -185,21 +193,61 @@ Classical ML's practical advantage: no GPU required, near-instant training, inte
 
 ## References (IEEE format — additional page, not counted in 6)
 
-Key citations needed:
-1. Islam et al. 2022 — dataset + Swin baseline
-2. Tan & Le 2019 — EfficientNet
-3. Kornblith et al. 2019 — transfer learning
-4. Yosinski et al. 2014 — feature transferability
-5. Howard & Ruder 2018 — ULMFiT / gradual unfreezing
-6. Loshchilov & Hutter 2019 — AdamW
-7. Haralick et al. 1973 — GLCM features
-8. Ojala et al. 2002 — LBP
-9. Selvaraju et al. 2017 — Grad-CAM
-10. Chen & Guestrin 2016 — XGBoost
-11. Litjens et al. 2017 — medical image analysis survey
-12. Matsoukas et al. 2021 — CNN vs ViT on medical imaging
-13. Raghu et al. 2019 — ImageNet transfer to medical imaging
-14. Pizer et al. 1987 — CLAHE
+Full master list — pull subset for the actual paper. Cross-reference with [[Supporting_Literature]] for context on what each citation supports. See Phase 0 / Phase 2 design docs for already-verified entries.
+
+**Foundational / framing**
+1. Lambin et al. 2017 — *Radiomics: the bridge between medical imaging and personalized medicine*
+2. Guiot et al. 2021 — radiomics review (handcrafted vs DL framing)
+3. Anyimadu et al. 2025 — classical-vs-DL paradigm comparison on three medical imaging tasks
+4. Islam et al. 2022 — dataset + Swin baseline (CITE for the dataset)
+5. Bingol et al. 2023 — independent 99.37 % on same dataset (saturation evidence)
+
+**Method — Classical ML (Person A's pipeline)**
+6. Haralick et al. 1973 — GLCM features
+7. Ojala et al. 2002 — LBP
+8. Pizer et al. 1987 — CLAHE
+9. Chen & Guestrin 2016 — XGBoost
+10. Teke et al. 2025 — GLCM + KNN at 99.98 % on kidney CT (precedent for classical dominance on this anatomy)
+11. Sayed et al. 2025 — CNN+XGBoost hybrid for kidney stones (precedent for the architectural choice)
+
+**Method — Deep Learning (Person B's pipeline)**
+12. Tan & Le 2019 — EfficientNet
+13. Woo et al. 2023 — ConvNeXt V2
+14. Liu et al. 2022 — original ConvNeXt
+15. Kornblith et al. 2019 — better-ImageNet → better-transfer
+16. Yosinski et al. 2014 — feature transferability
+17. Howard & Ruder 2018 — ULMFiT / gradual unfreezing
+18. Loshchilov & Hutter 2019 — AdamW
+19. Raghu et al. 2019 — ImageNet transfer to medical imaging
+20. Mei et al. 2022 — RadImageNet (saturation in small medical datasets)
+21. Matsoukas et al. 2021 — CNN vs ViT on medical imaging
+
+**Interpretability + ensemble**
+22. Selvaraju et al. 2017 — Grad-CAM
+23. Wang et al. 2019 — TTA in medical imaging
+24. Müller et al. 2022 — ensemble learning analysis for medical image classification
+25. Lakshminarayanan et al. 2017 — deep ensembles
+26. He et al. 2023 — DL + radiomics blending ensemble for cystic renal lesions
+27. He et al. 2022 — DL + radiomics stacking ensemble for cystic renal lesions
+
+**Statistical / reporting**
+28. Dietterich 1998 — McNemar's for paired classifiers
+29. Grandini et al. 2020 — multiclass metrics (macro-F1)
+30. Sokolova & Lapalme 2009 — performance measures for classification
+31. Cawley & Talbot 2010 — overfitting in model selection (val saturation)
+32. Mongan et al. 2020 + Tejani et al. 2024 — CLAIM / CLAIM 2024
+33. Collins et al. 2024 — TRIPOD+AI
+
+**Cross-task evidence**
+34. Shulong Li et al. 2018 — lung-nodule malignancy: CNN + handcrafted fusion
+35. Nishio et al. 2018 — lung-nodule classification: CNN > LBP+SVM (paradigm flip across tasks)
+
+**Limitations / patient-level leakage**
+36. Yagis et al. 2021 — slice-level leakage in 2D CNN brain MRI
+37. Veetil et al. 2024 — replication of slice-level-leakage effect
+
+**Clinical context**
+38. Weibl et al. 2017 — Bosniak / cystic renal mass differentiation
 
 ---
 

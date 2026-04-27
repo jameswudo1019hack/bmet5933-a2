@@ -20,7 +20,9 @@ Kidney CT Classification · Islam et al. (2022) dataset · Due **Fri 15 May 2026
 
 ### Paper Writing
 - [[Results_Summary]] — all canonical numbers in one place ← start here when writing
-- [[Paper_Skeleton]] — IEEE paper draft scaffold
+- [[Paper_Skeleton]] — IEEE paper draft scaffold (now anchored in radiomics literature)
+- [[Supporting_Literature]] — verified citations per finding ← reference when writing each paragraph
+- [[Tutor_Meeting_Brief]] — Wednesday meeting prep: thesis, key findings, three questions, one push-back ask
 
 ---
 
