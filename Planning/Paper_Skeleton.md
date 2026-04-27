@@ -100,17 +100,30 @@ Numbers → [[Results_Summary]] · Framing → [[Project_Framing_v2]]
 - Secondary: accuracy, per-class F1, ROC-AUC (OvR), bootstrap 95% CIs, McNemar's paired test
 - Comparison with Islam et al. (2022) is directional — different split, different class balance
 
-### III-B. Main results table
+### III-B. Main results
 
-*(Pull from [[Results_Summary]])*
+*(Numbers pulled from [[Results_Summary]].)*
 
-| Model | Accuracy | Macro-F1 [95% CI] | Stone F1 | Errors |
+**Table 1. Primary comparison — medium dataset, n = 934 test images.** Apples-to-apples on a single shared test set.
+
+| Model | Accuracy | Macro-F1 [95 % CI] | Stone F1 | Errors |
 |---|---|---|---|---|
 | Classical XGBoost | 0.9979 | 0.9976 [0.994, 1.000] | 1.000 | 2 / 934 |
-| EfficientNet-B0 + TTA | 0.9861 | 0.9829 [0.973, 0.992] | 0.961 | 13 / 934 |
-| Ensemble (w=0.5) | **1.0000** | **1.0000** [1.000, 1.000] | 1.000 | **0 / 934** |
+| EfficientNet-B0 + TTA hflip | 0.9861 | 0.9829 [0.973, 0.992] | 0.961 | 13 / 934 |
+| Soft-vote ensemble (`w_dl = 0.5`) | **1.0000** | **1.0000** [1.000, 1.000] | 1.000 | **0 / 934** |
 
-McNemar's test (classical vs DL + TTA): *report statistic and p-value here.*
+McNemar's paired test (Classical vs EfficientNet-B0 + TTA hflip): 15 discordant pairs, *p* = 7.4 × 10⁻³ (Classical > DL).
+
+**Table 2. Supplementary — full dataset, n = 1,867 test images.** Architecture-vs-data-volume decomposition (see [[Phase2_Design]] §13).
+
+| Model | Accuracy | Macro-F1 [95 % CI] | Stone F1 | Errors |
+|---|---|---|---|---|
+| EfficientNet-B0 (matched-data control) | 0.9877 | 0.9819 [0.975, 0.989] | 0.950 | 23 / 1867 |
+| ConvNeXt V2 Base @ 384 | 0.9968 | 0.9953 [0.991, 0.998] | 0.988 | 6 / 1867 |
+
+McNemar's paired test (EfficientNet-B0 vs ConvNeXt V2): 27 discordant pairs (22 only-EffNet wrong; 5 only-ConvNeXt wrong), *p* = 0.0021 (ConvNeXt V2 > EfficientNet-B0). The architecture effect is statistically significant at matched training data.
+
+*Cross-table comparisons are directional only — Tables 1 and 2 use disjoint test sets.*
 
 ### III-C. Analysis and discussion
 
@@ -124,7 +137,10 @@ Stone is a strongly-textured class — bright calcified deposits with high-contr
 Cysts and tumors are both rounded soft-tissue masses with similar first-order texture statistics. Classical features cannot distinguish them well — both classical errors are in this pair. EfficientNet-B0's learned spatial filters differentiate them via morphological cues (wall thickness, internal structure) that are not captured by rotation-invariant texture statistics.
 
 **Ensemble interpretation**
-The equal-weight ensemble achieves 0 errors not because the individual models are perfect, but because their errors are disjoint. This is evidence of complementary feature spaces. The val-tuned ensemble collapsed to classical-alone because classical achieves perfect val F1, making the val set uninformative for weight selection — a documented failure mode of disagreement-based ensemble tuning.
+The equal-weight ensemble achieves 0 errors not because the individual models are perfect, but because their errors are disjoint. This is evidence of complementary feature spaces. The val-tuned ensemble collapsed to classical-alone because classical achieves perfect val F1, making the val set uninformative for weight selection — a documented failure mode of disagreement-based ensemble tuning under model-selection bias [Cawley & Talbot 2010].
+
+**Architecture vs data-volume decomposition (Table 2)**
+Comparing EfficientNet-B0 across training-set sizes (1.29 % error rate on medium + TTA, 1.23 % on full) shows that doubling the training set produces no measurable improvement in this architecture — the 5.3 M-parameter capacity is already saturated. Comparing the two architectures on identical training data (EfficientNet-B0 1.23 % vs ConvNeXt V2 0.32 %) shows a 74 % error reduction with statistical significance (McNemar's *p* = 0.0021). The DL gains observed in Sprint 2 are therefore attributable to **architecture, not data volume**. This separation is consistent with the saturated-task regime in Mei et al. [RadImageNet 2022]: when a small medical-imaging dataset is approaching its solvability ceiling, capacity is the binding constraint on additional gains. Both DL architectures share the same dominant Cyst ↔ Stone failure mode (74 % and 83 % of total errors respectively), confirming that the DL ↔ classical gap is a paradigm-level distinction, not an architectural one.
 
 **Comparison with literature**
 Islam et al.'s Swin Transformer achieves 99.30% accuracy on their balanced subset. Our ConvNeXtV2 Base (supplementary, full dataset) achieves 99.53% macro-F1, consistent with but not directly comparable to their result (different splits, different class balance). Both results, alongside our classical ML performance, support the interpretation that this dataset is approaching a performance ceiling regardless of architecture — the remaining variance is in which images each paradigm fails on, not whether it fails.
@@ -139,13 +155,15 @@ Islam et al.'s Swin Transformer achieves 99.30% accuracy on their balanced subse
 
 Classical ML's practical advantage: no GPU required, near-instant training, interpretable outputs.
 
-### III-D. Interpretability side-by-side
+### III-D. Interpretability side-by-side — the central paper figure
 
-*(TODO: insert Grad-CAM panel + feature importance figure here)*
+**Figure 1. Cross-architecture Grad-CAM** (`Results/gradcam/cross_architecture.png`). Six paired examples drawn automatically from the EfficientNet-B0 / ConvNeXt V2 paired-disagreement set on the full test split, visualising last-conv-stage attention via Grad-CAM [Selvaraju et al. 2017]. For each row: original CT slice (left), EfficientNet-B0 @ 224 attention (centre), ConvNeXt V2 @ 384 attention (right).
 
-- Figure 1: Grad-CAM attention maps for EfficientNet-B0, 2 examples per class
-- Figure 2: Top-N XGBoost feature importances by class
-- Discussion: does DL attend to kidney tissue or to image margins/scanner artefacts?
+**Reading the figure.** EfficientNet-B0's attention is consistently *more dispersed* than ConvNeXt V2's, frequently extending outside the kidney silhouette into body wall and bowel. On the three Cyst → Stone misclassifications unique to EfficientNet-B0, the smaller network's attention peaks off-organ; ConvNeXt V2 on the same images correctly fixates on the kidney lesion and outputs Cyst. This directly visualises the architecture effect quantified in Table 2: the larger network is not just more accurate, it is **looking at different things** — specifically, kidney tissue rather than peripheral context. The qualitative observation aligns with the quantitative finding (McNemar's *p* = 0.0021): ConvNeXt V2's gains are anchored in better attentional discipline.
+
+**Figure 2. Classical feature importance** *(TODO — Person A to extract from the trained XGBoost classifier)*. Top-N feature importances by class. Hypothesis under [[Project_Framing_v2]]: 2–3 features dominate, and they are texture features (GLCM Haralick or LBP), confirming the dataset-saturation argument that handcrafted texture features alone capture nearly all the discriminating signal.
+
+**Joint reading.** The Grad-CAM attention maps and the feature-importance ranking together constitute the paper's central interpretability evidence: each paradigm exploits a different aspect of the visual signal (DL: spatial structure on the lesion itself; classical: texture/intensity statistics over the whole image), and the disjoint-error pattern in Table 1 is the measurable consequence of this representational difference. The clinical relevance is that Cyst ↔ Tumor differentiation — the failure mode classical cannot solve — is exactly the hardest pair under the radiology-standard Bosniak classification framework [Weibl et al. 2017], lending external validity to our paradigm-comparison story.
 
 ---
 

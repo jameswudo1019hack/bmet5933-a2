@@ -1,7 +1,13 @@
 # Phase 0 — Shared Infrastructure Design
 
 **BMET 5933 Assignment 2 — Kidney CT Classification**
-Status: draft v1, 2026-04-22
+Status: draft v1, 2026-04-22 (amended 2026-04-26 with framing-v2 preamble + checklist update — see below)
+
+---
+
+## Framing update — 2026-04-26
+
+After Sprint 1 showed that the classical/DL soft-vote ensemble achieves 100 % test macro-F1, and Sprint 2's matched-data architecture comparison (see [[Phase2_Design]] §13) showed both DL backbones share a Cyst ↔ Stone failure mode while classical fails on Cyst ↔ Tumor, the project's framing shifted from *"who wins"* to *paradigm comparison through interpretability* — see **[[Project_Framing_v2]]** for the canonical statement. The shared-infrastructure decisions documented below remain correct; their *exposition* in the paper now serves the interpretability analysis rather than chasing a score. In particular: fixed split + matched preprocessing + per-class bootstrap CIs + McNemar's paired test are all infrastructure for reasoning about *what each paradigm learns*, not for declaring a winner.
 
 ---
 
@@ -136,10 +142,10 @@ The two final classifiers are compared using **McNemar's test** [10] on paired p
 
 ### Decision
 The project commits to the following reporting artefacts, produced automatically by the evaluation harness:
-1. A JSON config for every experiment (seed, data path, model hyperparameters, git commit hash).
+1. A JSON config for every experiment (seed, data path, model hyperparameters, wall-clock timings). *Note: §7.1's draft also mentioned logging the git commit hash; in practice we logged the seed + full config in `run_log.json` and rely on the git history for the commit-hash trace. Substantive reproducibility of the run is preserved.*
 2. A JSON results file per experiment (all metrics in §5 + wall-clock timings).
-3. A single `split.csv` shared across both pipelines.
-4. Per-model `model_card.md` (one paragraph summary: inputs, outputs, training data, limitations, intended use).
+3. A single `split.csv` (medium dataset) plus `split_full.csv` (full dataset, Sprint 2 addition), both shared across pipelines.
+4. ~~Per-model `model_card.md`~~ — not produced for this submission. The Phase 2 design document plus the per-run `run_log.json` and `dl_results.json` together cover the substantive reporting items in CLAIM 2024 [1, 2] item-by-item; a separate model card would have been redundant given the paper's own Methods section.
 5. The final paper will include a CLAIM 2024 [1, 2] adherence checklist in supplementary material.
 
 ### Rationale
@@ -160,14 +166,15 @@ These will be repeated in the paper's Limitations section and must not be forgot
 
 ## 9. Phase 0 deliverables checklist
 
-- [ ] `split.py` — deterministic stratified splitter, emits `split.csv`.
-- [ ] `split.csv` — one-time artefact, committed to the repo.
-- [ ] `preprocessing.py` — `load_image(path) -> np.ndarray` + per-pipeline extensions.
-- [ ] `evaluate.py` — computes every metric in §5 plus McNemar's (§6), given `y_true` and `y_pred` (and optionally `y_prob` for ROC-AUC).
-- [ ] `bootstrap.py` — 1000-resample CI on macro-F1 and per-class F1.
-- [ ] `config.py` / `config.yaml` — central seed and path constants.
-- [ ] `README.md` — setup, how to reproduce, directory layout, environment freeze.
-- [ ] One smoke-test run per pipeline on the **small** dataset, end-to-end, to confirm the harness works before Phase 1/2.
+- [x] `split.py` — deterministic stratified splitter, emits `split.csv`. Now also supports `--dataset-root` / `--output` flags so it can emit the supplementary `split_full.csv` (Sprint 2 addition).
+- [x] `split.csv` — one-time artefact, committed to the repo.
+- [x] `split_full.csv` — supplementary full-dataset split, committed (Sprint 2 addition).
+- [x] `preprocessing.py` — `load_image(path) -> np.ndarray` + per-pipeline extensions; `load_split` accepts `split_csv` / `dataset_root` overrides for the full-dataset path.
+- [x] `evaluate.py` — computes every metric in §5 plus McNemar's (§6), given `y_true` and `y_pred` (and optionally `y_prob` for ROC-AUC).
+- [x] `bootstrap.py` — 1000-resample CI on macro-F1 and per-class F1.
+- [x] `config.py` — central seed and path constants. (`config.yaml` not used; `config.local.yaml` is per-machine and gitignored.)
+- [x] `README.md` — setup, how to reproduce, directory layout, environment freeze.
+- [x] Smoke tests per pipeline. The shared harness was smoke-tested on the medium dataset (`shared/smoke_test.py`); Person B's DL pipeline has a `--smoke` flag in `deep_learning/train.py`; Person A's classical pipeline has a `--smoke` flag in `classical/train.py`. The design-doc-stated "small dataset" was substituted with medium for stronger signal at negligible compute cost.
 
 ---
 

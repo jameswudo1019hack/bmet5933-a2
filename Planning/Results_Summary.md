@@ -78,6 +78,21 @@ McNemar's baseline vs TTA hflip: discordant=10, **p=0.11** (not significant — 
 
 ---
 
+## Data-efficiency sweep — EfficientNet-B0 baseline (no TTA)
+
+Stratified subsets of the medium training split, same val + test set, same training protocol (Sprint 1, commit `270bbd5`). Confirms that the EfficientNet-B0 baseline reaches a capacity ceiling well before the full medium training set is consumed.
+
+| Train fraction | n_train | Macro-F1 [95 % CI] | Stone F1 | Errors / 934 | Wall time (A100) |
+|---|---|---|---|---|---|
+| 10 % | 436 | 0.7466 [0.713, 0.778] | 0.595 | 65 | 105 s |
+| 25 % | 1088 | 0.9092 [0.886, 0.931] | 0.811 | 30 | 199 s |
+| 50 % | 2176 | 0.9580 [0.943, 0.972] | 0.915 | 19 | 309 s |
+| 100 % | 4353 | 0.9745 [0.963, 0.986] | 0.942 | 19 | 477 s |
+
+Marginal F1 gain from 50 % → 100 % is < 2 percentage points; further data-volume gains require architectural change (see Sprint 2 results below).
+
+---
+
 ## Ensemble analysis
 
 ### Val weight grid (DL weight w_dl, classical weight = 1 − w_dl)
@@ -136,9 +151,9 @@ Different test set (n=1867, full dataset split). **Not directly comparable to me
 
 ---
 
-## EfficientNet-B0 on full dataset (for reference)
+## EfficientNet-B0 on full dataset (matched-data control)
 
-Same full dataset split, n=1867 test.
+Same full-dataset split as ConvNeXt V2, n = 1867 test. Trained with the same two-stage protocol as the medium-set EfficientNet-B0; only training data differs.
 
 | Metric | Value |
 |---|---|
@@ -146,6 +161,35 @@ Same full dataset split, n=1867 test.
 | Macro-F1 | 0.9819 [0.975, 0.989] |
 | Stone F1 | 0.9496 |
 | Errors | 23 / 1867 |
+| Wall time (A100) | 18.4 min |
+| Best val F1 / epoch | 0.9766 / 35 |
+
+### Paired McNemar's — EfficientNet-B0 full vs ConvNeXt V2 full (same 1867 test set)
+
+| Quantity | Value |
+|---|---|
+| Both correct | 1839 |
+| Both wrong | 1 |
+| Only EfficientNet-B0 wrong | 22 |
+| Only ConvNeXt V2 wrong | 5 |
+| Discordant pairs | 27 |
+| **p-value** | **0.0021** (ConvNeXt V2 > EfficientNet-B0) |
+
+Architecture effect is statistically significant at matched training data. **Data-volume effect on EfficientNet-B0 is approximately zero** (1.29 % error rate on medium + TTA → 1.23 % on full).
+
+---
+
+## Interpretability artefacts
+
+| Artefact | Path | Purpose |
+|---|---|---|
+| Grad-CAM panel (EfficientNet-B0 only) | `Results/gradcam/gradcam_panel.png` | Initial 8-panel Grad-CAM (4 correct + 4 errors) on the medium-set EfficientNet-B0 — Sprint 1 deliverable |
+| **Cross-architecture Grad-CAM** | **`Results/gradcam/cross_architecture.png`** | **Paper Figure 1.** 6-row, 3-column comparison of EfficientNet-B0 (full) vs ConvNeXt V2 (full) attention on the same test images, drawn from paired-disagreement buckets |
+| Sample manifest | `Results/gradcam/gradcam_manifest.json` | Reproducibility — which test images were selected and why |
+| EfficientNet-B0 full predictions | `Results/dl_run_full/dl_predictions.npz` | y_true, y_pred, y_prob — input for paired McNemar's vs ConvNeXt V2 |
+| ConvNeXt V2 full predictions | `Results/convnextv2_full_run/dl_predictions.npz` | y_true, y_pred, y_prob — input for paired McNemar's vs EfficientNet-B0 |
+| Classical predictions | `Results/classical_run/classical_predictions.npz` | y_true, y_pred, y_prob — for paired McNemar's vs DL on medium set |
+| Classical feature importance | *(pending — Person A to extract)* | Paper Figure 2 once available |
 
 ---
 

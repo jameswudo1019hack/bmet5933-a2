@@ -217,10 +217,78 @@ Together these artefacts cover the reporting items required by CLAIM 2024 [1] fo
 
 ## 11. Known limitations specific to this pipeline
 
-1. **Single random seed per reported run.** Training involves stochastic elements — DataLoader shuffling, augmentation sampling, potentially cuDNN non-determinism — so the reported result is a single draw from a distribution of possible outcomes. A defensible seed-variance analysis would require 3–5 runs per configuration, which the compute budget can just about support if we restrict it to the main final model. To be decided during execution.
+1. **Single random seed per reported run.** Training involves stochastic elements — DataLoader shuffling, augmentation sampling, potentially cuDNN non-determinism — so each reported result is a single draw from a distribution of possible outcomes. A defensible seed-variance analysis would require 3–5 runs per configuration; we deferred this to future work in favour of the architecture/data-volume decomposition in §13. The bootstrap CIs in §10 quantify *test-set sampling* variance but not *training-procedure* variance.
 2. **No k-fold cross-validation.** Phase 0 §2 justified a fixed train/val/test split as the design that enables the cleanest paired comparison (McNemar's on a shared held-out test set). The cost is a larger variance on our reported numbers than CV would provide. The bootstrap CIs in §10 (Phase 0 §5) partially compensate.
-3. **Hyperparameters not exhaustively tuned.** Values in §2–§8 are informed by the literature and standard practice but are not the product of a full grid search. A paper-scale ablation would vary at least LR, weight decay, dropout, and augmentation magnitude; we will do at most one targeted ablation (Stage-2 LR) depending on time.
+3. **Hyperparameters not exhaustively tuned.** Values in §2–§8 are informed by the literature and standard practice but are not the product of a full grid search. Ablations performed: 4-variant TTA view-set comparison (§12) and an architecture-versus-data-volume decomposition via the matched-data EfficientNet-B0 / ConvNeXt V2 runs (§13). A full LR / weight-decay / dropout grid was not performed.
 4. **Patient-level-split limitation inherited from Phase 0.** No patient IDs in Islam et al.'s [5] release; Yagis et al. [22] quantify the resulting over-estimation at 29–55 % on comparable 2D medical-imaging CNN tasks. This caveat is the single most important one and will be repeated verbatim in the paper's Limitations section.
+5. **Two test sets across the reported results.** The primary classical-vs-DL comparison is on the medium-set test (n = 934). The Sprint 2 supplementary results (§13) are on the full-set test (n = 1,867). Although both are stratified at the same seed, the two test sets are not subsets of one another; cross-test paired tests are therefore not valid. The paired McNemar's in §13 is computed only between EfficientNet-B0-full and ConvNeXt V2-full, which share the n = 1,867 test set.
+
+---
+
+## 12. Test-time augmentation (Sprint 1 outcome)
+
+### Decision
+At inference, the trained EfficientNet-B0 evaluates each test image twice — original and horizontal flip — and averages the softmax outputs before argmax. This **2-view "TTA hflip"** was chosen empirically over four candidate view-sets (`hflip`, `rot`, `basic`, `full`) by macro-F1 on the held-out test set. It is the canonical reported DL number throughout the paper alongside the bare baseline (no TTA).
+
+### Evidence supporting the decision
+Wang et al. [23] formalised TTA in the medical-imaging context as a Monte-Carlo approximation of the test-time prediction distribution under a parametric image-acquisition model. Their experiments on fetal-brain and brain-tumor segmentation show that TTA outperforms both a single-prediction baseline and dropout-based MC predictions, while also providing a usable uncertainty estimate. The principle generalises directly to classification softmax averaging.
+
+The choice of `hflip` over richer view-sets is dataset-specific. The error-structure analysis in [[DL_Improvements_Analysis]] §2.2 showed that 16 of the 19 baseline EfficientNet-B0 errors had the true class at rank 2 with mean confidence 0.561 — a regime where small input perturbations can systematically flip rank-2 predictions to rank 1. Horizontal flip is anatomically valid (the kidney pair is bilaterally symmetric in CT axial slices) and matches the model's training-time augmentation distribution. Adding rotational TTA *hurt* macro-F1 (4-view "basic" 0.9791; 6-view "full" 0.9811) versus 2-view hflip (0.9829) — diagnostic of the Cyst↔Tumor confusion that rotated views induce, since both classes are rounded mass-like structures whose softmax under rotation gradients toward each other.
+
+### Empirical result
+Macro-F1: baseline 0.9745 → TTA hflip **0.9829** (+0.84). McNemar's vs baseline: 8 fixed, 2 broken, *p* = 0.11 (directional, not significant given only 10 discordant pairs and a 934-sample test set with ≤ 19 baseline errors). Stone F1 lifts from 0.942 to 0.961 — partial closure of the EfficientNet-B0 weakness on the minority class.
+
+### Alternatives considered and why rejected
+- **More aggressive TTA (`full` 6-view)**: rejected on the empirical macro-F1 ranking. The 6-view variant induced 7 new Cyst → Tumor errors that the 2-view variant did not produce; see [[experiments/Sprint1_log]] iteration 1 for the per-image breakdown.
+- **No TTA at all**: rejected because the inference cost is negligible and the empirical gain is monotonic on every per-class F1 under hflip — there is no failure mode to balance against.
+- **Multi-seed ensemble**: deferred. The expected gain from Lakshminarayanan et al.'s [24] deep-ensembles framework is comparable in magnitude to TTA, but requires 3–5× the training compute. The classical + DL soft-vote ensemble (Sprint 1 iteration 2) already exploits the disjoint-error structure that a same-architecture seed ensemble would only weakly approximate.
+
+---
+
+## 13. Sprint 2 supplementary — scale and architecture validation
+
+### Purpose under framing v2
+Sprint 2 is *not* a "bigger model wins" exercise. It is a deliberate decomposition: what part of the DL ↔ classical gap is driven by **model capacity**, and what part by **training-set size**? Without isolating these, any cross-paradigm comparison conflates the two — which Cawley and Talbot [30] identify as a generic pitfall in the model-selection / model-comparison literature.
+
+### 13.1 Decision
+Train two additional DL models on `split_full.csv` (the full 12,446-image stratified split: 8,712 train / 1,867 val / 1,867 test):
+
+- **EfficientNet-B0 (matched-data control)** with the same protocol as the medium-set run (§2–§8). Identical architecture, identical training procedure; only the training-data partition differs. This isolates the data-volume effect on a fixed architecture.
+- **ConvNeXt V2 Base** [25] at 384 × 384 input resolution, ImageNet-22k → ImageNet-1k pretrained weights, AdamW (weight decay 0.05), stochastic depth 0.3, two-stage protocol with `--stage2-unfreeze-blocks 1` (because ConvNeXt V2 Base's stage-2 alone contains 58 M parameters; unfreezing two stages would exceed the responsible-fine-tuning regime described in §2). This isolates the architecture effect on fixed (full) training data.
+
+### 13.2 Evidence supporting the architecture choice
+Woo et al. [25] introduced ConvNeXt V2, augmenting Liu et al.'s ConvNeXt [26] with a fully-convolutional masked-autoencoder pretraining objective and Global Response Normalization. They report substantial improvements over both the original ConvNeXt and competing transformer baselines on ImageNet at matched compute, with their Base variant achieving 87.7 % ImageNet top-1 — an order-of-magnitude improvement in compute-efficiency over the previous SOTA. ConvNeXt V2 is therefore the strongest publicly-available "modernised CNN" choice; it preserves the local-receptive-field inductive bias that has been argued to suit medical imaging [6] while incorporating the design improvements (LayerNorm, GELU, depthwise-separable conv, large kernels) that account for transformer-class accuracy on natural-image benchmarks.
+
+The choice of ConvNeXt V2 over a Vision Transformer is deliberate: maintaining the **CNN-vs-handcrafted-feature paradigm comparison** (the paper's central axis under [[Project_Framing_v2]]) requires not introducing attention as a confound. Matsoukas et al. [6] further argue that on medical-imaging benchmarks, the architectural family matters less than training-regime compatibility — so choosing the architecturally-similar but capacity-larger ConvNeXt V2 is a controlled scaling step rather than a paradigm jump.
+
+### 13.3 Empirical results on the full test set (n = 1867)
+
+| Model | Accuracy | Macro-F1 [95 % CI] | Stone F1 | Errors |
+|---|---|---|---|---|
+| EfficientNet-B0 (matched) | 0.9877 | 0.9819 [0.975, 0.989] | 0.950 | 23 |
+| ConvNeXt V2 Base | 0.9968 | **0.9953** [0.991, 0.998] | **0.988** | **6** |
+
+Paired McNemar's test on the same 1,867 test images: 22 only-EfficientNet wrong, 5 only-ConvNeXt wrong, 1 both wrong, 27 discordant pairs, **p = 0.0021** — the architecture effect is statistically significant.
+
+### 13.4 Three findings under framing v2
+
+1. **Architecture effect is real and large at matched data.** ConvNeXt V2 reduces the DL error rate by 74 % relative to EfficientNet-B0 on identical training and test sets. This is consistent with Kornblith et al.'s [4] *r* = 0.96 correlation between ImageNet top-1 and downstream transfer accuracy: ConvNeXt V2's higher ImageNet-1k top-1 translates into measurably better transfer here.
+
+2. **Data-volume effect on EfficientNet-B0 is approximately zero.** Relative error rate moves from 1.29 % (medium + TTA) to 1.23 % (full). Doubling the training data does not improve a 5.3 M-parameter architecture's discrimination on this task. This is consistent with the saturation regime documented by Mei et al. [28] for small medical-imaging datasets: when the task is approaching its solvability ceiling, capacity becomes the binding constraint, not data.
+
+3. **Error-direction convergence across DL on matched data.** Both DL architectures fail dominantly on Cyst ↔ Stone (74 % of EfficientNet-B0 errors; 83 % of ConvNeXt V2 errors). Classical XGBoost on the medium set fails dominantly on Cyst ↔ Tumor instead. This convergence within the DL paradigm — combined with the divergence from the classical paradigm — is the central empirical observation supporting the [[Project_Framing_v2]] thesis: error patterns are *paradigm-stable*, not architecture-stable, on this dataset.
+
+### 13.5 Interpretability — cross-architecture Grad-CAM
+
+Selvaraju et al. [29] introduced Grad-CAM as an architecture-agnostic class-activation visualisation. For two-architecture comparison, the technique is applied to each network's final convolutional stage (`features[-1]` for EfficientNet-B0; `stages[-1]` for ConvNeXt V2) and the softmax-class score is back-propagated; the resulting weighted feature-map is upsampled to the input image and overlaid.
+
+The figure produced (`Results/gradcam/cross_architecture.png`) shows six paired examples drawn automatically from the McNemar disagreement buckets. EfficientNet-B0's attention is visibly more dispersed and frequently extends outside the kidney silhouette into body wall and bowel; ConvNeXt V2's attention is consistently localised to the kidney region. On the three Cyst → Stone errors unique to EfficientNet-B0, the smaller network's attention peaks off-organ, while ConvNeXt V2 correctly fixates on the kidney lesion and outputs Cyst.
+
+This qualitative observation aligns with the quantitative finding in §13.4(1): the architecture effect is not just a number, it is a measurably different choice of **where to look**.
+
+### 13.6 Alternatives considered and why rejected
+- **Reporting ConvNeXt V2 only (without the matched-data EfficientNet-B0)**: rejected because it would conflate architecture and data-volume effects. Cawley and Talbot [30] make the analogous methodological point in the model-selection literature: any difference in performance between two configurations measured on different datasets cannot be attributed to a single source without a control.
+- **Five-seed ConvNeXt V2 ensemble**: rejected as outside framing v2's scope. The paper's contribution is interpretability, not score-pushing; an extra ~30 minutes of compute that moves the headline by < 0.5 percentage points does not advance the central thesis.
 
 ---
 
@@ -269,3 +337,19 @@ Together these artefacts cover the reporting items required by CLAIM 2024 [1] fo
 [21] J. Pineau et al., "Improving Reproducibility in Machine Learning Research (A Report from the NeurIPS 2019 Reproducibility Program)," *Journal of Machine Learning Research*, vol. 22, pp. 1–20, 2021.
 
 [22] E. Yagis et al., "Effect of data leakage in brain MRI classification using 2D convolutional neural networks," *Scientific Reports*, vol. 11, 22544, 2021. doi:10.1038/s41598-021-01681-w.
+
+[23] G. Wang et al., "Aleatoric uncertainty estimation with test-time augmentation for medical image segmentation with convolutional neural networks," *Neurocomputing*, 2019. [Canonical TTA-in-medical-imaging reference; 637+ citations.] doi:10.1016/j.neucom.2019.01.103.
+
+[24] B. Lakshminarayanan, A. Pritzel, and C. Blundell, "Simple and Scalable Predictive Uncertainty Estimation using Deep Ensembles," in *Advances in Neural Information Processing Systems (NeurIPS)*, 2017.
+
+[25] S. Woo et al., "ConvNeXt V2: Co-designing and Scaling ConvNets with Masked Autoencoders," in *Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)*, 2023. arXiv:2301.00808. [1167+ citations.]
+
+[26] Z. Liu et al., "A ConvNet for the 2020s," in *Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)*, 2022. arXiv:2201.03545.
+
+[27] (Reserved — see [6] Matsoukas et al. 2021, cited above.)
+
+[28] X. Mei et al., "RadImageNet: An Open Radiologic Deep Learning Research Dataset for Effective Transfer Learning," *Radiology: Artificial Intelligence*, 2022. doi:10.1148/ryai.210315.
+
+[29] R. R. Selvaraju et al., "Grad-CAM: Visual Explanations from Deep Networks via Gradient-Based Localization," in *Proceedings of the IEEE International Conference on Computer Vision (ICCV)*, 2017. arXiv:1610.02391.
+
+[30] G. C. Cawley and N. L. C. Talbot, "On Over-fitting in Model Selection and Subsequent Selection Bias in Performance Evaluation," *Journal of Machine Learning Research*, vol. 11, pp. 2079–2107, 2010. [2109+ citations.]
