@@ -1,0 +1,23 @@
+[predict] loaded pipeline: xgb  (108 → 50 dims)
+[predict] split_csv=split_full.csv  dataset_root=Dataset/CT-KIDNEY-DATASET-Normal-Cyst-Tumor-Stone  n_jobs=-1
+[features] test features: parallel extraction n_jobs=-1 on 1867 images …
+[features] saved feature cache -> Results/classical_features_full/test.npz
+[predict] predictions → Results/classical_run_full/classical_predictions.npz
+Model: xgb  (n_test=1867)
+  Accuracy:    0.9930
+  Macro F1:    0.9897  [95% CI 0.9835, 0.9948]
+  Weighted F1: 0.9930
+  ROC-AUC OvR: 0.9995
+  Per-class:
+    Cyst    P=0.988  R=1.000  F1=0.994  [95% CI 0.988, 0.997]  (support=556)
+    Normal  P=0.993  R=0.999  F1=0.996  [95% CI 0.993, 0.999]  (support=762)
+    Stone   P=0.995  R=0.947  F1=0.970  [95% CI 0.952, 0.986]  (support=207)
+    Tumor   P=1.000  R=0.997  F1=0.999  [95% CI 0.995, 1.000]  (support=342)
+  Confusion matrix (rows=true, cols=pred):
+              Cyst  Normal   Stone   Tumor
+    Cyst         556       0       0       0
+    Normal         0     761       1       0
+    Stone          6       5     196       0
+    Tumor          1       0       0     341
+[predict] results → Results/classical_run_full/classical_results.json
+

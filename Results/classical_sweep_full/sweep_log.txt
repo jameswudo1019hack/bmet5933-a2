@@ -1,0 +1,24 @@
+[sweep] using model=xgb  params={'learning_rate': 0.1, 'max_depth': 6, 'n_estimators': 200}
+[sweep] split_csv=split_full.csv  dataset_root=Dataset/CT-KIDNEY-DATASET-Normal-Cyst-Tumor-Stone  n_jobs=-1
+[sweep] loading/extracting features …
+[features] loaded cached features from Results/classical_features_full/train_frac100.npz  (shape (8712, 108))
+[features] loaded cached features from Results/classical_features_full/val.npz  (shape (1867, 108))
+[features] loaded cached features from Results/classical_features_full/test.npz  (shape (1867, 108))
+
+[sweep frac_010] n_train=871
+[sweep frac_010] PCA: 108 -> 50 components
+[sweep frac_010] val_f1=1.0000  test_macro_f1=0.9554
+
+[sweep frac_025] n_train=2178
+[sweep frac_025] PCA: 108 -> 50 components
+[sweep frac_025] val_f1=1.0000  test_macro_f1=0.9716
+
+[sweep frac_050] n_train=4355
+[sweep frac_050] PCA: 108 -> 50 components
+[sweep frac_050] val_f1=1.0000  test_macro_f1=0.9799
+
+[sweep frac_100] n_train=8712
+[sweep frac_100] PCA: 108 -> 50 components
+[sweep frac_100] val_f1=1.0000  test_macro_f1=0.9897
+[sweep] curve → Results/classical_sweep_full/data_efficiency_curve.png
+

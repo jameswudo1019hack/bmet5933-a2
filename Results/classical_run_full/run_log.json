@@ -1,0 +1,46 @@
+{
+  "train_frac": 1.0,
+  "n_train": 8712,
+  "n_val": 1867,
+  "n_raw_features": 108,
+  "n_pca_components": 50,
+  "seed": 42,
+  "smoke": false,
+  "classifiers": {
+    "svm": {
+      "best_params": {
+        "C": 1.0,
+        "kernel": "linear"
+      },
+      "cv_f1": 0.8388067352206651,
+      "val_f1": 0.8248241757192377
+    },
+    "rf": {
+      "best_params": {
+        "max_depth": 20,
+        "min_samples_split": 5,
+        "n_estimators": 200
+      },
+      "cv_f1": 0.9734494789332995,
+      "val_f1": 0.978936538339171
+    },
+    "xgb": {
+      "best_params": {
+        "learning_rate": 0.1,
+        "max_depth": 6,
+        "n_estimators": 200
+      },
+      "cv_f1": 0.9883615181801462,
+      "val_f1": 0.9894928087639744
+    }
+  },
+  "best_model": "xgb",
+  "best_params": {
+    "learning_rate": 0.1,
+    "max_depth": 6,
+    "n_estimators": 200
+  },
+  "best_val_f1": 0.9894928087639744,
+  "wall_time_sec": 172.7124400138855,
+  "pipeline_path": "Results/classical_run_full/classical_pipeline.pkl"
+}

@@ -1,0 +1,37 @@
+[train] output=Results/classical_run_full  smoke=False  train_frac=1.0
+[train] split_csv=split_full.csv  dataset_root=Dataset/CT-KIDNEY-DATASET-Normal-Cyst-Tumor-Stone  n_jobs=-1
+[train] extracting train features …
+[features] train features: parallel extraction n_jobs=-1 on 8712 images …
+[features] saved feature cache -> Results/classical_features_full/train_frac100.npz
+[train] extracting val features …
+[features] val features: parallel extraction n_jobs=-1 on 1867 images …
+[features] saved feature cache -> Results/classical_features_full/val.npz
+[train] raw feature dims: 108
+[train] PCA: 108 -> 50 components (capacity-constrained)
+
+[train] === SVM grid search ===
+Fitting 5 folds for each of 4 candidates, totalling 20 fits
+[svm]  best params={'C': 1.0, 'kernel': 'linear'}  cv_f1=0.8388  val_f1=0.8248
+
+[train] === Random Forest grid search ===
+Fitting 5 folds for each of 18 candidates, totalling 90 fits
+[rf]   best params={'max_depth': 20, 'min_samples_split': 5, 'n_estimators': 200}  cv_f1=0.9734  val_f1=0.9789
+
+[train] === XGBoost grid search ===
+[xgb grid search] 8 combinations × 5 folds
+  [1/8] {'learning_rate': 0.05, 'max_depth': 3, 'n_estimators': 100}  cv_macro_f1=0.8542
+  [2/8] {'learning_rate': 0.05, 'max_depth': 3, 'n_estimators': 200}  cv_macro_f1=0.9089
+  [3/8] {'learning_rate': 0.05, 'max_depth': 6, 'n_estimators': 100}  cv_macro_f1=0.9664
+  [4/8] {'learning_rate': 0.05, 'max_depth': 6, 'n_estimators': 200}  cv_macro_f1=0.9834
+  [5/8] {'learning_rate': 0.1, 'max_depth': 3, 'n_estimators': 100}  cv_macro_f1=0.9068
+  [6/8] {'learning_rate': 0.1, 'max_depth': 3, 'n_estimators': 200}  cv_macro_f1=0.9528
+  [7/8] {'learning_rate': 0.1, 'max_depth': 6, 'n_estimators': 100}  cv_macro_f1=0.9816
+  [8/8] {'learning_rate': 0.1, 'max_depth': 6, 'n_estimators': 200}  cv_macro_f1=0.9884
+[xgb]  best params={'learning_rate': 0.1, 'max_depth': 6, 'n_estimators': 200}  cv_f1=0.9884  val_f1=0.9895
+
+[train] winner: xgb  val_macro_f1=0.9895
+[train] retraining xgb on train+val (10579 samples) …
+
+[train] done  best=xgb  val_f1=0.9895  wall=172.7s
+[train] pipeline -> Results/classical_run_full/classical_pipeline.pkl
+
