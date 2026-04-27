@@ -95,6 +95,22 @@ The framing above was authored on 2026-04-24, when classical-on-full had not yet
 | Direction of disagreement carries more information than magnitude | Direction of disagreement is itself dataset-scale-dependent (see rows above) | **Refined**: direction is informative *at a fixed scale* but *changes with scale*. Reporting at one scale alone risks overclaiming |
 | Classical's perfect Stone recall is a hard ceiling DL approaches but does not reach | Classical-full Stone recall = 0.947 (11 errors / 207). DL backbones now reach or exceed this — Stone is hard for *every* paradigm at full scale | **Invalidated.** Stone is not classical's privileged class at full scale |
 
+### Sprint 3 same-day addendum (2026-04-27, after RF + SVM refit)
+
+The XGB-only Sprint 3 result above said the *narrower* DL-exclusive `Cyst→Stone` claim survives. Adding RF and SVM to the analysis (3 classical + 2 DL = 5 pipelines) **also kills that claim**:
+
+| Model | Total errors | `Cyst→Stone` errors |
+|---|---|---|
+| Classical SVM (linear) — broken at scale | 238 | 23 |
+| Classical RF | 27 | **2** ← within range of ConvNeXt V2's 3 |
+| Classical XGB | 13 | **0** ← classifier-specific zero |
+| EfficientNet-B0 | 23 | 9 |
+| ConvNeXt V2 | 6 | 3 |
+
+The zero-`Cyst→Stone` is **XGBoost-specific**, not paradigm-specific. Performance ranking at full scale is `ConvNeXt V2 > XGB > EffNet ~ RF >> SVM` — classifier choice within a paradigm dominates the paradigm split. Pairwise McNemar's: RF-vs-XGB is *significantly different within the classical paradigm* (p=0.0013, both-wrong=11), while RF-vs-EffNet is **tied** (p=0.64). The two-paradigm framing oversimplifies a 5-model continuum.
+
+**The replacement thesis** has to acknowledge that paradigm-level claims required deeper analysis to invalidate, and that the *invalidation chain* (medium → full-XGB → full-all-classifiers) is the paper's central methodological contribution.
+
 **The thesis as it stands cannot survive unrevised.** The replacement thesis is in [[Tutor_Meeting_Brief]] §1 (refreshed 2026-04-27) and is reproduced here for the canonical record:
 
 > We compared a classical machine-learning pipeline (handcrafted texture features + XGBoost) with two transfer-learned CNNs (EfficientNet-B0 and ConvNeXt V2 Base) on the Islam et al. 2022 kidney CT dataset, at *two* dataset scales (n=934 medium test set and n=1,867 full test set). All three achieve > 98 % macro-F1 at every scale, and at the medium scale the equal-weight soft-vote ensemble achieves 100 % — but only at the medium scale. The interesting finding is **scale-dependent**: on the medium dataset, classical and DL fail on disjoint image sets (both-wrong = 0); on the full dataset, classical and the two DL backbones share `Stone→Cyst` failures (both-wrong = 4 vs EffNet, 2 vs ConvNeXt V2), and paired McNemar's classical-vs-each-DL is no longer significant. A *narrower* paradigm-stable asymmetry survives at full scale: only DL pipelines make `Cyst→Stone` errors (9 + 3 across two backbones; classical makes zero). We argue this two-scale comparison — surfacing a result that *does not* replicate from medium to full — is the paper's most rigorous contribution: on saturated medical-imaging benchmarks, both the *magnitude* and *direction* of paradigm disagreement are dataset-scale-dependent, and reporting them at one scale alone risks overclaiming.

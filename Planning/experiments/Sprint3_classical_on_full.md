@@ -5,6 +5,8 @@
 Related: [[Sprint2_ConvNeXtV2_on_full]], [[Sprint2_evaluation_ConvNeXtV2]], [[Sprint1_log]], [[DL_Improvements_Analysis]], [[Phase0_Design]], [[Project_Framing_v2]]
 
 > **Framing.** Sprint 2 closed with classical-on-medium (0.9976) and DL-on-full (EffNet-B0 0.9819, ConvNeXt V2 0.9953). The medium-vs-full asymmetry left "classical fails on Cyst↔Tumor / DL fails on Cyst↔Stone" as a *medium-set* claim. Sprint 3 closes that asymmetry: classical retrained on the same full split (8,712 train, 1,867 test) so all three pipelines are now matched on the n=1867 test set. The scientific question: *does the paradigm-stable error pattern survive at full scale?* **Answer: in its original form, no — it was a medium-set artefact.** A narrower asymmetry survives (DL alone makes Cyst→Stone errors).
+>
+> **Same-day addendum (post-RF/SVM refit):** the *narrower* asymmetry above also collapses once RF and SVM are added in scope. RF makes 2 `Cyst→Stone` errors (within range of ConvNeXt V2's 3); the zero-Cyst→Stone result is **specific to XGBoost**, not to the classical paradigm. The full picture is below in the Sprint 3 addendum.
 
 ## Decision
 
@@ -175,14 +177,91 @@ The Sprint 3 results force three changes to the Paper Skeleton:
 4. The `bmet5934` conda env runs `xgboost 2.x` which differs by minor patch from Person A's original local env; we explicitly verified that the random seed produces deterministic results (smoke-run val F1 = 0.4125 reproduced bit-exact between Colab and local Apple Silicon).
 5. The Colab notebook is included in submission for reproducibility but was not the actual run path; the local-CLI invocations in the run_log have authoritative timestamps.
 
-## Files written
+## Sprint 3 addendum — SVM and RF re-fit on full (2026-04-27, same day)
 
+The user asked whether the partner had trained only XGBoost or also SVM and RF. The pipeline grid-searches all three but only the val-best is saved; the partner's medium run picked XGB and the Sprint 3 full run also picked XGB. To get test-set predictions for SVM and RF *at full scale*, I re-fit both on cached features using the existing best params from `run_log.json`, mirroring the train+val protocol (`analysis/sprint3_train_svm_rf.py`). This expanded the paradigm-comparison from 1 classical + 2 DL to **3 classical + 2 DL**.
+
+### Per-classifier results at full scale (same n=1867 test set)
+
+| Pipeline | Best params | Macro-F1 | Accuracy | Errors | `Cyst→Stone` errors |
+|---|---|---|---|---|---|
+| Classical SVM (linear) | `C=1.0` | 0.8515 | 0.8725 | 238 | 23 |
+| Classical RF | `max_depth=20, n=200, mss=5` | 0.9801 | 0.9855 | 27 | **2** |
+| Classical XGB | `lr=0.1, md=6, n=200` | 0.9897 | 0.9930 | 13 | **0** |
+| EfficientNet-B0 (full) | (Sprint 2) | 0.9819 | 0.9877 | 23 | 9 |
+| ConvNeXt V2 Base (full) | (Sprint 2) | 0.9953 | 0.9968 | 6 | 3 |
+
+### Pairwise McNemar's across all 5 (10 unordered pairs)
+
+`Results/classical_run_full/sprint3_all_classifiers.json`:
+
+| Pair | Discordant | Both wrong | p-value | Reading |
+|---|---|---|---|---|
+| SVM vs RF | 221 | 22 | 2.6e-45 | SVM dominated |
+| SVM vs XGB | 233 | 9 | 9.4e-49 | SVM dominated |
+| SVM vs EffNet-B0 | 243 | 9 | 6.9e-43 | SVM dominated |
+| SVM vs ConvNeXt V2 | 240 | 2 | 2.8e-50 | SVM dominated |
+| **RF vs XGB** | 18 | 11 | **0.0013** | **Within-classical: significantly different** |
+| RF vs EffNet-B0 | 42 | 4 | 0.64 | Tied |
+| RF vs ConvNeXt V2 | 29 | 2 | 0.0002 | ConvNeXt V2 wins |
+| XGB vs EffNet-B0 | 28 | 4 | 0.089 | Tied |
+| XGB vs ConvNeXt V2 | 15 | 2 | 0.119 | Tied |
+| EffNet-B0 vs ConvNeXt V2 | 27 | 1 | 0.0021 | ConvNeXt V2 wins (Sprint 2) |
+
+### What this kills, what survives
+
+**Killed (the surviving narrow paradigm-stable claim from Sprint 3 §"Verdict"):**
+
+> *"only DL pipelines make `Cyst→Stone` errors at full scale; classical makes zero"*
+
+Classical RF makes **2** `Cyst→Stone` errors at full scale — within range of ConvNeXt V2's 3. The pattern of zero-Cyst→Stone is **specific to XGBoost**, not specific to the classical paradigm. With three classical classifiers in scope, the asymmetry collapses.
+
+**Killed (the within-paradigm-stable claim):**
+
+The texture-features paradigm is not internally consistent across classifier choices. RF and XGB significantly disagree on which images they get wrong (p=0.0013, both-wrong=11). Within-paradigm variance > some between-paradigm comparisons (e.g., RF vs EffNet-B0 are *tied* at p=0.64).
+
+**Killed (the "classical vs DL" framing as the primary axis):**
+
+Performance ranking is `ConvNeXt V2 > XGB > EffNet-B0 ≈ RF >> SVM`. The "classical / DL" split does *not* explain ranking — classifier choice within a paradigm dominates. SVM-linear is broken (238 errors) but RF and XGB outperform EffNet-B0; ConvNeXt V2 outperforms all classical. The two-paradigm framing oversimplifies a 5-model continuum.
+
+**Surviving findings (now stricter and harder-won):**
+
+1. **Stone is the universal weak class.** All 5 models have Stone as their lowest-F1 class. Average Stone F1 across the 4 competent models is ~0.95 vs Cyst/Normal/Tumor all near 0.99. This is dataset-level, not paradigm-level.
+2. **SVM-linear with PCA(50) does not scale.** Macro-F1 collapses from 0.91 (medium) to 0.85 (full) — a finding worth one sentence in the paper if there is space.
+3. **The medium-set "disjoint errors / 100 % ensemble" finding is a medium-only artefact** (already documented in the main Sprint 3 body above; further confirmed here).
+4. **ConvNeXt V2 is the single best model** by a margin that *is* statistically significant against everything except XGBoost.
+5. **XGBoost is the most precise classifier on Cyst class** (zero Cyst-row errors) — a *classifier-level* finding worth flagging in the per-class analysis but **not** suitable as a paradigm-level claim.
+
+### Implications for the paper (replacing the earlier Sprint 3 implications)
+
+The earlier Sprint 3 §"Implications for the paper" was written when only classical-XGB was in scope. With RF and SVM added, the implications shift again:
+
+1. **Drop the "DL-exclusive Cyst→Stone errors" claim entirely.** It is XGBoost-specific, not paradigm-specific. The paper Discussion should report this honestly: "we expanded the analysis to RF and SVM and found that the asymmetry was specific to XGBoost".
+2. **The most rigorous paper framing is the *invalidation chain*:**
+   - Medium-set: "disjoint errors / 100% ensemble / paradigm-stable failure pairs" → headline result on first analysis
+   - Full-set XGB only: "disjoint errors does not survive; narrower DL-exclusive `Cyst→Stone` survives" → first invalidation
+   - Full-set with SVM + RF: "narrower asymmetry is XGB-specific, not paradigm-specific" → second invalidation
+   - This *progressive narrowing* of an over-claimed result by additional analysis is itself the paper's methodological contribution.
+3. **Lead with the 5-model comparison table.** It is the most informative single artefact: it demonstrates classifier-within-paradigm variance (`RF vs XGB`, p=0.0013) comparable to between-paradigm variance (`XGB vs ConvNeXt V2`, p=0.119, n.s.).
+4. **Add SVM as an instructive failure case.** The 238-error SVM is a teaching moment about model-class capacity at scale; do not bury it.
+5. **Update Tutor_Meeting_Brief Q1 again.** "Is dataset-saturation framing defensible for ISBI?" gains another layer: not only does the 100 % ensemble not replicate at full scale, but the surviving paradigm-stable asymmetry from Sprint 3 also fails to replicate when within-paradigm classifier variance is included.
+
+## Files written (Sprint 3 + Sprint 3 addendum)
+
+Original Sprint 3:
 - `Results/classical_run_full/classical_pipeline.pkl` — final XGBoost on train+val
 - `Results/classical_run_full/classical_predictions.npz` — (y_true, y_pred, y_prob)
 - `Results/classical_run_full/classical_results.json` — full evaluate() report
 - `Results/classical_run_full/run_log.json` — grid-search log
-- `Results/classical_run_full/sprint3_comparison.json` — paired McNemar's + failure-pair counts
-- `Results/classical_features_full/{train_frac100,val,test}.npz` — feature caches (regenerable; not committed)
+- `Results/classical_run_full/sprint3_comparison.json` — XGB vs DL paired-McNemar artefact
+- `Results/classical_features_full/{train_frac100,val,test}.npz` — feature caches
 - `Results/classical_sweep_full/sweep_summary.json` — sweep metrics
 - `Results/classical_sweep_full/data_efficiency_curve.png` — curve plot
-- `analysis/sprint3_full_comparison.py` — paired-comparison script (rerunnable)
+- `analysis/sprint3_full_comparison.py` — XGB-only paired-comparison script
+
+Sprint 3 addendum:
+- `Results/classical_run_full_svm/{classical_pipeline.pkl, classical_predictions.npz, classical_results.json}` — re-fit SVM on full
+- `Results/classical_run_full_rf/{classical_pipeline.pkl, classical_predictions.npz, classical_results.json}` — re-fit RF on full
+- `Results/classical_run_full/sprint3_all_classifiers.json` — 5-pipeline pairwise McNemar's + Cyst→Stone tally
+- `analysis/sprint3_train_svm_rf.py` — SVM+RF re-fit script (rerunnable from cached features)
+- `analysis/sprint3_all_classifiers.py` — 5-pipeline comparison script (rerunnable)

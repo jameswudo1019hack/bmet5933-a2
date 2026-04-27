@@ -6,7 +6,9 @@
 
 Read [[Project_Framing_v2]] before the meeting for full context.
 
-> **Sprint 3 update (2026-04-27).** Classical XGBoost retrained on the full 12,446-image split (8,712 train, 1,867 test); now matched-test-set against EffNet-B0-full and ConvNeXt V2-full. Macro-F1 = 0.9897 (13 errors). **The medium-set "disjoint errors / 100 % ensemble" finding does not replicate at full scale** — classical and ConvNeXt V2 share 2 errors, classical and EffNet share 4, all `Stone→Cyst`. Paired McNemar's classical-vs-each-DL is no longer significant (p = 0.089 / 0.119). The narrower asymmetry that survives: only DL pipelines make `Cyst→Stone` errors at full scale (9 EffNet + 3 ConvNeXt vs 0 classical). Findings 1 and 2 below have been refreshed to reflect this; the paper headline framing (Q1) becomes load-bearing. See [[experiments/Sprint3_classical_on_full]] for the full analysis.
+> **Sprint 3 update (2026-04-27).** Classical XGBoost retrained on the full 12,446-image split (8,712 train, 1,867 test); now matched-test-set against EffNet-B0-full and ConvNeXt V2-full. Macro-F1 = 0.9897 (13 errors). **The medium-set "disjoint errors / 100 % ensemble" finding does not replicate at full scale** — classical and ConvNeXt V2 share 2 errors, classical and EffNet share 4, all `Stone→Cyst`. Paired McNemar's classical-vs-each-DL is no longer significant (p = 0.089 / 0.119).
+>
+> **Same-day addendum (RF + SVM also re-fit on full):** the surviving narrow Sprint 3 claim — "only DL makes `Cyst→Stone` errors" — *also* fails once RF and SVM are added: RF makes 2 `Cyst→Stone` errors (within range of ConvNeXt V2's 3), so the zero-`Cyst→Stone` is XGBoost-specific, not paradigm-specific. The performance ranking at full scale is **`ConvNeXt V2 (6 err) > XGB (13) > EffNet (23) ~ RF (27) >> SVM (238)`** — classifier choice within a paradigm dominates the paradigm split. The paper Discussion now leads with the *invalidation chain* (medium → full-XGB → full-all-classifiers) rather than a single positive paradigm claim. Findings 1 and 2 below are refreshed; Q1 (dataset-saturation framing) is now triply load-bearing. See [[experiments/Sprint3_classical_on_full]] §"Sprint 3 addendum".
 
 ---
 
@@ -24,7 +26,7 @@ Read [[Project_Framing_v2]] before the meeting for full context.
 
 **At full scale (n=1867 test, all three pipelines on the same test set):** classical-XGB-full = 0.993 acc / 0.9897 macro-F1, EffNet-B0-full = 0.988 acc, ConvNeXt V2-full = 0.997 acc. **Disjoint-error claim does NOT survive**: classical ∩ ConvNeXt V2 = 2 both-wrong (Stone→Cyst); classical ∩ EffNet-B0 = 4 both-wrong (Stone→Cyst). Paired McNemar's classical-vs-each-DL: p = 0.089 (vs EffNet) and 0.119 (vs ConvNeXt) — not significant. Sprint-2 result EffNet-vs-ConvNeXt-V2 reproduces (p = 0.0021).
 
-**Surviving narrower asymmetry at full scale:** only DL pipelines make `Cyst→Stone` errors (9 EffNet + 3 ConvNeXt vs **0 classical**). Both DL backbones; zero classical. This is paradigm-stable and architecture-stable across the two CNNs.
+**Originally claimed narrower asymmetry at full scale (XGB-only Sprint 3):** *"only DL pipelines make `Cyst→Stone` errors (9 EffNet + 3 ConvNeXt vs 0 classical)"*. **This claim is invalidated by the same-day addendum**: classical RF refit on full also makes 2 `Cyst→Stone` errors (within range of ConvNeXt V2's 3). The zero-`Cyst→Stone` result is **XGBoost-specific**, not paradigm-specific. The narrower asymmetry does not survive RF + SVM scrutiny.
 
 **Caveat 1:** the dataset is saturated. Three other groups have approached 99 %+ on it (Islam Swin 99.30 %, Bingol 2023 hybrid 99.37 %, Teke 2025 GLCM-only 99.98 % on a related kidney-CT task). The 100 % ensemble figure is real on the medium subset but is a medium-scale artefact.
 
@@ -49,8 +51,14 @@ Grad-CAM on the same six paired-disagreement test images reveals EfficientNet-B0
 
 ## 3. Three specific questions for the tutor
 
-### Q1. Is the dataset-saturation framing defensible for an ISBI-style paper? *(now load-bearing post-Sprint 3)*
-We *had* been reporting 100 % test accuracy on medium as our headline ensemble number. Sprint 3 (classical retrained on full at matched test-set) showed the disjoint-error result that made the 100 % ensemble work **does not replicate at full scale**. Our argument is now: (a) the 100 % medium-set ensemble is real but is a medium-scale artefact; (b) the deeper finding is that the disjoint-error pattern is dataset-scale-dependent — a result we *invalidated by going to more data*, which we believe is the paper's most rigorous contribution; (c) at full scale, only DL pipelines make `Cyst→Stone` errors, which is a narrower paradigm-stable claim that does survive across two CNN backbones. **Is this two-scale framing acceptable for ISBI?** We could alternatively suppress the 100 % claim entirely and lead only with the full-scale results, but that hides a real finding.
+### Q1. Is the dataset-saturation framing defensible for an ISBI-style paper? *(triply load-bearing post-Sprint 3 + addendum)*
+We have a **three-step invalidation chain** to present:
+
+- **Medium-set (Sprint 1)**: classical+DL ensemble → 100 % test accuracy on n=934. Disjoint errors (both-wrong = 0). Classical fails on Cyst↔Tumor; DL fails on Cyst↔Stone.
+- **Full-set, XGB only (Sprint 3)**: 100 % ensemble does *not* replicate. Classical and ConvNeXt V2 share 2 `Stone→Cyst` errors; classical-vs-each-DL McNemar p > 0.05. Surviving narrower claim: "only DL makes `Cyst→Stone` errors".
+- **Full-set, all classifiers (Sprint 3 addendum)**: surviving narrower claim *also* fails. RF makes 2 `Cyst→Stone` errors (within range of ConvNeXt V2's 3). The asymmetry is XGBoost-specific, not paradigm-specific. Classifier choice within a paradigm matters more than paradigm choice.
+
+**Our argument:** we did not bury the failures; we surfaced them and they are themselves the paper's rigour signal. The medium-set 100 % is real on the medium subset; we report it with a caveat paragraph and lead the Discussion with the invalidation chain. The dataset-saturation framing (Bingol 2023 99.37 % on this dataset; multiple groups in 99 %+ territory) explains *why* the medium ensemble could plausibly hit 100 % and *why* the gap closes at scale. **Is this three-step invalidation framing acceptable for ISBI?** Or should we suppress the medium 100 % entirely and lead only with the full-scale 5-model comparison?
 
 ### Q2. Is the patient-level-leakage limitation strong enough to invalidate our results?
 The Islam dataset has no patient identifiers; we cannot prevent slices from the same patient appearing in both train and test. Yagis et al. 2021 quantified this effect at 29–55 % accuracy inflation in 2D MRI CNN studies; Veetil et al. 2024 replicated at +67 % on Parkinson's data. We are committed to flagging this as the single most important caveat in the paper. **Should we go further** — e.g., contact the dataset authors for patient IDs, switch to KiTS19 for a patient-stratified secondary evaluation, or add a "future work" section specifically on this?
@@ -107,6 +115,6 @@ Both share Cyst↔Stone as the dominant DL failure pair. Classical fails on Cyst
 
 ## 7. One-liner if Sandhya asks "what's your contribution?"
 
-> *"We contribute a two-scale paradigm-comparison study on kidney CT (classical handcrafted texture features + XGBoost vs EfficientNet-B0 + ConvNeXt V2 transfer-learned CNNs), showing that the medium-set 'disjoint errors / 100 % ensemble' finding does not replicate at full dataset scale — and that the surviving paradigm-stable asymmetry is narrower than the medium results suggested: only the DL pipelines make `Cyst→Stone` errors, which both CNN backbones make and the classical pipeline never makes."*
+> *"We contribute a kidney CT paradigm-comparison study at two dataset scales (medium n=934 and full n=1867 test sets) using three classical classifiers (SVM, RF, XGBoost on handcrafted texture features) and two transfer-learned CNNs (EfficientNet-B0 and ConvNeXt V2 Base), in which two paradigm-stable claims (the medium-set 'disjoint errors / 100 % ensemble' and the Sprint 3 'DL-exclusive `Cyst→Stone` errors') were both surfaced as headline findings on first analysis and both invalidated by deeper analysis — first by going from medium to full data, then by including RF and SVM in the comparison. We argue this invalidation chain is itself the paper's most rigorous contribution: on saturated medical-imaging benchmarks, paradigm-level claims are easy to over-claim and demand multi-classifier, multi-scale verification before they can be reported."*
 
 That's the sentence to lead with.

@@ -260,6 +260,87 @@ Classical reaches 0.96 with only 871 training samples — substantially better t
 
 ---
 
+## Sprint 3 addendum — SVM and RF re-fit on full (same n=1867 test set)
+
+`classical/train.py` grid-searches all three classifiers but only the val-best (XGB) is saved. To enable per-classifier paradigm comparison, SVM and RF were re-fit at full scale on the cached features using their already-discovered best params (`analysis/sprint3_train_svm_rf.py`).
+
+### Per-classifier overall metrics — full classical
+
+| Pipeline | Best params | Accuracy | Macro-F1 [95 % CI] | Errors |
+|---|---|---|---|---|
+| Classical SVM (linear) | `C=1.0` | 0.8725 | 0.8515 [0.834, 0.868] | 238 / 1867 |
+| Classical Random Forest | `max_depth=20, n_estimators=200, min_samples_split=5` | 0.9855 | 0.9801 [0.973, 0.987] | 27 / 1867 |
+| **Classical XGBoost** *(matched-protocol winner)* | `lr=0.1, max_depth=6, n_estimators=200` | **0.9930** | **0.9897 [0.984, 0.995]** | 13 / 1867 |
+
+### Per-class F1 — Classical RF (full)
+
+| Class | Precision | Recall | F1 | Support |
+|---|---|---|---|---|
+| Cyst | 0.979 | 0.996 | 0.988 | 556 |
+| Normal | 0.983 | 0.999 | 0.991 | 762 |
+| Stone | 0.990 | 0.918 | **0.952** | 207 |
+| Tumor | 1.000 | 0.980 | 0.990 | 342 |
+
+### Per-class F1 — Classical SVM (full)
+
+| Class | Precision | Recall | F1 | Support |
+|---|---|---|---|---|
+| Cyst | 0.912 | 0.908 | 0.910 | 556 |
+| Normal | 0.933 | 0.864 | 0.897 | 762 |
+| Stone | 0.728 | 0.826 | **0.774** | 207 |
+| Tumor | 0.791 | 0.863 | 0.825 | 342 |
+
+### Confusion matrix — Classical RF (full)
+
+|  | Pred Cyst | Pred Normal | Pred Stone | Pred Tumor |
+|---|---|---|---|---|
+| **True Cyst** | 554 | 0 | 2 | 0 |
+| **True Normal** | 1 | 761 | 0 | 0 |
+| **True Stone** | 10 | 7 | 190 | 0 |
+| **True Tumor** | 1 | 6 | 0 | 335 |
+
+### Confusion matrix — Classical SVM (full)
+
+|  | Pred Cyst | Pred Normal | Pred Stone | Pred Tumor |
+|---|---|---|---|---|
+| **True Cyst** | 505 | 3 | 23 | 25 |
+| **True Normal** | 10 | 658 | 41 | 53 |
+| **True Stone** | 24 | 12 | 171 | 0 |
+| **True Tumor** | 15 | 32 | 0 | 295 |
+
+### `Cyst → Stone` error tally (the original "DL-exclusive failure" hypothesis, now re-evaluated)
+
+| Pipeline | `Cyst→Stone` errors |
+|---|---|
+| Classical XGBoost (full) | **0** ← the *only* zero, hence classifier-specific |
+| Classical Random Forest (full) | **2** ← within range of ConvNeXt V2 |
+| Classical SVM (full, broken) | 23 |
+| EfficientNet-B0 (full) | 9 |
+| ConvNeXt V2 Base (full) | 3 |
+
+**Conclusion:** the "only DL makes `Cyst→Stone` errors" claim from the XGB-only Sprint 3 analysis is invalidated once RF is in scope. The asymmetry is XGBoost-specific, not paradigm-specific.
+
+### Pairwise McNemar's across all 5 pipelines (10 unordered pairs)
+
+`Results/classical_run_full/sprint3_all_classifiers.json`:
+
+| Pair | Discordant | Both wrong | p-value | Verdict |
+|---|---|---|---|---|
+| SVM vs RF | 221 | 22 | 2.6e-45 | SVM dominated |
+| SVM vs XGB | 233 | 9 | 9.4e-49 | SVM dominated |
+| SVM vs EffNet-B0 | 243 | 9 | 6.9e-43 | SVM dominated |
+| SVM vs ConvNeXt V2 | 240 | 2 | 2.8e-50 | SVM dominated |
+| **RF vs XGB** *(within-classical)* | 18 | 11 | **0.0013** | **Significantly different within paradigm** |
+| RF vs EffNet-B0 | 42 | 4 | 0.64 | **Tied** |
+| RF vs ConvNeXt V2 | 29 | 2 | 0.0002 | ConvNeXt V2 wins |
+| XGB vs EffNet-B0 | 28 | 4 | 0.089 | Tied (Sprint 3) |
+| XGB vs ConvNeXt V2 | 15 | 2 | 0.119 | Tied (Sprint 3) |
+| EffNet-B0 vs ConvNeXt V2 | 27 | 1 | 0.0021 | ConvNeXt V2 wins (Sprint 2) |
+
+**Performance ranking at full scale**: `ConvNeXt V2 (6 err) > XGBoost (13) > EfficientNet-B0 (23) ~ Random Forest (27) >> SVM (238)`. The "classical vs DL" split does not explain ranking — classifier choice within a paradigm dominates. RF-vs-XGB are significantly different within the classical paradigm, but RF-vs-EffNet-B0 are statistically tied. The two-paradigm framing oversimplifies a 5-model continuum on this saturated dataset.
+
+---
+
 ## Interpretability artefacts
 
 | Artefact | Path | Purpose |

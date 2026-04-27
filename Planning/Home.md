@@ -54,13 +54,18 @@ Full table → [[Results_Summary]]
 | Classical XGBoost | Medium (n=934) | **0.9976** | 2 / 934 |
 | EfficientNet-B0 + TTA hflip | Medium (n=934) | **0.9829** | 13 / 934 |
 | Ensemble equal-weight w=0.5 | Medium (n=934) | **1.0000** | 0 / 934 |
+| Classical SVM (full) | Full (n=1867) | 0.8515 | 238 / 1867 |
+| Classical RF (full) | Full (n=1867) | 0.9801 | 27 / 1867 |
 | Classical XGBoost (full) | Full (n=1867) | **0.9897** | 13 / 1867 |
 | EfficientNet-B0 (full, matched data) | Full (n=1867) | 0.9819 | 23 / 1867 |
 | ConvNeXtV2 Base | Full (n=1867) | **0.9953** | 6 / 1867 |
 
-**Key findings (post-Sprint 3, two scales):**
-- **Medium scale** — error sets are **disjoint** (both-wrong = 0 between classical and DL). Equal-weight ensemble achieves 100 %. Classical fails on Cyst↔Tumor; DL fails on Cyst↔Stone.
-- **Full scale** — disjoint-error claim **does not survive**. Classical and ConvNeXt V2 share 2 `Stone→Cyst` errors; classical and EffNet-B0 share 4 `Stone→Cyst` errors. Paired McNemar's classical-vs-DL is no longer significant (p = 0.089 / 0.119). The narrower paradigm-stable asymmetry that survives: only DL pipelines make `Cyst→Stone` errors (9 EffNet + 3 ConvNeXt vs 0 classical) — Sprint 3 [[experiments/Sprint3_classical_on_full]].
+**Key findings — invalidation chain (post-Sprint 3 + addendum, three steps):**
+1. **Medium scale** — error sets are **disjoint** (both-wrong = 0 between classical-XGB and DL). Equal-weight ensemble achieves 100 %. Classical fails on Cyst↔Tumor; DL fails on Cyst↔Stone.
+2. **Full scale, XGB only** — disjoint-error claim **does not survive**. Classical-XGB and ConvNeXt V2 share 2 `Stone→Cyst` errors; classical-XGB and EffNet-B0 share 4. Paired McNemar's classical-vs-DL is no longer significant (p = 0.089 / 0.119). Narrower surviving claim: "only DL pipelines make `Cyst→Stone` errors".
+3. **Full scale, all classifiers (Sprint 3 addendum)** — narrower claim **also fails**. Classical RF makes 2 `Cyst→Stone` errors (within range of ConvNeXt V2's 3). The zero-`Cyst→Stone` is XGBoost-specific, not paradigm-specific. Performance ranking at full scale is `ConvNeXt V2 > XGB > EffNet ~ RF >> SVM` — classifier choice within a paradigm dominates the paradigm split. RF-vs-XGB are significantly different within the classical paradigm (p=0.0013), but RF-vs-EffNet are *tied* (p=0.64).
+
+The **invalidation chain itself** is now the paper's central methodological contribution. See [[experiments/Sprint3_classical_on_full]] §"Sprint 3 addendum".
 
 ---
 
