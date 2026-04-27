@@ -1,399 +1,51 @@
 {
-  "nodes": [
-    {
-      "id": "classical_title",
-      "type": "text",
-      "text": "## Classical ML \u2014 Person A",
-      "x": 200,
-      "y": 550,
-      "width": 360,
-      "height": 70,
-      "color": "2"
-    },
-    {
-      "id": "dl_title",
-      "type": "text",
-      "text": "## Deep learning \u2014 Person B",
-      "x": 1240,
-      "y": 550,
-      "width": 360,
-      "height": 70,
-      "color": "6"
-    },
-    {
-      "id": "classical_features",
-      "type": "text",
-      "text": "### Feature extraction\n\n- GLCM Haralick (48 features, 4 angles \u00d7 2 distances)\n- LBP histogram (P=8, R=1, 10 bins)\n- HOG (9 orientations, 8\u00d78 cells)\n- First-order intensity stats\n\n\u2192 PCA (retain 95% variance)",
-      "x": 200,
-      "y": 660,
-      "width": 360,
-      "height": 270,
-      "color": "2"
-    },
-    {
-      "id": "dl_model",
-      "type": "text",
-      "text": "### Architecture\n\n**EfficientNet-B0** (torchvision)\nImageNet-1K pretrained weights\n5.3M params \u00b7 0.39 BFLOPs\n\nHead replaced:\n`Dropout(0.3) \u2192 Linear(1280, 4)`",
-      "x": 1240,
-      "y": 660,
-      "width": 360,
-      "height": 240,
-      "color": "6"
-    },
-    {
-      "id": "classical_clf",
-      "type": "text",
-      "text": "### Classifier + tuning\n\nCandidates: SVM (RBF) \u00b7 Random Forest \u00b7 Gradient Boosting\n\nGrid-search + stratified 5-fold CV on train+val\n`class_weight='balanced'`",
-      "x": 200,
-      "y": 960,
-      "width": 360,
-      "height": 230,
-      "color": "2"
-    },
-    {
-      "id": "dl_train",
-      "type": "text",
-      "text": "### Two-stage training\n\n**Stage 1** \u00b7 freeze backbone\nAdam, LR 1e-3, 5 epochs\n\n**Stage 2** \u00b7 unfreeze last 2 blocks\nAdamW, LR 1e-5, weight-decay 1e-4\nEarly stopping (patience 5, val macro-F1)",
-      "x": 1240,
-      "y": 960,
-      "width": 360,
-      "height": 240,
-      "color": "6"
-    },
-    {
-      "id": "classical_out",
-      "type": "text",
-      "text": "### Outputs\n\n`classical_predictions.npz`\n`classical_results.json`\n\nRuns locally in minutes\nInherently interpretable (feature importance)",
-      "x": 200,
-      "y": 1230,
-      "width": 360,
-      "height": 220,
-      "color": "2"
-    },
-    {
-      "id": "dl_support",
-      "type": "text",
-      "text": "### Imbalance + augmentation\n\nInverse-frequency class weights\n(Stone \u00d7 1.78, Normal \u00d7 0.48)\n\nAug: hflip \u00b7 rot \u00b115\u00b0 \u00b7 zoom 0.1 \u00b7 brightness/contrast \u00b10.1\n**No vertical flip** (anatomy not top-bottom symmetric)",
-      "x": 1240,
-      "y": 1230,
-      "width": 360,
-      "height": 270,
-      "color": "6"
-    },
-    {
-      "id": "dl_out",
-      "type": "text",
-      "text": "### Outputs\n\n`dl_predictions.npz`\n`dl_results.json`\n`best_model.pt` (Drive, gitignored)\n\n**Current: macro-F1 0.974 [0.963, 0.986]**",
-      "x": 1240,
-      "y": 1540,
-      "width": 360,
-      "height": 210,
-      "color": "6"
-    },
-    {
-      "id": "analysis_mcnemar",
-      "type": "text",
-      "text": "## Disjoint-error analysis\n\nMcNemar's test on the shared test set\n\u0394macro-F1 with bootstrap CI\n\n**Primary finding**: both-wrong = 0.\nParadigms err on disjoint examples \u2014\nevidence of complementary feature spaces,\nnot redundant ones. Framed under **[[Project_Framing_v2]]** as the central\ninterpretability finding, not a \"who wins\" test.",
-      "x": 200,
-      "y": 1810,
-      "width": 380,
-      "height": 290,
-      "color": "4"
-    },
-    {
-      "id": "analysis_sweep",
-      "type": "text",
-      "text": "## Data-efficiency sweep\n\nTrain DL on 10 / 25 / 50 / 100 % of train\nStratified, same seed, shared splits\n\nUnder new framing: shows how **DL's learned\nrepresentations scale with data** compared to\nclassical's fixed handcrafted features \u2014\nnot a \"when does DL pull ahead\" race.",
-      "x": 720,
-      "y": 1810,
-      "width": 380,
-      "height": 290,
-      "color": "4"
-    },
-    {
-      "id": "analysis_gradcam",
-      "type": "text",
-      "text": "## Grad-CAM (both DL models)\n\nLast-conv attention maps:\nEfficientNet-B0 @ 224 + ConvNeXt V2 @ 384\nSame test images; compare attended regions.\n\n**Central question**: is the network looking\nat kidney tissue or at scanner / crop\nartefacts? Pairs with classical feature\nimportance to map what each paradigm sees.",
-      "x": 1240,
-      "y": 1810,
-      "width": 380,
-      "height": 290,
-      "color": "4"
-    },
-    {
-      "id": "deliverables",
-      "type": "text",
-      "text": "## Deliverables \u00b7 due 2026-05-15\n\n- IEEE ISBI paper \u00b7 6 pages (2-person team)\n- In-class demo \u00b7 7 minutes\n- Submission: one `.ipynb` per team member\n- Code: github.com/jameswudo1019hack/bmet5933-a2",
-      "x": 620,
-      "y": 2150,
-      "width": 560,
-      "height": 200,
-      "color": "1"
-    },
-    {
-      "id": "legend_title",
-      "type": "text",
-      "text": "## Legend\nColour = phase",
-      "x": -420,
-      "y": 0,
-      "width": 280,
-      "height": 50
-    },
-    {
-      "id": "legend_dataset",
-      "type": "text",
-      "text": "**Dataset**",
-      "x": -420,
-      "y": 60,
-      "width": 280,
-      "height": 60,
-      "color": "3"
-    },
-    {
-      "id": "legend_infra",
-      "type": "text",
-      "text": "**Shared infrastructure** (Phase 0)",
-      "x": -420,
-      "y": 130,
-      "width": 280,
-      "height": 60,
-      "color": "5"
-    },
-    {
-      "id": "legend_classical",
-      "type": "text",
-      "text": "**Classical ML** \u2014 Person A",
-      "x": -420,
-      "y": 200,
-      "width": 280,
-      "height": 60,
-      "color": "2"
-    },
-    {
-      "id": "legend_dl",
-      "type": "text",
-      "text": "**Deep learning** \u2014 Person B",
-      "x": -420,
-      "y": 270,
-      "width": 280,
-      "height": 60,
-      "color": "6"
-    },
-    {
-      "id": "legend_analysis",
-      "type": "text",
-      "text": "**Analysis**",
-      "x": -420,
-      "y": 340,
-      "width": 280,
-      "height": 60,
-      "color": "4"
-    },
-    {
-      "id": "legend_deliverables",
-      "type": "text",
-      "text": "**Final deliverables**",
-      "x": -420,
-      "y": 410,
-      "width": 280,
-      "height": 60,
-      "color": "1"
-    },
-    {
-      "id": "split",
-      "type": "text",
-      "text": "## 1. Stratified split\n\n`shared/split.py`\n\n70 / 15 / 15 train / val / test\nseed = 42, class-stratified\n\n\u2192 **split.csv** (committed)\nBoth pipelines load from this",
-      "x": 200,
-      "y": 260,
-      "width": 360,
-      "height": 230,
-      "color": "5"
-    },
-    {
-      "id": "dataset",
-      "type": "text",
-      "text": "## Dataset\n\n**Islam et al. 2022** \u2014 Kidney CT\nMedium set, 6221 images\n_Natural imbalance_\nCyst 1854 \u00b7 Normal 2538 \u00b7 Stone 688 \u00b7 Tumor 1141",
-      "x": 720,
-      "y": 0,
-      "width": 360,
-      "height": 200,
-      "color": "3"
-    },
-    {
-      "id": "preproc",
-      "type": "text",
-      "text": "## 2. Preprocessing\n\n`shared/preprocessing.py`\n\nGrayscale \u2192 centre-crop \u2192 256\u00d7256 bilinear\n\nSame entry point for both pipelines;\nper-classifier transforms bolt on top",
-      "x": 720,
-      "y": 260,
-      "width": 360,
-      "height": 230,
-      "color": "5"
-    },
-    {
-      "id": "evaluate",
-      "type": "text",
-      "text": "## 3. Evaluation harness\n\n`shared/evaluate.py` + `bootstrap.py`\n\nAccuracy, macro-F1, per-class P/R/F1\nROC-AUC OvR, confusion matrix\n1000\u00d7 bootstrap 95% CI\nMcNemar's test (paired)",
-      "x": 1240,
-      "y": 260,
-      "width": 360,
-      "height": 230,
-      "color": "5"
-    },
-    {
-      "id": "framing_banner",
-      "type": "text",
-      "x": 200,
-      "y": -150,
-      "width": 1400,
-      "height": 110,
-      "color": "4",
-      "text": "## Framing v2 \u2014 paradigm comparison, not score chasing\n\nClassical ML and deep learning both near-ceiling on this dataset. The score is not the science; the **failure patterns + attention maps** are. Canonical reference: **[[Project_Framing_v2]]**."
-    }
-  ],
-  "edges": [
-    {
-      "id": "e1",
-      "fromNode": "dataset",
-      "fromSide": "bottom",
-      "toNode": "split",
-      "toSide": "top"
-    },
-    {
-      "id": "e2",
-      "fromNode": "dataset",
-      "fromSide": "bottom",
-      "toNode": "preproc",
-      "toSide": "top"
-    },
-    {
-      "id": "e3",
-      "fromNode": "dataset",
-      "fromSide": "bottom",
-      "toNode": "evaluate",
-      "toSide": "top"
-    },
-    {
-      "id": "e4",
-      "fromNode": "split",
-      "fromSide": "bottom",
-      "toNode": "classical_title",
-      "toSide": "top",
-      "label": "split.csv"
-    },
-    {
-      "id": "e6",
-      "fromNode": "classical_title",
-      "fromSide": "bottom",
-      "toNode": "classical_features",
-      "toSide": "top"
-    },
-    {
-      "id": "e7",
-      "fromNode": "classical_features",
-      "fromSide": "bottom",
-      "toNode": "classical_clf",
-      "toSide": "top"
-    },
-    {
-      "id": "e8",
-      "fromNode": "classical_clf",
-      "fromSide": "bottom",
-      "toNode": "classical_out",
-      "toSide": "top"
-    },
-    {
-      "id": "e9",
-      "fromNode": "dl_title",
-      "fromSide": "bottom",
-      "toNode": "dl_model",
-      "toSide": "top"
-    },
-    {
-      "id": "e10",
-      "fromNode": "dl_model",
-      "fromSide": "bottom",
-      "toNode": "dl_train",
-      "toSide": "top"
-    },
-    {
-      "id": "e11",
-      "fromNode": "dl_train",
-      "fromSide": "bottom",
-      "toNode": "dl_support",
-      "toSide": "top"
-    },
-    {
-      "id": "e12",
-      "fromNode": "dl_support",
-      "fromSide": "bottom",
-      "toNode": "dl_out",
-      "toSide": "top"
-    },
-    {
-      "id": "e13",
-      "fromNode": "classical_out",
-      "fromSide": "bottom",
-      "toNode": "analysis_mcnemar",
-      "toSide": "top",
-      "label": "predictions A"
-    },
-    {
-      "id": "e14",
-      "fromNode": "dl_out",
-      "fromSide": "bottom",
-      "toNode": "analysis_mcnemar",
-      "toSide": "top",
-      "label": "predictions B"
-    },
-    {
-      "id": "e15",
-      "fromNode": "classical_out",
-      "fromSide": "bottom",
-      "toNode": "analysis_sweep",
-      "toSide": "top"
-    },
-    {
-      "id": "e16",
-      "fromNode": "dl_out",
-      "fromSide": "bottom",
-      "toNode": "analysis_sweep",
-      "toSide": "top"
-    },
-    {
-      "id": "e17",
-      "fromNode": "dl_out",
-      "fromSide": "bottom",
-      "toNode": "analysis_gradcam",
-      "toSide": "top"
-    },
-    {
-      "id": "e18",
-      "fromNode": "analysis_mcnemar",
-      "fromSide": "bottom",
-      "toNode": "deliverables",
-      "toSide": "top"
-    },
-    {
-      "id": "e19",
-      "fromNode": "analysis_sweep",
-      "fromSide": "bottom",
-      "toNode": "deliverables",
-      "toSide": "top"
-    },
-    {
-      "id": "e20",
-      "fromNode": "analysis_gradcam",
-      "fromSide": "bottom",
-      "toNode": "deliverables",
-      "toSide": "top"
-    },
-    {
-      "id": "e5",
-      "fromNode": "split",
-      "fromSide": "bottom",
-      "toNode": "dl_title",
-      "toSide": "top",
-      "label": "split.csv"
-    }
-  ]
+	"nodes":[
+		{"id":"classical_title","type":"text","text":"## Classical ML — Person A","x":200,"y":550,"width":360,"height":70,"color":"2"},
+		{"id":"dl_title","type":"text","text":"## Deep learning — Person B","x":1240,"y":550,"width":360,"height":70,"color":"6"},
+		{"id":"classical_features","type":"text","text":"### Feature extraction\n\n- GLCM Haralick (48 features, 4 angles × 2 distances)\n- LBP histogram (P=8, R=1, 10 bins)\n- HOG (9 orientations, 8×8 cells)\n- First-order intensity stats\n\n→ PCA (retain 95% variance)","x":200,"y":660,"width":360,"height":270,"color":"2"},
+		{"id":"dl_model","type":"text","text":"### Architecture\n\n**EfficientNet-B0** (torchvision)\nImageNet-1K pretrained weights\n5.3M params · 0.39 BFLOPs\n\nHead replaced:\n`Dropout(0.3) → Linear(1280, 4)`","x":1240,"y":660,"width":360,"height":240,"color":"6"},
+		{"id":"classical_clf","type":"text","text":"### Classifier + tuning\n\nCandidates: SVM (RBF) · Random Forest · Gradient Boosting\n\nGrid-search + stratified 5-fold CV on train+val\n`class_weight='balanced'`","x":200,"y":960,"width":360,"height":230,"color":"2"},
+		{"id":"dl_train","type":"text","text":"### Two-stage training\n\n**Stage 1** · freeze backbone\nAdam, LR 1e-3, 5 epochs\n\n**Stage 2** · unfreeze last 2 blocks\nAdamW, LR 1e-5, weight-decay 1e-4\nEarly stopping (patience 5, val macro-F1)","x":1240,"y":960,"width":360,"height":240,"color":"6"},
+		{"id":"classical_out","type":"text","text":"### Outputs\n\n`classical_predictions.npz`\n`classical_results.json`\n\nRuns locally in minutes\nInherently interpretable (feature importance)","x":200,"y":1230,"width":360,"height":220,"color":"2"},
+		{"id":"dl_support","type":"text","text":"### Imbalance + augmentation\n\nInverse-frequency class weights\n(Stone × 1.78, Normal × 0.48)\n\nAug: hflip · rot ±15° · zoom 0.1 · brightness/contrast ±0.1\n**No vertical flip** (anatomy not top-bottom symmetric)","x":1240,"y":1230,"width":360,"height":270,"color":"6"},
+		{"id":"dl_out","type":"text","text":"### Outputs\n\n`dl_predictions.npz`\n`dl_results.json`\n`best_model.pt` (Drive, gitignored)\n\n**Current: macro-F1 0.974 [0.963, 0.986]**","x":1240,"y":1540,"width":360,"height":210,"color":"6"},
+		{"id":"analysis_mcnemar","type":"text","text":"## Disjoint-error analysis\n\nMcNemar's test on the shared test set\nΔmacro-F1 with bootstrap CI\n\n**Primary finding**: both-wrong = 0.\nParadigms err on disjoint examples —\nevidence of complementary feature spaces,\nnot redundant ones. Framed under **[[Project_Framing_v2]]** as the central\ninterpretability finding, not a \"who wins\" test.","x":200,"y":1810,"width":380,"height":290,"color":"4"},
+		{"id":"analysis_sweep","type":"text","text":"## Data-efficiency sweep\n\nTrain DL on 10 / 25 / 50 / 100 % of train\nStratified, same seed, shared splits\n\nUnder new framing: shows how **DL's learned\nrepresentations scale with data** compared to\nclassical's fixed handcrafted features —\nnot a \"when does DL pull ahead\" race.","x":720,"y":1810,"width":380,"height":290,"color":"4"},
+		{"id":"analysis_gradcam","type":"text","text":"## Grad-CAM (both DL models)\n\nLast-conv attention maps:\nEfficientNet-B0 @ 224 + ConvNeXt V2 @ 384\nSame test images; compare attended regions.\n\n**Central question**: is the network looking\nat kidney tissue or at scanner / crop\nartefacts? Pairs with classical feature\nimportance to map what each paradigm sees.","x":1240,"y":1810,"width":380,"height":290,"color":"4"},
+		{"id":"deliverables","type":"text","text":"## Deliverables · due 2026-05-15\n\n- IEEE ISBI paper · 6 pages (2-person team)\n- In-class demo · 7 minutes\n- Submission: one `.ipynb` per team member\n- Code: github.com/jameswudo1019hack/bmet5933-a2","x":620,"y":2150,"width":560,"height":200,"color":"1"},
+		{"id":"legend_title","type":"text","text":"## Legend\nColour = phase","x":-420,"y":0,"width":280,"height":50},
+		{"id":"legend_dataset","type":"text","text":"**Dataset**","x":-420,"y":60,"width":280,"height":60,"color":"3"},
+		{"id":"legend_infra","type":"text","text":"**Shared infrastructure** (Phase 0)","x":-420,"y":130,"width":280,"height":60,"color":"5"},
+		{"id":"legend_classical","type":"text","text":"**Classical ML** — Person A","x":-420,"y":200,"width":280,"height":60,"color":"2"},
+		{"id":"legend_dl","type":"text","text":"**Deep learning** — Person B","x":-420,"y":270,"width":280,"height":60,"color":"6"},
+		{"id":"legend_analysis","type":"text","text":"**Analysis**","x":-420,"y":340,"width":280,"height":60,"color":"4"},
+		{"id":"legend_deliverables","type":"text","text":"**Final deliverables**","x":-420,"y":410,"width":280,"height":60,"color":"1"},
+		{"id":"split","type":"text","text":"## 1. Stratified split\n\n`shared/split.py`\n\n70 / 15 / 15 train / val / test\nseed = 42, class-stratified\n\n→ **split.csv** (committed)\nBoth pipelines load from this","x":200,"y":260,"width":360,"height":230,"color":"5"},
+		{"id":"dataset","type":"text","text":"## Dataset\n\n**Islam et al. 2022** — Kidney CT\nMedium set, 6221 images\n_Natural imbalance_\nCyst 1854 · Normal 2538 · Stone 688 · Tumor 1141","x":720,"y":0,"width":360,"height":200,"color":"3"},
+		{"id":"preproc","type":"text","text":"## 2. Preprocessing\n\n`shared/preprocessing.py`\n\nGrayscale → centre-crop → 256×256 bilinear\n\nSame entry point for both pipelines;\nper-classifier transforms bolt on top","x":720,"y":260,"width":360,"height":230,"color":"5"},
+		{"id":"evaluate","type":"text","text":"## 3. Evaluation harness\n\n`shared/evaluate.py` + `bootstrap.py`\n\nAccuracy, macro-F1, per-class P/R/F1\nROC-AUC OvR, confusion matrix\n1000× bootstrap 95% CI\nMcNemar's test (paired)","x":1240,"y":260,"width":360,"height":230,"color":"5"},
+		{"id":"framing_banner","type":"text","x":200,"y":-150,"width":1400,"height":110,"color":"4","text":"## Framing v2 — paradigm comparison, not score chasing\n\nClassical ML and deep learning both near-ceiling on this dataset. The score is not the science; the **failure patterns + attention maps** are. Canonical reference: **[[Project_Framing_v2]]**."}
+	],
+	"edges":[
+		{"id":"e1","fromNode":"dataset","fromSide":"bottom","toNode":"split","toSide":"top"},
+		{"id":"e2","fromNode":"dataset","fromSide":"bottom","toNode":"preproc","toSide":"top"},
+		{"id":"e3","fromNode":"dataset","fromSide":"bottom","toNode":"evaluate","toSide":"top"},
+		{"id":"e4","fromNode":"split","fromSide":"bottom","toNode":"classical_title","toSide":"top","label":"split.csv"},
+		{"id":"e6","fromNode":"classical_title","fromSide":"bottom","toNode":"classical_features","toSide":"top"},
+		{"id":"e7","fromNode":"classical_features","fromSide":"bottom","toNode":"classical_clf","toSide":"top"},
+		{"id":"e8","fromNode":"classical_clf","fromSide":"bottom","toNode":"classical_out","toSide":"top"},
+		{"id":"e9","fromNode":"dl_title","fromSide":"bottom","toNode":"dl_model","toSide":"top"},
+		{"id":"e10","fromNode":"dl_model","fromSide":"bottom","toNode":"dl_train","toSide":"top"},
+		{"id":"e11","fromNode":"dl_train","fromSide":"bottom","toNode":"dl_support","toSide":"top"},
+		{"id":"e12","fromNode":"dl_support","fromSide":"bottom","toNode":"dl_out","toSide":"top"},
+		{"id":"e13","fromNode":"classical_out","fromSide":"bottom","toNode":"analysis_mcnemar","toSide":"top","label":"predictions A"},
+		{"id":"e14","fromNode":"dl_out","fromSide":"bottom","toNode":"analysis_mcnemar","toSide":"top","label":"predictions B"},
+		{"id":"e15","fromNode":"classical_out","fromSide":"bottom","toNode":"analysis_sweep","toSide":"top"},
+		{"id":"e16","fromNode":"dl_out","fromSide":"bottom","toNode":"analysis_sweep","toSide":"top"},
+		{"id":"e17","fromNode":"dl_out","fromSide":"bottom","toNode":"analysis_gradcam","toSide":"top"},
+		{"id":"e18","fromNode":"analysis_mcnemar","fromSide":"bottom","toNode":"deliverables","toSide":"top"},
+		{"id":"e19","fromNode":"analysis_sweep","fromSide":"bottom","toNode":"deliverables","toSide":"top"},
+		{"id":"e20","fromNode":"analysis_gradcam","fromSide":"bottom","toNode":"deliverables","toSide":"top"},
+		{"id":"e5","fromNode":"split","fromSide":"bottom","toNode":"dl_title","toSide":"top","label":"split.csv"}
+	]
 }
