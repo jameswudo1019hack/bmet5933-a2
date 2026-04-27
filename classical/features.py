@@ -29,6 +29,7 @@ from pathlib import Path
 
 import numpy as np
 import tqdm
+from joblib import Parallel, delayed
 from scipy import stats as sp_stats
 from scipy.signal import fftconvolve
 from skimage.exposure import equalize_adapthist
@@ -168,6 +169,7 @@ def build_feature_matrix(
     df,
     cache_path: Path | None = None,
     desc: str = "extracting features",
+    n_jobs: int = 1,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Return (X, y) for all rows in df.
 
@@ -183,7 +185,9 @@ def build_feature_matrix(
     cache_path : Path or None
         Optional path to a .npz cache file.
     desc : str
-        tqdm progress-bar description.
+        tqdm progress-bar description (used only when n_jobs == 1).
+    n_jobs : int
+        joblib worker count. 1 = serial with tqdm; -1 = all CPUs (Colab Pro+).
     """
     if cache_path is not None and Path(cache_path).exists():
         data = np.load(cache_path)
@@ -194,9 +198,16 @@ def build_feature_matrix(
     paths = df["abs_path"].tolist()
     labels = df["class_idx"].tolist()
 
-    X_list: list[np.ndarray] = []
-    for path in tqdm.tqdm(paths, desc=desc, unit="img"):
-        X_list.append(_extract_row(path))
+    if n_jobs == 1:
+        X_list: list[np.ndarray] = []
+        for path in tqdm.tqdm(paths, desc=desc, unit="img"):
+            X_list.append(_extract_row(path))
+    else:
+        print(f"[features] {desc}: parallel extraction n_jobs={n_jobs} "
+              f"on {len(paths)} images …")
+        X_list = Parallel(n_jobs=n_jobs)(
+            delayed(_extract_row)(p) for p in paths
+        )
 
     X = np.stack(X_list, axis=0)
     y = np.array(labels, dtype=np.int64)
