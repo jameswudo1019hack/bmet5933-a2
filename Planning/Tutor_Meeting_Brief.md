@@ -1,6 +1,6 @@
 # Tutor Meeting Brief
 
-**For:** BMET5933 Assignment 2 tutor meeting, Wednesday (2026-04-29 or 05-06 — confirm date)
+**For:** BMET5933 Assignment 2 tutor meeting, Wednesday 2026-04-29
 **Team:** Person A (classical ML, XGBoost) + Person B (deep learning, EfficientNet-B0 + ConvNeXt V2)
 **Goal of meeting:** validate the reframed thesis, get directional feedback on framing and limitations, and surface anything Sandhya wants us to adjust **before** drafting the paper.
 
@@ -16,13 +16,13 @@ Read [[Project_Framing_v2]] before the meeting for full context.
 
 ## 1. The reframed thesis (one paragraph, slightly compressed for verbal delivery)
 
-> We compared a classical machine-learning pipeline (handcrafted texture features + XGBoost) with two transfer-learned CNNs (EfficientNet-B0 and ConvNeXt V2 Base) on the Islam et al. 2022 kidney CT dataset, at *two* dataset scales (n=934 medium test set and n=1,867 full test set). All three achieve > 98 % macro-F1 at every scale, and at the medium scale the equal-weight soft-vote ensemble achieves 100 % — but only at the medium scale. The interesting finding is **scale-dependent**: on the medium dataset, classical and DL fail on disjoint image sets (both-wrong = 0); on the full dataset, classical and the two DL backbones share `Stone→Cyst` failures (both-wrong = 4 vs EffNet, 2 vs ConvNeXt V2), and paired McNemar's classical-vs-each-DL is no longer significant. A *narrower* paradigm-stable asymmetry survives at full scale: only DL pipelines make `Cyst→Stone` errors (9 + 3 across two backbones; classical makes zero). We argue this two-scale comparison — surfacing a result that *does not* replicate from medium to full — is the paper's most rigorous contribution: on saturated medical-imaging benchmarks, both the *magnitude* and *direction* of paradigm disagreement are dataset-scale-dependent, and reporting them at one scale alone risks overclaiming.
+> We compared a classical machine-learning pipeline (handcrafted texture features + XGBoost) with two transfer-learned CNNs (EfficientNet-B0 and ConvNeXt V2 Base) on the Islam et al. 2022 kidney CT dataset, at two dataset scales (n=934 medium test set and n=1,867 full test set). All competent models achieve near-ceiling performance, and the medium-scale equal-weight soft-vote ensemble reaches 100 % accuracy. However, the main finding is not the score: it is that the clean medium-set interpretation collapses under stronger analysis. The original "disjoint errors / complementary paradigms" claim fails at full scale; the narrower XGB-only claim that only DL makes `Cyst→Stone` errors fails after adding RF and SVM; and the 3-way bucket check shows no full-set image where classical-XGB uniquely rescues both DL backbones. We argue that this four-step invalidation chain is the paper's most rigorous contribution: on saturated medical-imaging benchmarks, paradigm-level claims are easy to overclaim and require multi-scale, multi-classifier, bucket-level verification before being reported.
 
 ---
 
 ## 2. Three key findings (numbered, with caveats)
 
-### Finding 1: scale-dependent paradigm-stable disagreement (refreshed 2026-04-27 with Sprint 3)
+### Finding 1: paradigm-level claims are scale- and classifier-dependent
 
 **At medium scale (n=934 test):** classical = 0.998 acc, EffNet-B0 + TTA = 0.986 acc, equal-weight ensemble = 1.000 acc. Errors are disjoint (both-wrong = 0). Classical fails on Cyst↔Tumor; DL fails on Cyst↔Stone.
 
@@ -57,22 +57,62 @@ The dataset is solvable by *multi-scale local-pattern + frequency-response* feat
 
 **Cross-architecture Grad-CAM** (Sprint 2): EffNet-B0's attention is dispersed and frequently extends beyond the kidney silhouette; ConvNeXt V2's attention is consistently localised to kidney tissue. On the three `Cyst → Stone` errors unique to EfficientNet-B0, the smaller network peaks off-organ; ConvNeXt V2 fixates on the lesion and gets it right.
 
-**Cross-paradigm Grad-CAM** (Sprint 3 second addendum, new): on the 8 `Stone → Normal/Cyst` slices that classical misclassifies but DL gets right, both DL backbones correctly attend to small focal high-density regions (visible bright calcifications); ConvNeXt V2's attention is sharper than EffNet-B0's. **Classical's whole-image LBP+Gabor aggregation cannot localise focal lesions** — the calcification occupies a small fraction of the 256×256 frame and gets averaged out. This is a mechanistic explanation for *why* the classical paradigm fails on Stone class while DL does not.
+**Cross-paradigm Grad-CAM** (Sprint 3 second addendum, new): on the 8 `Stone → Normal/Cyst` slices that classical misclassifies but DL gets right, both DL backbones correctly attend to small focal high-density regions (visible bright calcifications); ConvNeXt V2's attention is sharper than EffNet-B0's. **Classical's whole-image LBP+Gabor aggregation cannot localise focal lesions** — the calcification occupies a small fraction of the 256×256 frame and gets averaged out. In these disagreement cases, DL localises focal calcifications that the classical whole-image aggregation misses.
 
 **Caveat 3:** Grad-CAM is a local linear approximation of attribution and not a complete explanation of the model's decision process; the qualitative observation is suggestive of representational difference, not proof. We cite Selvaraju et al. (2017) and the Adebayo et al. (2018) sanity-check paper as the appropriate guardrails.
 
 ---
 
-## 3. Three specific questions for the tutor
+## 3. Feature importance and Grad-CAM figures
 
-### Q1. Is the dataset-saturation framing defensible for an ISBI-style paper? *(triply load-bearing post-Sprint 3 + addendum)*
-We have a **three-step invalidation chain** to present:
+### Classical XGBoost feature importance
+
+Deployed full-scale classical pipeline: `StandardScaler → PCA(50) → XGBoost`, permutation importance on the n=1,867 full test set, n_repeats=10.
+
+| Feature group | Macro-F1 drop when permuted | Interpretation |
+|---|---:|---|
+| LBP | **0.568 ± 0.018** | strongest signal; multi-scale local binary texture |
+| Gabor | **0.532 ± 0.014** | second strongest; frequency and orientation response |
+| Intensity stats | 0.236 ± 0.006 | useful but not dominant |
+| GLCM | 0.163 ± 0.006 | contributes, but less than expected |
+
+Top individual features by deployed-pipeline permutation importance:
+
+| Rank | Feature | Group | Macro-F1 drop |
+|---:|---|---|---:|
+| 1 | `gabor:f0.1_tpi/2_std` | Gabor | 0.0484 |
+| 2 | `gabor:f0.4_t3pi/4_std` | Gabor | 0.0427 |
+| 3 | `gabor:f0.4_tpi/2_std` | Gabor | 0.0319 |
+| 4 | `lbp:P24R3_b1` | LBP | 0.0302 |
+| 5 | `gabor:f0.2_t3pi/4_std` | Gabor | 0.0299 |
+
+Raw-XGB without PCA scores higher than the deployed PCA pipeline: macro-F1 **0.9950** vs **0.9897**. This suggests PCA(50) slightly suppresses useful feature structure and helps explain why RF and XGB disagree despite sharing the same handcrafted feature family.
+
+![Classical XGBoost feature-group permutation importance](../Results/classical_run_full/feature_importance_group.png)
+
+### Grad-CAM figures
+
+Cross-architecture Grad-CAM compares EfficientNet-B0 and ConvNeXt V2 on the same full-set images. The main visual finding is that EfficientNet-B0 attention is more dispersed, while ConvNeXt V2 attention is more kidney-localised.
+
+![Cross-architecture Grad-CAM: EfficientNet-B0 vs ConvNeXt V2](../Results/gradcam/cross_architecture.png)
+
+Cross-paradigm Grad-CAM focuses on cases where classical-XGB is wrong but both DL backbones are correct. The main visual finding is that the DL models attend to small high-density calcifications that whole-image LBP/Gabor aggregation can miss.
+
+![Cross-paradigm Grad-CAM disagreement examples](../Results/gradcam/cross_paradigm_disagreement.png)
+
+---
+
+## 4. Three specific questions for the tutor
+
+### Q1. Is the dataset-saturation framing defensible for an ISBI-style paper? *(four-step invalidation chain)*
+We have a **four-step invalidation chain** to present:
 
 - **Medium-set (Sprint 1)**: classical+DL ensemble → 100 % test accuracy on n=934. Disjoint errors (both-wrong = 0). Classical fails on Cyst↔Tumor; DL fails on Cyst↔Stone.
 - **Full-set, XGB only (Sprint 3)**: 100 % ensemble does *not* replicate. Classical and ConvNeXt V2 share 2 `Stone→Cyst` errors; classical-vs-each-DL McNemar p > 0.05. Surviving narrower claim: "only DL makes `Cyst→Stone` errors".
 - **Full-set, all classifiers (Sprint 3 addendum)**: surviving narrower claim *also* fails. RF makes 2 `Cyst→Stone` errors (within range of ConvNeXt V2's 3). The asymmetry is XGBoost-specific, not paradigm-specific. Classifier choice within a paradigm matters more than paradigm choice.
+- **Full-set, 3-way coverage check (Sprint 3 second addendum)**: `classical-XGB right, both DL wrong = 0`. No full-set test image exists where classical-XGB uniquely rescues the joint DL pipeline. This formally falsifies the medium-set "complementary signal" story at full scale.
 
-**Our argument:** we did not bury the failures; we surfaced them and they are themselves the paper's rigour signal. The medium-set 100 % is real on the medium subset; we report it with a caveat paragraph and lead the Discussion with the invalidation chain. The dataset-saturation framing (Bingol 2023 99.37 % on this dataset; multiple groups in 99 %+ territory) explains *why* the medium ensemble could plausibly hit 100 % and *why* the gap closes at scale. **Is this three-step invalidation framing acceptable for ISBI?** Or should we suppress the medium 100 % entirely and lead only with the full-scale 5-model comparison?
+**Our argument:** we did not bury the failures; we surfaced them and they are themselves the paper's rigour signal. The medium-set 100 % is real on the medium subset; we report it with a caveat paragraph and lead the Discussion with the invalidation chain. The dataset-saturation framing (Bingol 2023 99.37 % on this dataset; multiple groups in 99 %+ territory) explains *why* the medium ensemble could plausibly hit 100 % and *why* the gap closes at scale. **Is this four-step invalidation framing acceptable for ISBI?** Or should we suppress the medium 100 % entirely and lead only with the full-scale 5-model comparison?
 
 ### Q2. Is the patient-level-leakage limitation strong enough to invalidate our results?
 The Islam dataset has no patient identifiers; we cannot prevent slices from the same patient appearing in both train and test. Yagis et al. 2021 quantified this effect at 29–55 % accuracy inflation in 2D MRI CNN studies; Veetil et al. 2024 replicated at +67 % on Parkinson's data. We are committed to flagging this as the single most important caveat in the paper. **Should we go further** — e.g., contact the dataset authors for patient IDs, switch to KiTS19 for a patient-stratified secondary evaluation, or add a "future work" section specifically on this?
@@ -82,21 +122,19 @@ We have done: TTA ablation (4 view-sets), classical+DL soft-vote ensemble (val-t
 
 ---
 
-## 4. One thing we explicitly want pushback on
+## 5. What we explicitly want pushback on
 
-**Our "paradigm-stable error patterns" claim is currently supported by *two* DL backbones.**
+### A. Are we framing the invalidation chain too ambitiously for the assignment?
 
-We have:
-- EfficientNet-B0 (5 M params, 224 × 224, medium + full)
-- ConvNeXt V2 (89 M params, 384 × 384, full)
+The scientifically honest story is complex: the clean medium-set result collapses after stronger analysis. Should the report foreground this as the main contribution, or simplify around the full 5-model comparison and use the medium 100 % ensemble only as a cautionary result?
 
-Both share Cyst↔Stone as the dominant DL failure pair. Classical fails on Cyst↔Tumor.
+### B. What should be cut first for the 6-page limit?
 
-**The push-back we want:** *is 2 backbones enough to claim "paradigm-stable"?* A reviewer might argue we need at least 3 (e.g., add ResNet-50 as a third DL data point, even if Islam et al. report it at only 73.8 % — which would itself be diagnostic if ResNet-50 fails differently). Should we run a third DL backbone for the paper, or is the current evidence sufficient?
+Candidates to cut or compress: TTA ablation, ensemble tuning details, data-efficiency sweep, SVM failure case, or one of the Grad-CAM figure sets. The current instinct is to keep the full 5-model comparison, feature importance, and cross-paradigm Grad-CAM because they support the central argument most directly.
 
 ---
 
-## 5. Status going into the meeting
+## 6. Status going into the meeting
 
 | Phase | Status |
 |---|---|
@@ -107,13 +145,15 @@ Both share Cyst↔Stone as the dominant DL failure pair. Classical fails on Cyst
 | Sprint 2: ConvNeXt V2 + matched-data EffNet-B0 (Person B) | ✅ Done — architecture significance *p* = 0.0021 |
 | Sprint 3: Classical on full + paired McNemar's at matched scale (Person B) | ✅ Done 2026-04-27 — see [[experiments/Sprint3_classical_on_full]] |
 | Cross-architecture Grad-CAM | ✅ Figure generated |
+| Cross-paradigm Grad-CAM | ✅ Figure generated |
+| Classical feature importance | ✅ Figure + metrics generated |
 | **Paper drafting** | 🔴 **Will start after this meeting** |
 | Submission notebooks (one per person) | 🔴 To do |
 | In-class demo (~7 minutes) | 🔴 To do |
 
 ---
 
-## 6. Repo + vault links (in case Sandhya wants to look)
+## 7. Repo + vault links (in case Sandhya wants to look)
 
 - GitHub: <https://github.com/jameswudo1019hack/bmet5933-a2>
 - Obsidian vault: `Planning/` directory in the repo. Key reading order if cold:
@@ -127,8 +167,8 @@ Both share Cyst↔Stone as the dominant DL failure pair. Classical fails on Cyst
 
 ---
 
-## 7. One-liner if Sandhya asks "what's your contribution?"
+## 8. One-liner if Sandhya asks "what's your contribution?"
 
-> *"We contribute a kidney CT paradigm-comparison study at two dataset scales (medium n=934 and full n=1867 test sets) using three classical classifiers (SVM, RF, XGBoost on handcrafted texture features) and two transfer-learned CNNs (EfficientNet-B0 and ConvNeXt V2 Base), in which two paradigm-stable claims (the medium-set 'disjoint errors / 100 % ensemble' and the Sprint 3 'DL-exclusive `Cyst→Stone` errors') were both surfaced as headline findings on first analysis and both invalidated by deeper analysis — first by going from medium to full data, then by including RF and SVM in the comparison. We argue this invalidation chain is itself the paper's most rigorous contribution: on saturated medical-imaging benchmarks, paradigm-level claims are easy to over-claim and demand multi-classifier, multi-scale verification before they can be reported."*
+> *"We contribute a kidney CT classifier-comparison study at two dataset scales (medium n=934 and full n=1867 test sets) using three classical classifiers (SVM, RF, XGBoost on handcrafted texture features) and two transfer-learned CNNs (EfficientNet-B0 and ConvNeXt V2 Base). Our initial medium-set result suggested disjoint classical-vs-DL errors and a 100 % ensemble, but that interpretation was progressively invalidated by full-scale testing, by adding RF and SVM, and by a 3-way coverage check showing no full-set image where classical-XGB uniquely rescued both DL models. We argue this invalidation chain, supported by feature importance and Grad-CAM, is the paper's most rigorous contribution: on saturated medical-imaging benchmarks, paradigm-level claims require multi-scale, multi-classifier, bucket-level verification before they can be reported."*
 
 That's the sentence to lead with.
