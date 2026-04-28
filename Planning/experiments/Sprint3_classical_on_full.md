@@ -7,6 +7,8 @@ Related: [[Sprint2_ConvNeXtV2_on_full]], [[Sprint2_evaluation_ConvNeXtV2]], [[Sp
 > **Framing.** Sprint 2 closed with classical-on-medium (0.9976) and DL-on-full (EffNet-B0 0.9819, ConvNeXt V2 0.9953). The medium-vs-full asymmetry left "classical fails on Cyst↔Tumor / DL fails on Cyst↔Stone" as a *medium-set* claim. Sprint 3 closes that asymmetry: classical retrained on the same full split (8,712 train, 1,867 test) so all three pipelines are now matched on the n=1867 test set. The scientific question: *does the paradigm-stable error pattern survive at full scale?* **Answer: in its original form, no — it was a medium-set artefact.** A narrower asymmetry survives (DL alone makes Cyst→Stone errors).
 >
 > **Same-day addendum (post-RF/SVM refit):** the *narrower* asymmetry above also collapses once RF and SVM are added in scope. RF makes 2 `Cyst→Stone` errors (within range of ConvNeXt V2's 3); the zero-Cyst→Stone result is **specific to XGBoost**, not to the classical paradigm. The full picture is below in the Sprint 3 addendum.
+>
+> **Day-2 addendum (interpretability + 3-way bucket counting, 2026-04-28):** classical XGBoost feature importance shows LBP (54 %) and Gabor (53 %) groups dominate, with stats (24 %) and GLCM (16 %) contributing less. Cross-paradigm Grad-CAM bucket counts reveal a **third invalidation**: `classical_right_dl_wrong = 0` — there is no test image where classical-XGB uniquely succeeds over the joint DL pipelines. The Sprint 1 "complementary signal" claim is formally falsified at full scale. See "Sprint 3 second addendum" below.
 
 ## Decision
 
@@ -246,7 +248,81 @@ The earlier Sprint 3 §"Implications for the paper" was written when only classi
 4. **Add SVM as an instructive failure case.** The 238-error SVM is a teaching moment about model-class capacity at scale; do not bury it.
 5. **Update Tutor_Meeting_Brief Q1 again.** "Is dataset-saturation framing defensible for ISBI?" gains another layer: not only does the 100 % ensemble not replicate at full scale, but the surviving paradigm-stable asymmetry from Sprint 3 also fails to replicate when within-paradigm classifier variance is included.
 
-## Files written (Sprint 3 + Sprint 3 addendum)
+## Sprint 3 second addendum — interpretability findings (2026-04-28)
+
+### Classical XGBoost feature importance
+
+Two complementary analyses on the deployed pipeline (`scaler → PCA(50) → XGB`) using `analysis/sprint3_feature_importance.py`:
+
+**Per-group permutation importance** (macro-F1 drop when each feature group is permuted on the n=1867 test set, n_repeats=10):
+
+| Feature group | macro-F1 drop ± std | Group size |
+|---|---|---|
+| **LBP** (multi-scale local binary patterns) | **0.568 ± 0.018** | 54 features |
+| **Gabor** (frequency × orientation responses) | **0.532 ± 0.014** | 32 features |
+| stats (intensity statistics) | 0.236 ± 0.006 | 10 features |
+| GLCM (Haralick texture) | 0.163 ± 0.006 | 12 features |
+
+LBP and Gabor jointly carry the predictive signal at full scale. Classical XGB on this dataset is fundamentally a **multi-scale local-pattern + frequency-response detector**, not a global statistics or co-occurrence model. This is paper-relevant: it grounds the dataset-is-texture-solvable claim in specific feature-group dominance rather than the previous hand-wave.
+
+**Top 5 individual features (deployed pipeline permutation importance):**
+
+| Rank | Feature | Group | macro-F1 drop |
+|---|---|---|---|
+| 1 | `gabor:f=0.1, θ=π/2, std` | Gabor | 0.0484 |
+| 2 | `gabor:f=0.4, θ=3π/4, std` | Gabor | 0.0427 |
+| 3 | `gabor:f=0.4, θ=π/2, std` | Gabor | 0.0319 |
+| 4 | `lbp:P=24, R=3, b=1` | LBP | 0.0302 |
+| 5 | `gabor:f=0.2, θ=3π/4, std` | Gabor | 0.0299 |
+
+The dominant Gabor features all measure *standard deviation of magnitude response* (textural roughness), at vertical (π/2) and anti-diagonal (3π/4) orientations — consistent with kidney-CT anatomy (renal capsule edges, vertebral / vascular boundaries, oblique calculi).
+
+**Sanity check — raw-XGB without PCA:** test macro-F1 = **0.9950** (vs deployed 0.9897). PCA(50) costs ~0.5pp accuracy at full scale. Top 5 by raw-XGB gain are LBP-dominated (5/5 LBP top, then 3 GLCM, no Gabor in top 10). The PCA-vs-raw divergence in feature ranking (Gabor wins under PCA, LBP wins without) provides a **mechanistic explanation** for why XGB and RF disagree on errors at full scale (Sprint 3 addendum, p=0.0013): the PCA step reshapes which features get weight, and RF doesn't use PCA in the same way.
+
+Figure files: `Results/classical_run_full/feature_importance_group.png` (Paper Figure 2 candidate), `feature_importance_top20.png` (supplementary).
+
+### Cross-paradigm Grad-CAM — and the third invalidation
+
+`analysis/sprint3_gradcam_paradigm.py` selects samples from the *3-way* classical / EffNet / ConvNeXt disagreement buckets (rather than Sprint 2's pairwise EffNet-vs-ConvNeXt only).
+
+**Bucket counts on n=1867 test set:**
+
+| Bucket | Count |
+|---|---|
+| classical-XGB right, both DL wrong | **0** |
+| classical-XGB wrong, both DL right | 8 (all `Stone → Normal/Cyst` classical errors that DL caught) |
+| all three wrong | 1 (idx 790: true=Stone, all → Cyst) |
+
+**Third invalidation in the chain.** `classical_right_dl_wrong = 0` means **there is no test image (out of 1,867) where classical-XGB uniquely succeeds over the DL paradigm**. The Sprint 1 medium-set claim that "classical and DL provide complementary signal" is now formally falsified: at full scale, classical adds zero coverage that the DL pipelines don't already provide jointly.
+
+This is the **third step of the invalidation chain**:
+
+1. *Medium scale*: classical+DL ensemble = 100 % (disjoint errors → complementary signal)
+2. *Full scale, XGB only*: 100 % ensemble does not replicate; classical-vs-DL McNemar p > 0.05
+3. *Full scale, all classifiers*: `Cyst→Stone` asymmetry is XGB-specific, not paradigm-specific
+4. *Full scale, paradigm-coverage check*: classical never uniquely succeeds over the joint DL pipeline → **the "complementary signal" claim is dead at full scale**
+
+**Mechanism (Grad-CAM evidence):** the figure (`Results/gradcam/cross_paradigm_disagreement.png`) shows three rows:
+
+- *Rows 1–2 (Stone-class slices misclassified by classical-XGB as Normal):* both DL backbones correctly attend to small focal high-density regions in the upper kidney quadrants (clearly visible bright calcifications). ConvNeXt V2's attention is sharper than EffNet-B0's. **Classical's whole-image texture aggregation cannot localise these focal lesions** because LBP+Gabor are computed over the entire 256×256 frame and the calcification is a small fraction of the pixel area.
+- *Row 3 (universally-wrong slice):* both DL backbones attend to the *wrong* region with moderate confidence (p=0.56, 0.65), genuine slice-level ambiguity. The image is the dataset's irreducible difficulty.
+
+**Implications for the paper (consolidated, post second addendum):**
+
+The paper Discussion now leads with **a four-step invalidation chain** rather than a single positive claim. Each step is a result on its own:
+
+| Step | Finding | What it falsifies |
+|---|---|---|
+| 1 | Medium-set: classical+DL ensemble = 100 %, disjoint errors | sets the headline number that subsequent steps probe |
+| 2 (Sprint 3) | At full scale, disjoint errors does not survive | "this is a paradigm-level property" |
+| 3 (Sprint 3 addendum) | XGB-specific zero `Cyst→Stone` does not generalise to RF | "classical paradigm has a systematic blind spot DL doesn't" |
+| 4 (Sprint 3 second addendum) | classical never uniquely succeeds over joint DL at full scale | "classical provides complementary signal to DL" |
+
+What survives: **Stone is the universal weak class** (every model's hardest class); **DL attention is mechanistically different from classical's whole-image texture aggregation** (Grad-CAM evidence: focal lesion detection); **ConvNeXt V2 is the single best model** (statistically beats RF, EffNet-B0, and tied-with-trend-favouring vs XGBoost p=0.119); **PCA costs ~0.5pp accuracy** in the deployed classical pipeline at full scale (raw-XGB = 0.995 vs deployed = 0.990).
+
+What does *not* survive: any "paradigm-stable" or "complementary-signal" framing. The paper should report what survives cleanly, lead with the invalidation chain methodologically, and make the figure-2 (feature importance) and figure-3 (cross-paradigm Grad-CAM) the substrate of the Discussion.
+
+## Files written (Sprint 3 + Sprint 3 addendum + second addendum)
 
 Original Sprint 3:
 - `Results/classical_run_full/classical_pipeline.pkl` — final XGBoost on train+val
@@ -265,3 +341,12 @@ Sprint 3 addendum:
 - `Results/classical_run_full/sprint3_all_classifiers.json` — 5-pipeline pairwise McNemar's + Cyst→Stone tally
 - `analysis/sprint3_train_svm_rf.py` — SVM+RF re-fit script (rerunnable from cached features)
 - `analysis/sprint3_all_classifiers.py` — 5-pipeline comparison script (rerunnable)
+
+Sprint 3 second addendum (interpretability):
+- `Results/classical_run_full/feature_importance.{json,csv}` — per-feature + per-group importances
+- `Results/classical_run_full/feature_importance_group.png` — Paper Figure 2 candidate
+- `Results/classical_run_full/feature_importance_top20.png` — supplementary (top-20 individual features)
+- `Results/gradcam/cross_paradigm_disagreement.png` — 3-row 3-column figure: original / EffNet Grad-CAM / ConvNeXt V2 Grad-CAM with classical's prediction in the column-1 caption
+- `Results/gradcam/gradcam_paradigm_manifest.json` — selected sample provenance
+- `analysis/sprint3_feature_importance.py` — permutation + raw-XGB feature importance (rerunnable)
+- `analysis/sprint3_gradcam_paradigm.py` — 3-way disagreement bucket selection + Grad-CAM rendering (rerunnable)

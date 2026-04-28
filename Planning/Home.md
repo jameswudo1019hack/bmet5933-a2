@@ -36,9 +36,10 @@ Kidney CT Classification · Islam et al. (2022) dataset · Due **Fri 15 May 2026
 | Phase 2 — EfficientNet-B0 + TTA | Person B | ✅ Complete |
 | Sprint 2 — ConvNeXtV2 (supplementary) | Person B | ✅ Complete |
 | Sprint 3 — Classical on full + paired McNemar's | Person B (running) | ✅ Complete |
-| Grad-CAM figures | Person B | ✅ Figures generated |
+| Sprint 3 second addendum — Feature importance + cross-paradigm Grad-CAM | Person B | ✅ Complete (2026-04-28) |
+| Grad-CAM figures | Person B | ✅ Figures generated (cross-architecture + cross-paradigm) |
 | Data efficiency sweep | Both | ✅ Both pipelines (medium DL + full classical) |
-| Feature importance (classical) | Person A | ⚠️ Not yet extracted |
+| Feature importance (classical) | Person B (Sprint 3) | ✅ Extracted (deployed-pipeline permutation + raw-XGB sanity) |
 | Paper draft | Both | 🔴 Not started |
 | Submission notebooks (.ipynb) | Both | 🔴 Not started |
 | In-class demo slides | Both | 🔴 Not started |
@@ -49,23 +50,26 @@ Kidney CT Classification · Islam et al. (2022) dataset · Due **Fri 15 May 2026
 
 Full table → [[Results_Summary]]
 
-| Model | Dataset | Macro-F1 | Errors |
-|---|---|---|---|
-| Classical XGBoost | Medium (n=934) | **0.9976** | 2 / 934 |
-| EfficientNet-B0 + TTA hflip | Medium (n=934) | **0.9829** | 13 / 934 |
-| Ensemble equal-weight w=0.5 | Medium (n=934) | **1.0000** | 0 / 934 |
-| Classical SVM (full) | Full (n=1867) | 0.8515 | 238 / 1867 |
-| Classical RF (full) | Full (n=1867) | 0.9801 | 27 / 1867 |
-| Classical XGBoost (full) | Full (n=1867) | **0.9897** | 13 / 1867 |
-| EfficientNet-B0 (full, matched data) | Full (n=1867) | 0.9819 | 23 / 1867 |
-| ConvNeXtV2 Base | Full (n=1867) | **0.9953** | 6 / 1867 |
+| Model                                | Dataset        | Macro-F1   | Errors     |
+| ------------------------------------ | -------------- | ---------- | ---------- |
+| Classical XGBoost                    | Medium (n=934) | **0.9976** | 2 / 934    |
+| EfficientNet-B0 + TTA hflip          | Medium (n=934) | **0.9829** | 13 / 934   |
+| Ensemble equal-weight w=0.5          | Medium (n=934) | **1.0000** | 0 / 934    |
+| Classical SVM (full)                 | Full (n=1867)  | 0.8515     | 238 / 1867 |
+| Classical RF (full)                  | Full (n=1867)  | 0.9801     | 27 / 1867  |
+| Classical XGBoost (full)             | Full (n=1867)  | **0.9897** | 13 / 1867  |
+| EfficientNet-B0 (full, matched data) | Full (n=1867)  | 0.9819     | 23 / 1867  |
+| ConvNeXtV2 Base                      | Full (n=1867)  | **0.9953** | 6 / 1867   |
 
-**Key findings — invalidation chain (post-Sprint 3 + addendum, three steps):**
+**Key findings — invalidation chain (post-Sprint 3 + 2 addenda, four steps):**
 1. **Medium scale** — error sets are **disjoint** (both-wrong = 0 between classical-XGB and DL). Equal-weight ensemble achieves 100 %. Classical fails on Cyst↔Tumor; DL fails on Cyst↔Stone.
 2. **Full scale, XGB only** — disjoint-error claim **does not survive**. Classical-XGB and ConvNeXt V2 share 2 `Stone→Cyst` errors; classical-XGB and EffNet-B0 share 4. Paired McNemar's classical-vs-DL is no longer significant (p = 0.089 / 0.119). Narrower surviving claim: "only DL pipelines make `Cyst→Stone` errors".
-3. **Full scale, all classifiers (Sprint 3 addendum)** — narrower claim **also fails**. Classical RF makes 2 `Cyst→Stone` errors (within range of ConvNeXt V2's 3). The zero-`Cyst→Stone` is XGBoost-specific, not paradigm-specific. Performance ranking at full scale is `ConvNeXt V2 > XGB > EffNet ~ RF >> SVM` — classifier choice within a paradigm dominates the paradigm split. RF-vs-XGB are significantly different within the classical paradigm (p=0.0013), but RF-vs-EffNet are *tied* (p=0.64).
+3. **Full scale, all classifiers (Sprint 3 addendum)** — narrower claim **also fails**. Classical RF makes 2 `Cyst→Stone` errors (within range of ConvNeXt V2's 3). The zero-`Cyst→Stone` is XGBoost-specific, not paradigm-specific. Performance ranking at full scale is `ConvNeXt V2 > XGB > EffNet ~ RF >> SVM` — classifier choice within a paradigm dominates the paradigm split.
+4. **Full scale, paradigm-coverage check (Sprint 3 second addendum, 2026-04-28)** — `classical_right_dl_wrong = 0`: no test image (out of 1,867) exists where classical-XGB uniquely succeeds over both DL backbones. **The Sprint 1 "complementary signal between paradigms" claim is formally falsified** at full scale. Cross-paradigm Grad-CAM (new Figure 3) shows DL correctly attends to focal calcifications classical's whole-image texture aggregation cannot localise.
 
-The **invalidation chain itself** is now the paper's central methodological contribution. See [[experiments/Sprint3_classical_on_full]] §"Sprint 3 addendum".
+**Mechanism (Sprint 3 second addendum):** classical XGBoost feature importance shows LBP (0.568 macro-F1 drop) + Gabor (0.532) dominate; stats (0.236) and GLCM (0.163) contribute far less. The dataset is solvable by multi-scale local-pattern + frequency-response features. Raw-XGB without PCA scores 0.9950 (vs deployed 0.9897) — PCA(50) costs ~0.5pp at full scale. Top-5 individual features are Gabor std-of-magnitude at vertical/anti-diagonal orientations. See `Results/classical_run_full/feature_importance_group.png` (Paper Figure 2) and `Results/gradcam/cross_paradigm_disagreement.png` (Paper Figure 3).
+
+The **four-step invalidation chain** is now the paper's central methodological contribution. See [[experiments/Sprint3_classical_on_full]] §"Sprint 3 addendum" + §"Sprint 3 second addendum".
 
 ---
 

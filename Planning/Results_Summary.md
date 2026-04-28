@@ -341,6 +341,72 @@ Classical reaches 0.96 with only 871 training samples — substantially better t
 
 ---
 
+## Sprint 3 second addendum — interpretability + paradigm-coverage check (2026-04-28)
+
+### Classical XGBoost feature importance — per-group permutation importance
+
+Deployed pipeline (`scaler → PCA(50) → XGBClassifier`), permuted on the n=1867 test set, n_repeats=10. Higher drop = more important.
+
+| Feature group | macro-F1 drop ± std | Group size | Share of signal |
+|---|---|---|---|
+| **LBP** (multi-scale local binary patterns) | **0.568 ± 0.018** | 54 features | **largest** |
+| **Gabor** (frequency × orientation responses) | **0.532 ± 0.014** | 32 features | **second** |
+| stats (intensity statistics) | 0.236 ± 0.006 | 10 features | third |
+| GLCM (Haralick) | 0.163 ± 0.006 | 12 features | smallest |
+
+LBP + Gabor groups jointly carry most of the predictive signal. Figure: `Results/classical_run_full/feature_importance_group.png` (paper Figure 2).
+
+### Top 10 individual features — deployed pipeline permutation importance
+
+| Rank | Feature | Group | macro-F1 drop |
+|---|---|---|---|
+| 1 | `gabor: f=0.1, θ=π/2, std` | Gabor | 0.0484 |
+| 2 | `gabor: f=0.4, θ=3π/4, std` | Gabor | 0.0427 |
+| 3 | `gabor: f=0.4, θ=π/2, std` | Gabor | 0.0319 |
+| 4 | `lbp: P=24, R=3, b=1` | LBP | 0.0302 |
+| 5 | `gabor: f=0.2, θ=3π/4, std` | Gabor | 0.0299 |
+| 6 | `lbp: P=24, R=3, b=14` | LBP | 0.0285 |
+| 7 | `lbp: P=24, R=3, b=12` | LBP | 0.0259 |
+| 8 | `gabor: f=0.4, θ=π/4, std` | Gabor | 0.0247 |
+| 9 | `stat: p10` (10th-percentile intensity) | stats | 0.0241 |
+| 10 | `gabor: f=0.2, θ=π/2, mean` | Gabor | 0.0235 |
+
+Top features are dominated by *standard deviation of Gabor magnitude responses* at vertical (π/2) and anti-diagonal (3π/4) orientations — consistent with kidney-CT anatomy (renal capsule, vertebral / vascular structures, oblique calculi).
+
+### Raw-XGB sanity check (no PCA)
+
+Parallel XGBoost trained on the unscaled, un-PCA'd 108-dim feature vector with the same `best_params`:
+
+| Pipeline | Test macro-F1 |
+|---|---|
+| Deployed (scaler → PCA(50) → XGB) | 0.9897 |
+| **Raw-XGB (scaler-free, no PCA)** | **0.9950** |
+
+PCA(50) costs ~0.5pp accuracy at full scale. The raw-XGB top-importance features shift to LBP+GLCM (5/5 LBP top, then 3 GLCM, no Gabor in top 10), indicating PCA reshapes the feature weighting. This is a mechanistic explanation for the within-classical-paradigm RF-vs-XGB error disagreement (Sprint 3 addendum, McNemar p=0.0013, both-wrong=11).
+
+### 3-way paradigm-coverage check
+
+3-way disagreement bucket counts on n=1867 test set:
+
+| Bucket | Count |
+|---|---|
+| classical-XGB right, **both DL wrong** | **0** |
+| classical-XGB wrong, both DL right | 8 (all `Stone → Normal/Cyst` classical errors) |
+| All three wrong | 1 (idx 790: true=Stone, all → Cyst) |
+
+**This is the fourth step of the invalidation chain.** `classical_right_and_both_DL_wrong = 0` means *there is no test image where adding classical-XGB rescues the joint DL pipeline*. The Sprint 1 "complementary signal" / "100 % ensemble" finding is formally falsified at full scale.
+
+### Cross-paradigm Grad-CAM (Paper Figure 3 candidate)
+
+`Results/gradcam/cross_paradigm_disagreement.png` shows three rows of three columns (original CT slice with classical's verdict in caption / EffNet-B0 Grad-CAM / ConvNeXt V2 Grad-CAM):
+
+- **Rows 1–2** (classical-XGB wrong, DL right): both DL backbones correctly attend to small focal high-density regions (visible bright calcifications); ConvNeXt V2's attention is markedly sharper than EffNet-B0's. Classical's whole-image texture aggregation cannot localise these focal lesions.
+- **Row 3** (all three wrong, idx 790): both DL backbones attend to *different* wrong regions with moderate confidence (p=0.56, 0.65) — the dataset's irreducible difficulty.
+
+Mechanistic claim for the paper: DL's spatial attention catches focal lesions that the classical paradigm's whole-image LBP+Gabor aggregation misses. This is direct evidence for *why* classical fails on the Stone class at full scale.
+
+---
+
 ## Interpretability artefacts
 
 | Artefact | Path | Purpose |

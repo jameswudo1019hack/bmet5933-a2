@@ -8,7 +8,9 @@ Read [[Project_Framing_v2]] before the meeting for full context.
 
 > **Sprint 3 update (2026-04-27).** Classical XGBoost retrained on the full 12,446-image split (8,712 train, 1,867 test); now matched-test-set against EffNet-B0-full and ConvNeXt V2-full. Macro-F1 = 0.9897 (13 errors). **The medium-set "disjoint errors / 100 % ensemble" finding does not replicate at full scale** — classical and ConvNeXt V2 share 2 errors, classical and EffNet share 4, all `Stone→Cyst`. Paired McNemar's classical-vs-each-DL is no longer significant (p = 0.089 / 0.119).
 >
-> **Same-day addendum (RF + SVM also re-fit on full):** the surviving narrow Sprint 3 claim — "only DL makes `Cyst→Stone` errors" — *also* fails once RF and SVM are added: RF makes 2 `Cyst→Stone` errors (within range of ConvNeXt V2's 3), so the zero-`Cyst→Stone` is XGBoost-specific, not paradigm-specific. The performance ranking at full scale is **`ConvNeXt V2 (6 err) > XGB (13) > EffNet (23) ~ RF (27) >> SVM (238)`** — classifier choice within a paradigm dominates the paradigm split. The paper Discussion now leads with the *invalidation chain* (medium → full-XGB → full-all-classifiers) rather than a single positive paradigm claim. Findings 1 and 2 below are refreshed; Q1 (dataset-saturation framing) is now triply load-bearing. See [[experiments/Sprint3_classical_on_full]] §"Sprint 3 addendum".
+> **Same-day addendum (RF + SVM also re-fit on full):** the surviving narrow Sprint 3 claim — "only DL makes `Cyst→Stone` errors" — *also* fails once RF and SVM are added: RF makes 2 `Cyst→Stone` errors (within range of ConvNeXt V2's 3), so the zero-`Cyst→Stone` is XGBoost-specific, not paradigm-specific. The performance ranking at full scale is **`ConvNeXt V2 (6 err) > XGB (13) > EffNet (23) ~ RF (27) >> SVM (238)`** — classifier choice within a paradigm dominates the paradigm split.
+>
+> **Day-2 update (2026-04-28, interpretability + 3-way disagreement check).** Two additions: (1) classical XGBoost feature importance shows LBP (54 % macro-F1 drop when permuted) and Gabor (53 %) jointly dominate, with stats and GLCM contributing far less — the dataset is solvable by *multi-scale local-pattern + frequency-response* features, more specific than the previous "texture-solvable" hand-wave. (2) The 3-way disagreement bucket counter reveals **a *fourth* invalidation step**: `classical_right_dl_wrong = 0` — *no test image (out of 1,867)* exists where classical-XGB uniquely succeeds over both DL backbones. The Sprint 1 "complementary signal between paradigms" claim is now formally falsified at full scale. Cross-paradigm Grad-CAM (Figure 3) shows DL backbones correctly attending to small focal calcifications (Stone) that classical's whole-image texture aggregation misses — mechanistic explanation for the 8 `Stone→Normal/Cyst` classical-only errors. Q1 (dataset-saturation framing) is now **quadruply** load-bearing. See [[experiments/Sprint3_classical_on_full]] §"Sprint 3 second addendum".
 
 ---
 
@@ -42,10 +44,22 @@ Read [[Project_Framing_v2]] before the meeting for full context.
 
 **Caveat 2:** test sets aren't comparable sample-for-sample (medium-test ≠ full-test), so the cross-scale "classical 0.21 % → 0.70 %" reads as directional. The paired McNemar's at full scale (classical-vs-EffNet-full, classical-vs-ConvNeXt-full, EffNet-full-vs-ConvNeXt-full) **all use the same 1,867 test set** and are valid.
 
-### Finding 3: cross-architecture Grad-CAM shows attention difference
-Grad-CAM on the same six paired-disagreement test images reveals EfficientNet-B0's attention is dispersed and frequently extends beyond the kidney silhouette; ConvNeXt V2's attention is consistently localised to kidney tissue. On the three Cyst → Stone errors unique to EfficientNet-B0, the smaller network peaks off-organ; ConvNeXt V2 fixates on the lesion and gets it right.
+### Finding 3: interpretability — feature importance + cross-paradigm Grad-CAM (refreshed 2026-04-28)
 
-**Caveat 3:** Grad-CAM is a local linear approximation of attribution and not a complete explanation of the model's decision process; the qualitative observation is suggestive of representational difference, not proof.
+**Classical XGBoost feature importance** (deployed pipeline, permutation on n=1867 test set):
+
+- LBP: macro-F1 drop = **0.568** (multi-scale local binary patterns dominate)
+- Gabor: 0.532 (frequency × orientation responses)
+- stats: 0.236
+- GLCM: 0.163
+
+The dataset is solvable by *multi-scale local-pattern + frequency-response* features, more specific than the previous "texture-solvable" hand-wave. The top 5 individual features are 4 Gabor std-of-magnitude features at orientations π/2 (vertical) and 3π/4 (anti-diagonal), plus one LBP at the largest scale (P=24, R=3). Raw-XGB without PCA actually scores higher (macro-F1 0.9950 vs deployed 0.9897), and its top-importance features shift toward LBP+GLCM — providing a mechanistic explanation for why XGB and RF disagree on errors at full scale (PCA reshapes the feature weighting; RF doesn't use PCA).
+
+**Cross-architecture Grad-CAM** (Sprint 2): EffNet-B0's attention is dispersed and frequently extends beyond the kidney silhouette; ConvNeXt V2's attention is consistently localised to kidney tissue. On the three `Cyst → Stone` errors unique to EfficientNet-B0, the smaller network peaks off-organ; ConvNeXt V2 fixates on the lesion and gets it right.
+
+**Cross-paradigm Grad-CAM** (Sprint 3 second addendum, new): on the 8 `Stone → Normal/Cyst` slices that classical misclassifies but DL gets right, both DL backbones correctly attend to small focal high-density regions (visible bright calcifications); ConvNeXt V2's attention is sharper than EffNet-B0's. **Classical's whole-image LBP+Gabor aggregation cannot localise focal lesions** — the calcification occupies a small fraction of the 256×256 frame and gets averaged out. This is a mechanistic explanation for *why* the classical paradigm fails on Stone class while DL does not.
+
+**Caveat 3:** Grad-CAM is a local linear approximation of attribution and not a complete explanation of the model's decision process; the qualitative observation is suggestive of representational difference, not proof. We cite Selvaraju et al. (2017) and the Adebayo et al. (2018) sanity-check paper as the appropriate guardrails.
 
 ---
 
