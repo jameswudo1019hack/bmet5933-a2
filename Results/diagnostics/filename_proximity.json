@@ -1,0 +1,67 @@
+{
+  "k_nearest": 5,
+  "n_random_trials": 5,
+  "rng_seed": 42,
+  "per_class": {
+    "Cyst": {
+      "n_test": 556,
+      "n_train_pool": 2597,
+      "nearest_mean_sim": 0.9977123213114498,
+      "nearest_std_sim": 0.007929205310495633,
+      "random_mean_sim": 0.9659933633941541,
+      "random_std_sim": 0.014349076271894171,
+      "ratio": 1.0328355857496232,
+      "delta_mean_sim": 0.03171895791729573,
+      "mannwhitney_u": 300846.0,
+      "mannwhitney_pvalue": 1.303191985507962e-164,
+      "mean_id_gap_to_nearest_K": 2.3920863309352516,
+      "verdict": "no signal"
+    },
+    "Normal": {
+      "n_test": 762,
+      "n_train_pool": 3553,
+      "nearest_mean_sim": 0.9991347099070161,
+      "nearest_std_sim": 0.004499803583146088,
+      "random_mean_sim": 0.9716520827742698,
+      "random_std_sim": 0.015192379284144504,
+      "ratio": 1.0282844318660622,
+      "delta_mean_sim": 0.027482627132746296,
+      "mannwhitney_u": 573853.0,
+      "mannwhitney_pvalue": 3.2669252888477587e-239,
+      "mean_id_gap_to_nearest_K": 2.4643044619422576,
+      "verdict": "no signal"
+    },
+    "Stone": {
+      "n_test": 207,
+      "n_train_pool": 964,
+      "nearest_mean_sim": 0.9958639559538468,
+      "nearest_std_sim": 0.010557047193551198,
+      "random_mean_sim": 0.9761921806035987,
+      "random_std_sim": 0.014346515350495134,
+      "ratio": 1.0201515395647656,
+      "delta_mean_sim": 0.01967177535024811,
+      "mannwhitney_u": 39566.0,
+      "mannwhitney_pvalue": 1.5885924700551818e-50,
+      "mean_id_gap_to_nearest_K": 2.4966183574879226,
+      "verdict": "no signal"
+    },
+    "Tumor": {
+      "n_test": 342,
+      "n_train_pool": 1598,
+      "nearest_mean_sim": 0.9986868132973274,
+      "nearest_std_sim": 0.006816513213176993,
+      "random_mean_sim": 0.9706616693769979,
+      "random_std_sim": 0.012377113008635428,
+      "ratio": 1.0288722062532014,
+      "delta_mean_sim": 0.02802514392032951,
+      "mannwhitney_u": 114694.0,
+      "mannwhitney_pvalue": 3.146696958634942e-105,
+      "mean_id_gap_to_nearest_K": 2.4157894736842107,
+      "verdict": "no signal"
+    }
+  },
+  "overall_verdict": "WEAK / no leakage signal",
+  "n_classes_strong_signal": 0,
+  "n_classes_moderate_signal": 0,
+  "n_classes_no_signal": 4
+}
