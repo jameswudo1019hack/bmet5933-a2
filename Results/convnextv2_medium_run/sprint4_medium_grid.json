@@ -1,0 +1,177 @@
+{
+  "n_test": 934,
+  "headline": {
+    "effnetb0_tta_medium_acc": 0.9860813704496788,
+    "effnetb0_tta_medium_errors": 13,
+    "convnextv2_medium_acc": 0.9925053533190579,
+    "convnextv2_medium_errors": 7,
+    "classical_medium_acc": 0.9978586723768736,
+    "classical_medium_errors": 2
+  },
+  "pairwise_mcnemar": {
+    "convnextv2_medium_vs_effnetb0_tta_medium": {
+      "model_a": "convnextv2",
+      "model_b": "effnetb0",
+      "both_correct": 916,
+      "only_convnextv2_wrong_count": 5,
+      "only_effnetb0_wrong_count": 11,
+      "both_wrong_count": 2,
+      "discordant_pairs": 16,
+      "mcnemar_statistic": 5.0,
+      "mcnemar_pvalue": 0.210113525390625,
+      "convnextv2_only_wrong_pairs": [
+        {
+          "true": "Stone",
+          "pred": "Normal",
+          "count": 2
+        },
+        {
+          "true": "Cyst",
+          "pred": "Stone",
+          "count": 2
+        },
+        {
+          "true": "Normal",
+          "pred": "Cyst",
+          "count": 1
+        }
+      ],
+      "effnetb0_only_wrong_pairs": [
+        {
+          "true": "Normal",
+          "pred": "Cyst",
+          "count": 4
+        },
+        {
+          "true": "Stone",
+          "pred": "Normal",
+          "count": 4
+        },
+        {
+          "true": "Tumor",
+          "pred": "Stone",
+          "count": 1
+        },
+        {
+          "true": "Cyst",
+          "pred": "Stone",
+          "count": 1
+        },
+        {
+          "true": "Tumor",
+          "pred": "Cyst",
+          "count": 1
+        }
+      ],
+      "both_wrong_pairs": [
+        {
+          "true": "Normal",
+          "pred": "Stone",
+          "count": 2
+        }
+      ]
+    },
+    "convnextv2_medium_vs_classical_medium": {
+      "model_a": "convnextv2",
+      "model_b": "classical",
+      "both_correct": 925,
+      "only_convnextv2_wrong_count": 7,
+      "only_classical_wrong_count": 2,
+      "both_wrong_count": 0,
+      "discordant_pairs": 9,
+      "mcnemar_statistic": 2.0,
+      "mcnemar_pvalue": 0.1796875,
+      "convnextv2_only_wrong_pairs": [
+        {
+          "true": "Stone",
+          "pred": "Normal",
+          "count": 2
+        },
+        {
+          "true": "Cyst",
+          "pred": "Stone",
+          "count": 2
+        },
+        {
+          "true": "Normal",
+          "pred": "Stone",
+          "count": 2
+        },
+        {
+          "true": "Normal",
+          "pred": "Cyst",
+          "count": 1
+        }
+      ],
+      "classical_only_wrong_pairs": [
+        {
+          "true": "Cyst",
+          "pred": "Tumor",
+          "count": 1
+        },
+        {
+          "true": "Tumor",
+          "pred": "Cyst",
+          "count": 1
+        }
+      ],
+      "both_wrong_pairs": []
+    },
+    "effnetb0_tta_medium_vs_classical_medium": {
+      "model_a": "effnetb0",
+      "model_b": "classical",
+      "both_correct": 919,
+      "only_effnetb0_wrong_count": 13,
+      "only_classical_wrong_count": 2,
+      "both_wrong_count": 0,
+      "discordant_pairs": 15,
+      "mcnemar_statistic": 2.0,
+      "mcnemar_pvalue": 0.00738525390625,
+      "effnetb0_only_wrong_pairs": [
+        {
+          "true": "Normal",
+          "pred": "Cyst",
+          "count": 4
+        },
+        {
+          "true": "Stone",
+          "pred": "Normal",
+          "count": 4
+        },
+        {
+          "true": "Normal",
+          "pred": "Stone",
+          "count": 2
+        },
+        {
+          "true": "Tumor",
+          "pred": "Stone",
+          "count": 1
+        },
+        {
+          "true": "Cyst",
+          "pred": "Stone",
+          "count": 1
+        },
+        {
+          "true": "Tumor",
+          "pred": "Cyst",
+          "count": 1
+        }
+      ],
+      "classical_only_wrong_pairs": [
+        {
+          "true": "Cyst",
+          "pred": "Tumor",
+          "count": 1
+        },
+        {
+          "true": "Tumor",
+          "pred": "Cyst",
+          "count": 1
+        }
+      ],
+      "both_wrong_pairs": []
+    }
+  }
+}
