@@ -205,17 +205,46 @@ def main() -> None:
                 bar.get_height() + 0.005,
                 f"{val:.3f}", ha="center", va="bottom", fontsize=8)
 
+    # σ-distance annotations per class — the headline diagnostic signal.
+    for i, c in enumerate(CLASSES):
+        if f1_std[i] < 1e-9:
+            continue
+        sigma_dist = (test_vals[i] - f1_mean[i]) / f1_std[i]
+        if abs(sigma_dist) >= 1.5:
+            color = "#c44e52"          # red — concerning
+            tag = "structural mismatch"
+        elif abs(sigma_dist) >= 1.0:
+            color = "#dd8452"          # orange — borderline
+            tag = "borderline"
+        else:
+            color = "#55a868"          # green — within bounds
+            tag = "within bounds"
+        sign = "+" if sigma_dist >= 0 else "−"
+        label = f"{sign}{abs(sigma_dist):.1f} σ"
+        ax.text(
+            i, 0.86, label,
+            ha="center", va="bottom", fontsize=11, fontweight="bold",
+            color=color,
+            bbox=dict(boxstyle="round,pad=0.3", fc="white", ec=color, lw=1.2),
+        )
+        ax.text(
+            i, 0.852, tag,
+            ha="center", va="top", fontsize=8, color=color, style="italic",
+        )
+
     ax.set_xticks(x)
     ax.set_xticklabels(CLASSES, fontsize=11)
     ax.set_ylabel("F1 score", fontsize=11)
-    ax.set_ylim(0.85, 1.02)
+    ax.set_ylim(0.83, 1.02)
     ax.set_title(
         "Classical XGBoost — 5-fold stratified CV per-class F1 vs held-out test F1\n"
         f"CV macro-F1 = {per_fold_macro_f1.mean():.4f} ± {per_fold_macro_f1.std():.4f}  ·  "
-        f"test macro-F1 = {deployed_test['macro_f1']:.4f}",
+        f"test macro-F1 = {deployed_test['macro_f1']:.4f}\n"
+        "σ-distance = (test F1 − CV mean) / CV std  ·  "
+        "|σ| ≥ 1.5 flagged as structural mismatch",
         fontsize=10,
     )
-    ax.legend(fontsize=10, loc="lower right")
+    ax.legend(fontsize=10, loc="upper right")
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     ax.grid(axis="y", linestyle="--", alpha=0.4)

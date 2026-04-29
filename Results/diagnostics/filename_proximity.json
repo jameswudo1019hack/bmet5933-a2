@@ -12,10 +12,13 @@
       "random_std_sim": 0.014349076271894171,
       "ratio": 1.0328355857496232,
       "delta_mean_sim": 0.03171895791729573,
+      "cohens_d": 2.7337197658417165,
+      "cles_prob_nearest_gt_random": 0.9731833238445216,
+      "saturation_room_used": 0.9327284637094363,
       "mannwhitney_u": 300846.0,
       "mannwhitney_pvalue": 1.303191985507962e-164,
       "mean_id_gap_to_nearest_K": 2.3920863309352516,
-      "verdict": "no signal"
+      "verdict": "saturated: large statistical effect, small absolute gap"
     },
     "Normal": {
       "n_test": 762,
@@ -26,10 +29,13 @@
       "random_std_sim": 0.015192379284144504,
       "ratio": 1.0282844318660622,
       "delta_mean_sim": 0.027482627132746296,
+      "cohens_d": 2.4513326339263672,
+      "cles_prob_nearest_gt_random": 0.9883043654976199,
+      "saturation_room_used": 0.9694760611125788,
       "mannwhitney_u": 573853.0,
       "mannwhitney_pvalue": 3.2669252888477587e-239,
       "mean_id_gap_to_nearest_K": 2.4643044619422576,
-      "verdict": "no signal"
+      "verdict": "saturated: large statistical effect, small absolute gap"
     },
     "Stone": {
       "n_test": 207,
@@ -40,10 +46,13 @@
       "random_std_sim": 0.014346515350495134,
       "ratio": 1.0201515395647656,
       "delta_mean_sim": 0.01967177535024811,
+      "cohens_d": 1.558080606217367,
+      "cles_prob_nearest_gt_random": 0.9233821092674275,
+      "saturation_room_used": 0.8262737138043652,
       "mannwhitney_u": 39566.0,
       "mannwhitney_pvalue": 1.5885924700551818e-50,
       "mean_id_gap_to_nearest_K": 2.4966183574879226,
-      "verdict": "no signal"
+      "verdict": "saturated: large statistical effect, small absolute gap"
     },
     "Tumor": {
       "n_test": 342,
@@ -54,14 +63,18 @@
       "random_std_sim": 0.012377113008635428,
       "ratio": 1.0288722062532014,
       "delta_mean_sim": 0.02802514392032951,
+      "cohens_d": 2.8008114177694763,
+      "cles_prob_nearest_gt_random": 0.980592319004138,
+      "saturation_room_used": 0.9552398969270944,
       "mannwhitney_u": 114694.0,
       "mannwhitney_pvalue": 3.146696958634942e-105,
       "mean_id_gap_to_nearest_K": 2.4157894736842107,
-      "verdict": "no signal"
+      "verdict": "saturated: large statistical effect, small absolute gap"
     }
   },
-  "overall_verdict": "WEAK / no leakage signal",
+  "overall_verdict": "SATURATED-SIGNAL pattern: large Cohen's d (>=0.8) in 4/4 classes but absolute similarity gap < 5 % above random baseline. Statistical effect of patient-level structure is real (CLES ~0.92-0.99) but bounded by within-class saturation in the 108-dim handcrafted feature space.",
   "n_classes_strong_signal": 0,
+  "n_classes_saturated_signal": 4,
   "n_classes_moderate_signal": 0,
-  "n_classes_no_signal": 4
+  "n_classes_no_signal": 0
 }
