@@ -18,6 +18,7 @@ Kidney CT Classification · Islam et al. (2022) dataset · Due **Fri 15 May 2026
 - [[experiments/Sprint2_evaluation_ConvNeXtV2]] — ConvNeXtV2 decision rationale
 - [[experiments/Sprint2_ConvNeXtV2_on_full]] — ConvNeXtV2 on full dataset
 - [[experiments/Sprint3_classical_on_full]] — classical on full + paired McNemar's at matched scale
+- [[Validation_and_Verification]] — overfitting diagnostics + V&V infrastructure (post-tutor 2026-04-29) ← **the answer to Sandhya's overfitting question**
 
 ### Paper Writing
 - [[Results_Summary]] — all canonical numbers in one place ← start here when writing

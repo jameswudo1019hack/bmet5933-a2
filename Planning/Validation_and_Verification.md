@@ -1,0 +1,195 @@
+# Validation and Verification — model-behaviour diagnostics
+
+**Status:** consolidated reference (created 2026-04-29 from Sprint 3 third addendum + supporting infrastructure)
+**Related:** [[Phase0_Design]] (eval harness), [[experiments/Sprint3_classical_on_full]] (chronological log of the diagnostic work), [[Tutor_Meeting_Brief]] (Day-3 update), [[Results_Summary]]
+
+This document consolidates everything we did to *validate* (does the model generalise correctly?) and *verify* (does the pipeline do what we intended?) our classical and deep-learning kidney-CT classifiers. It exists primarily so that the overfitting question from Sandhya's 2026-04-29 tutor meeting has a single authoritative reference; secondarily as the audit trail for the methodological rigour we will reference in the paper.
+
+---
+
+## 1. Purpose and scope
+
+In ML for medical imaging, "verification" and "validation" map roughly to two distinct questions:
+
+- **Verification — "are we building the model right?"** Does the pipeline implement what the design specified? (Smoke tests, equivalence checks, reproducibility, bit-exact match between protocols.)
+- **Validation — "are we building the right model?"** Does the trained model generalise? Is the test-set metric a fair estimate of how it will behave on truly unseen data? (Cross-validation, bootstrap CIs, paired hypothesis tests, overfitting diagnostics, leakage probes.)
+
+Sandhya's overfitting concern is a *validation* question — even if the pipeline is implemented correctly, the model might be exploiting structure (patient-level slice leakage, class imbalance under saturated benchmarks, etc.) rather than learning pathology. This document documents both kinds of check.
+
+---
+
+## 2. V&V infrastructure (one-liners with pointers)
+
+Built across Phase 0 / Phase 2 and reused throughout. Detailed justifications in [[Phase0_Design]] §§3, 5, 6 and [[Phase2_Design]] §§5, 6, 9.
+
+| Activity | Where it lives | Purpose |
+|---|---|---|
+| Stratified 70/15/15 split, seed=42 | `shared/split.py`, `split.csv`, `split_full.csv` | Apples-to-apples comparison; fixed split prevents cherry-picking |
+| Shared preprocessing entry-point | `shared/preprocessing.load_image()` | Both pipelines start from identical inputs (verification — equivalent inputs) |
+| Smoke tests | `shared/smoke_test.py`, `--smoke` flag in train CLIs | Pipeline runs end-to-end on tiny data before full training |
+| Joblib parallel bit-equivalence | `analysis/sprint3_train_svm_rf.py` (smoke test in classical/features.py for n_jobs=1 vs 4) | Verification — parallel extraction matches serial bit-exact |
+| Determinism check | Smoke val_f1 = 0.4125 reproduced bit-exact between Colab and local (Sprint 3 log) | Verification — same seed → same numbers |
+| Bootstrap CIs (1000 resamples) | `shared/bootstrap.bootstrap_ci()` | Validation — uncertainty on point estimates (Efron-Tibshirani) |
+| Paired McNemar's test | `shared/evaluate.mcnemar_test()` (exact binomial for <25 discordant; chi-square otherwise) | Validation — significance of paired model differences (Dietterich 1998) |
+| 5-fold stratified CV for classical | `classical/train.py` `_grid_search_xgb`, `_grid_search_rf`, `_grid_search_svm` | Validation — model-selection criterion is robust |
+| Two-stage early-stopping for DL | `deep_learning/train.py` (head freeze → fine-tune; patience=5) | Validation — training stops before overfit (in principle) |
+| Sprint 2 sanity check | EffNet-vs-ConvNeXt p=0.0021 reproduced exactly in Sprint 3 addendum | Verification — analysis pipelines match across runs |
+
+The diagnostic battery in §3 is built on top of this infrastructure.
+
+---
+
+## 3. Overfitting diagnostics battery (Sprint 3 third addendum, 2026-04-29)
+
+Sandhya raised the overfitting hypothesis at the Wednesday tutor meeting. We ran four targeted diagnostics, each ~30 min, none requiring retraining of any deployed pipeline. Plan: `Planning/plans/2026-04-29-overfitting-diagnostics.md`.
+
+The four diagnostics are designed to attack overfitting from independent angles:
+- **Diag 1**: dataset-level structural concern (patient-level slice leakage in classical features)
+- **Diag 2**: classical-classifier overfit (train-val divergence in XGBoost as `n_estimators` grows)
+- **Diag 3**: per-class instability hidden by aggregate macro-F1 (5-fold CV per class)
+- **Diag 4**: DL-specific overfit (val-loss rebound across epochs)
+
+### 3.1 Diagnostic 1 — filename-proximity slice-leakage probe
+
+**Hypothesis.** Islam dataset has no patient IDs. Filenames look like `Cyst- (3051).jpg`. If numerically adjacent files within a class are slices of the same patient, then for each test image its numerically-nearest-by-ID train images should be feature-space-similar above random baseline. Yagis et al. 2021 quantify slice-level leakage at 29–55 % accuracy inflation in 2D-CNN MRI; Veetil 2024 at +67 % on Parkinson's data.
+
+**Method.** For each test image with class C and ID *i*: compute mean cosine similarity (in 108-dim handcrafted feature space) between the test image and (a) the K=5 train images of class C with smallest |ID − i|, vs (b) K=5 random train images of class C, averaged over 5 random pulls. One-sided Mann-Whitney U with alternative "nearest > random". K=5, seed=42.
+
+**Implementation.** `analysis/diag_filename_proximity.py`. Outputs `Results/diagnostics/filename_proximity.{json,png}`.
+
+**Results.**
+
+| Class | n_test | Nearest-by-ID sim | Random sim | Ratio | p-value | Verdict |
+|---|---|---|---|---|---|---|
+| Cyst | 556 | 0.9977 ± 0.0079 | 0.9660 ± 0.0143 | 1.033 | 1.3 × 10⁻¹⁶⁴ | weak signal |
+| Normal | 762 | 0.9991 ± 0.0045 | 0.9717 ± 0.0152 | 1.028 | 3.3 × 10⁻²³⁹ | weak signal |
+| Stone | 207 | 0.9959 ± 0.0106 | 0.9762 ± 0.0143 | 1.020 | 1.6 × 10⁻⁵⁰ | weak signal |
+| Tumor | 342 | 0.9987 ± 0.0068 | 0.9707 ± 0.0124 | 1.029 | 3.2 × 10⁻¹⁰⁵ | weak signal |
+
+Overall verdict (script-derived): **WEAK / no leakage signal** in classical features.
+
+**Reading.** Within-class baseline cosine similarity is already saturated at ~0.97 — kidneys of the same diagnostic class look very alike in the 108-dim feature space. Nearest-by-ID adds only 2–3 % on top, statistically real (p ≪ 10⁻⁵⁰ in all classes) but small effect. **The 108-dim handcrafted feature space cannot distinguish patient identity from class identity at any scale that would dominate model behaviour.** This does NOT rule out patient leakage — it shows the classical feature space is too coarse to detect it. A parallel test in DL embedding space (penultimate layer of EffNet-B0 / ConvNeXt V2) would be richer; deferred as future work.
+
+### 3.2 Diagnostic 2 — XGBoost learning curves over n_estimators
+
+**Hypothesis.** Classical XGB at deployed `n_estimators = 200` could be over-trained if validation mlogloss minimum occurs earlier. Train→0/val-plateau divergence is the textbook overfit signature.
+
+**Method.** Refit XGB on cached train-only-fit scaler+PCA(50) features with `eval_set = [(train_pca, y_train), (val_pca, y_val)]` and `eval_metric = ["mlogloss", "merror"]`. Ceiling 400 estimators. Re-evaluate on test at deployed (n=200) and val-best (n=399) operating points.
+
+**Implementation.** `analysis/diag_xgb_learning_curves.py`. Outputs `Results/diagnostics/xgb_learning_curves.{json,png}`.
+
+**Results.**
+
+| Quantity | Value |
+|---|---|
+| Train mlogloss at deployed n=200 | very small (saturated) |
+| Val mlogloss at deployed n=200 | 0.0299 |
+| Val mlogloss minimum | 0.0218 (at round 399 — still slowly decreasing) |
+| Train merror at deployed | 0.0000 (perfect train fit) |
+| Val merror at deployed | 0.0070 |
+| Train–val merror gap | **constant 0.7 pp** (does not widen with capacity) |
+| Test macro-F1 at deployed (n=200) | 0.9871 |
+| Test macro-F1 at val-best (n=399) | 0.9874 |
+| Δ macro-F1 (val-best − deployed) | +0.0002 (negligible) |
+
+**Verdict (script-derived).** *"Saturation pattern: both train and val converge to near-zero error. Consistent with dataset-level signal (or leakage), not classifier overfit."* Train-val gap is fixed (does not widen), and val keeps slowly improving past the deployed point — the opposite of overfitting. Deployed n_estimators=200 is essentially indistinguishable from val-best at n=399.
+
+### 3.3 Diagnostic 3 — per-class 5-fold stratified CV
+
+**Hypothesis.** Sandhya's note "do CV class-wise too". Macro-F1 alone can hide per-class instability; the universal-weak-class (Stone) might be overfitting more than aggregate metrics show.
+
+**Method.** 5-fold stratified CV on train+val combined (n=10,579) using deployed `best_params`. Per-fold per-class precision/recall/F1; aggregate to mean ± std per class. Compare to held-out test per-class F1 from `classical_results.json`. Test set is not used in training — it remains a sacred reference.
+
+**Implementation.** `analysis/diag_per_class_cv.py`. Outputs `Results/diagnostics/per_class_cv.{json,png}`.
+
+**Results.**
+
+| Class | CV F1 mean ± std | CV min | CV max | Held-out test F1 | Test − CV mean | (Test − CV mean) / std |
+|---|---|---|---|---|---|---|
+| Cyst | 0.9935 ± 0.0012 | 0.9921 | 0.9953 | 0.9937 | +0.0002 | +0.2 σ |
+| Normal | 0.9958 ± 0.0007 | 0.9948 | 0.9965 | 0.9961 | +0.0003 | +0.4 σ |
+| Tumor | 0.9935 ± 0.0023 | 0.9909 | 0.9974 | 0.9985 | +0.0050 | **+2.2 σ** |
+| **Stone** | **0.9792 ± 0.0023** | 0.9760 | 0.9828 | **0.9703** | **−0.0089** | **−3.9 σ** |
+
+| Aggregate | CV (mean ± std) | Held-out test |
+|---|---|---|
+| macro-F1 | 0.9905 ± 0.0010 | 0.9897 (within 1 σ) |
+
+**Verdict — the strongest leakage signal in the four diagnostics.** Aggregate macro-F1 looks fine (CV ≈ test within 1 σ), but the per-class breakdown reveals **directional structural mismatch**:
+
+- Stone test F1 is **3.9 σ below** the train+val 5-fold CV mean — the test set's Stone slices are systematically *harder* than what stratified random folds on train+val would predict.
+- Tumor test F1 is **2.2 σ above** CV mean — test set's Tumor slices are systematically *easier*.
+- Cyst and Normal are within fold-level noise.
+
+**Mechanism.** This is exactly what you'd expect if the underlying patient-grouped slice population is *unevenly distributed* across the train+val and test partitions of `split_full.csv`. If some "easy Stone patients" landed in train+val and some "hard Stone patients" landed in test (or vice versa for Tumor), a random stratified split on slice level cannot average that out, and 5-fold CV *within* train+val underestimates the train+val/test difficulty mismatch on those classes. This is a **quantitative observation** of the patient-leakage caveat — the strongest signal across the four diagnostics.
+
+### 3.4 Diagnostic 4 — DL learning curves from existing per-epoch logs
+
+**Hypothesis.** EfficientNet-B0-full and ConvNeXt V2-full could be overfitting in stage-2 fine-tuning if val_loss rebounds while train_loss continues to fall.
+
+**Method.** Parse existing per-epoch logs at `Results/dl_run_full/run_log.json` and `Results/convnextv2_full_run/run_log.json` (both already log train_loss + val_loss + val_macro_f1 per epoch). No retraining. Plot 2-stage curves with stage-1 → stage-2 boundary marked. Look for late-stage val-loss rebound.
+
+**Implementation.** `analysis/diag_dl_learning_curves.py`. Outputs `Results/diagnostics/dl_learning_curves.{json,png}`.
+
+**Results.**
+
+| Pipeline | Total epochs | Best epoch | Best val macro-F1 | Stage-2 val-loss rebound from minimum |
+|---|---|---|---|---|
+| EfficientNet-B0 (full) | 35 | 35 (last) | 0.9766 | +0.000 (none) |
+| ConvNeXt V2 Base (full) | 35 | 34 | 0.9979 | +0.000 (none) |
+
+**Verdicts (script-derived):** both pipelines show *"Saturation: val loss plateau in stage 2, no overfit rebound detected."*
+
+**Reading.** Both DL models are *under-trained* if anything, not over-trained. Best epoch is at or near the last epoch trained — early-stopping patience never triggered because val kept improving. Train and val loss curves track each other smoothly. **DL overfitting is not the cause of the 99 %+ accuracies.**
+
+---
+
+## 4. Synthesis
+
+### 4.1 Hypothesis-by-hypothesis disposition
+
+| Hypothesis | Diagnostic | Outcome |
+|---|---|---|
+| Classical XGB over-trained at deployed `n_estimators=200` | XGB learning curves (Diag 2) | **Rejected** — saturation pattern; val-best at n=399 is +0.0002 macro-F1 above deployed |
+| Classical XGB has high per-class variance hidden by aggregate metric | Per-class 5-fold CV (Diag 3) | **Variance rejected** (per-class CV std ≤ 0.0023); BUT structural mismatch *found* — see next row |
+| DL backbones overfit at end of training | DL learning curves (Diag 4) | **Rejected** — both still climbing at last epoch; no val-loss rebound |
+| Patient-level leakage inflates accuracy | Filename-proximity (Diag 1) + per-class CV (Diag 3) | **Diag 1 inconclusive** in classical feature space; **Diag 3 supports** — Stone test F1 is 3.9 σ below CV mean, Tumor 2.2 σ above |
+
+### 4.2 The diagnostic answer to Sandhya's "could be overfitting"
+
+> *We tested four overfitting hypotheses and the classical-overfit framing is rejected by all four — train-val gaps for XGB and both DL backbones are stable, val curves never rebound, per-class CV variance is small (std ≤ 0.0023). However, per-class CV reveals a per-class structural mismatch between train+val and the held-out test set: Stone test F1 is 3.9 σ below the 5-fold CV mean while Tumor is 2.2 σ above — exactly what we would expect if patient-level grouping creates systematic difficulty differences between sets that random stratified slice splitting cannot smooth out. The 99 %+ accuracies are not over-trained model artefacts; they reflect either genuine dataset signal or shared dataset-level structure that affects per-class composition. Further investigation requires patient-level resplitting, which the dataset does not support without reverse-engineering patient groups (deferred as future work).*
+
+### 4.3 What changed in the paper because of these diagnostics
+
+Nothing about the deployed pipelines, the four-step invalidation chain, the figures, or the headline numbers needs to change. The diagnostics *strengthen* the existing story:
+
+- The patient-leakage caveat in [[Phase0_Design]] §11 / [[Tutor_Meeting_Brief]] Q2 moves from *"literature-backed worry"* to *"dataset-specific observed signal with quantitative evidence"*.
+- The paper Discussion gains a "Diagnostic checks" subsection summarising the four overfitting tests + the per-class structural mismatch finding. Diagnostic 3's 3.9 σ Stone gap is the cleanest evidence of patient-level structure short of access to patient IDs.
+- The paper's invalidation chain becomes a *five*-step argument: medium → full-XGB → full-all-classifiers → 3-way coverage → diagnostic-confirmed structural mismatch. The diagnostic battery is the methodological contribution that lets the chain stand.
+
+---
+
+## 5. Limitations of this V&V work (what we explicitly did NOT do)
+
+1. **No DL embedding-space proximity probe.** Diagnostic 1 only tests classical-feature-space similarity. The richer DL embedding space (penultimate layer of each backbone) might show stronger patient-level structure. Future work; not blocking the paper.
+2. **No patient-stratified resplit experiment.** The "killer experiment" — cluster filenames into pseudo-patients (groups of N consecutive numerical IDs in a class), re-split with no pseudo-patient appearing in both train and test, retrain, measure accuracy drop — would directly quantify the leakage. Estimated 2–4 hours; deferred as future work because (a) the per-class CV finding is already sufficient evidence for the paper, (b) reverse-engineering patient groups from filenames is speculative without ground-truth patient mappings, (c) timeline pressure for the 2026-05-15 submission.
+3. **No multi-seed variance characterisation.** All diagnostics are run with seed=42. A 5-seed run of classical-XGB on cached features (~15 min) would characterise model-side variance independent of split-side variance. If the paper asks for it, easy add.
+4. **No external dataset transfer.** KiTS19 or other kidney-CT benchmarks have patient IDs. Training on Islam and testing on KiTS19 would directly test cross-distribution transfer. Out of scope for this assignment.
+5. **No saliency-map sanity tests** (Adebayo et al. 2018) on the Grad-CAM outputs. The cross-paradigm Grad-CAM in [[experiments/Sprint3_classical_on_full]] §"Sprint 3 second addendum" is a qualitative demonstration; we cite Adebayo as the appropriate guardrail rather than running the full sanity-check battery.
+6. **No dataset-level audit for image duplicates / near-duplicates.** A perceptual-hash deduplication pass on the 12,446 images would reveal whether the same slice appears multiple times across train and test (the strongest possible form of leakage). Not done; flagged as future work.
+7. **No augmentation / sampling experiments.** Sandhya's note 2 ("data augmentation or sampling") was deferred because the diagnostics rejected the classical-overfit hypothesis that those experiments would have addressed. If the deployed model were over-trained, we would have run Stone-class oversampling and/or stronger DL augmentation; since it is not, the experiments would not change the conclusions.
+
+---
+
+## 6. Files and scripts
+
+All diagnostic outputs live under `Results/diagnostics/`; all scripts under `analysis/diag_*.py`.
+
+| Script | Output | Purpose |
+|---|---|---|
+| `analysis/diag_filename_proximity.py` | `Results/diagnostics/filename_proximity.{json,png}` | Diagnostic 1 (slice-leakage probe in classical features) |
+| `analysis/diag_xgb_learning_curves.py` | `Results/diagnostics/xgb_learning_curves.{json,png}` | Diagnostic 2 (XGB train+val curves) |
+| `analysis/diag_per_class_cv.py` | `Results/diagnostics/per_class_cv.{json,png}` | Diagnostic 3 (per-class 5-fold CV vs test) |
+| `analysis/diag_dl_learning_curves.py` | `Results/diagnostics/dl_learning_curves.{json,png}` | Diagnostic 4 (DL train+val curves from existing logs) |
+
+Each script is rerunnable from cached features / existing logs; none require retraining of any deployed pipeline. Plan that produced this work: `Planning/plans/2026-04-29-overfitting-diagnostics.md`.
