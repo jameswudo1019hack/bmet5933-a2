@@ -1,0 +1,16 @@
+Model: convnextv2_base  (n_test=934)
+  Accuracy:    0.9925
+  Macro F1:    0.9898  [95% CI 0.9813, 0.9968]
+  Weighted F1: 0.9925
+  ROC-AUC OvR: 0.9999
+  Per-class:
+    Cyst    P=0.996  R=0.993  F1=0.995  [95% CI 0.988, 1.000]  (support=279)
+    Normal  P=0.995  R=0.992  F1=0.993  [95% CI 0.987, 0.999]  (support=381)
+    Stone   P=0.962  R=0.981  F1=0.971  [95% CI 0.946, 0.991]  (support=103)
+    Tumor   P=1.000  R=1.000  F1=1.000  [95% CI 1.000, 1.000]  (support=171)
+  Confusion matrix (rows=true, cols=pred):
+              Cyst  Normal   Stone   Tumor
+    Cyst         277       0       2       0
+    Normal         1     378       2       0
+    Stone          0       2     101       0
+    Tumor          0       0       0     171
