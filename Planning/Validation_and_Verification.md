@@ -181,7 +181,54 @@ Nothing about the deployed pipelines, the four-step invalidation chain, the figu
 
 ---
 
-## 6. Files and scripts
+## 6. Prior work on this dataset (literature cross-reference)
+
+Sandhya noted at the 2026-04-29 meeting that multiple published papers have used the same Islam et al. 2022 dataset (Kaggle: `nazmul0087/ct-kidney-dataset-normal-cyst-tumor-and-stone`, 12,446 images, 4 classes). To contextualise our 99 %+ numbers and our diagnostic findings, we surveyed the literature.
+
+### Reported accuracy on the same dataset
+
+| Paper (year, venue) | Method | Reported headline metric | Notes |
+|---|---|---|---|
+| **Islam et al. 2022** (Sci Rep) | Swin Transformer + 5 other transfer-learned baselines (ResNet50, VGG16, Inception v3, EANet, CCT) | **Swin: 99.30 % accuracy** (best); others 60–98 % | Original dataset paper. Swin trained fastest as well as scoring highest. |
+| **Bingol et al. 2023** (PeerJ CS) | Hybrid CNN + Relief-based feature optimisation | **99.37 %** accuracy | Uses Relief feature-importance to optimise feature maps; combines deep + classical thinking. |
+| **Detection & Classification 2024** (MDPI Technologies) | DenseNet121 + EfficientNetB0 + SVM/RF/XGBoost soft-vote ensemble | **99.24 %** accuracy / **99 %** F1 | Almost identical methodology to our own (DL feature extraction + classical-ensemble head). |
+| **Fine-tuned DL 2025** (Sci Rep) | CNN, VGG16, ResNet50, CNNAlexnet, InceptionV3 with hyperparameter optimisation | ~99 % accuracy across models | Transfer-learning sweep; multiple architectures converge to 99 %+. |
+| **DiagNeXt 2025** (MDPI J. Imaging) | Two-stage attention-guided ConvNeXt (segmentation + classification) | **98.9 %** classification accuracy | Reports 3,847 patients — only paper in our survey that mentions patient-level structure explicitly. |
+| **KidneyNeXt 2025** (MDPI JCM) | Lightweight ConvNeXt-inspired CNN | **99.96 %** accuracy / **99.94 %** F1 | Highest reported number; "wide neural network classifier". |
+| **Hybrid DL Framework 2025** (arXiv 2502.04367) | Custom ensemble | 99.73 % train / **100 %** test | Reports a clean 100 % on test, like our medium-scale ensemble; no leakage discussion. |
+| **Automatic classification with Relief 2023** (PubMed PMC10703024) | Hybrid deep-feature + Relief | ~99 % | Uses the same Relief approach as Bingol 2023. |
+| **Two-stage renal classification 2023** (PMC10113505) | Transfer learning + Bayesian hyperparameter optimisation | ~99 % | Standard transfer-learning sweep. |
+
+### Our matched numbers
+
+| Configuration | Macro-F1 | Accuracy | Errors |
+|---|---|---|---|
+| Classical XGBoost (medium n=934 test) | 0.9976 | 0.9979 | 2 |
+| EfficientNet-B0 + TTA (medium n=934 test) | 0.9829 | 0.9861 | 13 |
+| Equal-weight ensemble (medium n=934 test) | **1.0000** | **1.0000** | **0** |
+| Classical XGBoost (full n=1867 test) | 0.9897 | 0.9930 | 13 |
+| EfficientNet-B0 (full n=1867 test) | 0.9819 | 0.9877 | 23 |
+| ConvNeXt V2 Base (full n=1867 test) | 0.9953 | 0.9968 | 6 |
+
+### Synthesis — what the literature says
+
+**1. Saturation is universal on this dataset.** Every published study we surveyed reports ≥ 98.9 % accuracy. The lowest published number (DiagNeXt 98.9 %) is still higher than our EfficientNet-B0-full (98.77 %); the highest (KidneyNeXt 99.96 %, Hybrid DL Framework 100 %) match or exceed our equal-weight medium ensemble. **Our 99 %+ numbers are not anomalous — they are the dataset's normal operating regime.** This is a stronger version of the saturation framing in [[Project_Framing_v2]].
+
+**2. Methodological convergence with at least two recent papers.** The 2024 MDPI Technologies and 2025 Sci Rep papers both use *DenseNet/EfficientNet feature extraction → SVM/RF/XGBoost classical-ensemble heads*, structurally similar to our hybrid medium-scale ensemble. Their headline number (99.24 %) sits in our 99 %+ band. The Bingol 2023 Relief-based hybrid is conceptually similar to our handcrafted-features + XGBoost classical pipeline (texture features → ML head). **We are not the first to combine classical and DL features on this dataset, but we may be the first to report what *fails* about that approach at scale.**
+
+**3. None of the surveyed papers explicitly diagnose patient-level structure.** Of the nine papers above, only DiagNeXt 2025 mentions patient counts at all (3,847 patients), and it does not report patient-stratified evaluation. None of them quote per-class CV vs test discrepancies; none mention slice-level leakage as a concern. **The 3.9 σ Stone difficulty mismatch we report in §3.3 is, to our knowledge, the first quantitative observation of patient-level structure in this benchmark's literature.** This is the cleanest novelty claim our paper has — multiple papers have hit 99 %+ but none have asked *what kind* of 99 %.
+
+**4. The original dataset paper (Islam 2022) does not provide patient IDs.** This is the upstream constraint that makes patient-stratified evaluation impossible without reverse-engineering. Our diagnostic findings are therefore lower-bound evidence — the true patient-grouping effect could be larger than our classical-feature-space probe (Diag 1) and per-class CV gap (Diag 3) reveal.
+
+**5. The clinical literature on slice-level leakage in 2D medical CNNs is well-established.** Yagis et al. (Sci Rep 2021) quantify 29–55 % accuracy inflation in 2D MRI CNN studies that do not stratify by patient; Veetil et al. (2024) replicate at +67 % on Parkinson's data. Neither applies directly to our dataset, but both motivate our diagnostic Q3 finding as expected behaviour rather than an isolated artefact.
+
+### Implication for the paper
+
+The Discussion can lead with two complementary observations: (a) we replicate the saturation pattern that nine independent papers have observed on this dataset, and (b) we are the first to quantify a patient-level structural mismatch via per-class CV vs test gaps. The novelty is not the score, it is the *failure mode of the score* under stricter analysis — which is the contribution none of the prior papers have made on this benchmark.
+
+---
+
+## 7. Files and scripts
 
 All diagnostic outputs live under `Results/diagnostics/`; all scripts under `analysis/diag_*.py`.
 
