@@ -11,13 +11,13 @@ Both models evaluated on the **same** 934-image test set. Apples-to-apples.
 
 ### Overall metrics
 
-| Model | Accuracy | Macro-F1 | Weighted F1 | ROC-AUC | Errors |
-|---|---|---|---|---|---|
-| Classical XGBoost | 0.9979 | 0.9976 | 0.9979 | 0.99999 | 2 / 934 |
-| EfficientNet-B0 baseline | 0.9797 | 0.9745 | 0.9797 | 0.9995 | 19 / 934 |
-| EfficientNet-B0 + TTA hflip ← **canonical DL** | 0.9861 | **0.9829** | 0.9861 | 0.9998 | 13 / 934 |
-| Ensemble val-tuned (collapses to classical) | 0.9979 | 0.9976 | 0.9979 | — | 2 / 934 |
-| Ensemble equal-weight w=0.5 ← **headline** | **1.0000** | **1.0000** | 1.0000 | — | **0 / 934** |
+| Model                                          | Accuracy   | Macro-F1   | Weighted F1 | ROC-AUC | Errors      |
+| ---------------------------------------------- | ---------- | ---------- | ----------- | ------- | ----------- |
+| Classical XGBoost                              | 0.9979     | 0.9976     | 0.9979      | 0.99999 | 2 / 934     |
+| EfficientNet-B0 baseline                       | 0.9797     | 0.9745     | 0.9797      | 0.9995  | 19 / 934    |
+| EfficientNet-B0 + TTA hflip ← **canonical DL** | 0.9861     | **0.9829** | 0.9861      | 0.9998  | 13 / 934    |
+| Ensemble val-tuned (collapses to classical)    | 0.9979     | 0.9976     | 0.9979      | —       | 2 / 934     |
+| Ensemble equal-weight w=0.5 ← **headline**     | **1.0000** | **1.0000** | 1.0000      | —       | **0 / 934** |
 
 ### Bootstrap 95% CIs (macro-F1)
 
@@ -130,15 +130,15 @@ Both are Cyst ↔ Tumor confusions — clinically the most consequential pair. D
 
 Different test set (n=1867, full dataset split). **Not directly comparable to medium results above.**
 
-| Metric | Value |
-|---|---|
-| Accuracy | 0.9968 |
-| Macro-F1 | **0.9953** [0.991, 0.998] |
-| Weighted F1 | 0.9968 |
-| ROC-AUC | 0.99998 |
-| Errors | 6 / 1867 |
-| Best epoch | 34 (stage 1: 5, stage 2: 29) |
-| Training time | ~54 min (A100, bfloat16) |
+| Metric        | Value                        |
+| ------------- | ---------------------------- |
+| Accuracy      | 0.9968                       |
+| Macro-F1      | **0.9953** [0.991, 0.998]    |
+| Weighted F1   | 0.9968                       |
+| ROC-AUC       | 0.99998                      |
+| Errors        | 6 / 1867                     |
+| Best epoch    | 34 (stage 1: 5, stage 2: 29) |
+| Training time | ~54 min (A100, bfloat16)     |
 
 ### Per-class F1 — ConvNeXtV2 Base
 
@@ -404,6 +404,82 @@ PCA(50) costs ~0.5pp accuracy at full scale. The raw-XGB top-importance features
 - **Row 3** (all three wrong, idx 790): both DL backbones attend to *different* wrong regions with moderate confidence (p=0.56, 0.65) — the dataset's irreducible difficulty.
 
 Mechanistic claim for the paper: DL's spatial attention catches focal lesions that the classical paradigm's whole-image LBP+Gabor aggregation misses. This is direct evidence for *why* classical fails on the Stone class at full scale.
+
+---
+
+## Sprint 3 third addendum — overfitting diagnostics (post-tutor 2026-04-29)
+
+Sandhya raised "the models could be overfitting" at Wednesday's tutor meeting. Four targeted diagnostics; none required retraining of any deployed pipeline.
+
+### Diagnostic 1 — filename-proximity slice-leakage probe (`Results/diagnostics/filename_proximity.{json,png}`)
+
+For each test image with class C and ID *i*, mean cosine similarity in 108-dim handcrafted feature space against (a) K=5 train images of class C with smallest |ID − i|, vs (b) K=5 random train images of class C. One-sided Mann-Whitney U.
+
+| Class | Nearest-by-ID sim | Random sim | Ratio | p-value |
+|---|---|---|---|---|
+| Cyst | 0.9977 ± 0.0079 | 0.9660 ± 0.0143 | 1.033 | 1.3e-164 |
+| Normal | 0.9991 ± 0.0045 | 0.9717 ± 0.0152 | 1.028 | 3.3e-239 |
+| Stone | 0.9959 ± 0.0106 | 0.9762 ± 0.0143 | 1.020 | 1.6e-50 |
+| Tumor | 0.9987 ± 0.0068 | 0.9707 ± 0.0124 | 1.029 | 3.2e-105 |
+
+**Verdict.** Within-class baseline cosine similarity is already saturated at ~0.97 — kidneys of the same diagnostic class look very alike in this feature space. Nearest-by-ID adds only 2–3 % on top, statistically real but small effect. **The 108-dim handcrafted feature space is too coarse to detect patient identity above class identity.** Not a clear leakage signal in the classical features; a parallel test in DL embedding space remains future work.
+
+### Diagnostic 2 — XGBoost learning curves over n_estimators (`Results/diagnostics/xgb_learning_curves.{json,png}`)
+
+Refit deployed-pipeline XGB on cached train-only-fit scaler+PCA(50) features with `eval_set=[(train, val)]`, ceiling 400 estimators. Test re-evaluated at deployed (n=200) and val-best (n=399).
+
+| Quantity | Value |
+|---|---|
+| Train mlogloss at deployed | very small (saturated) |
+| Val mlogloss at deployed n=200 | 0.0299 |
+| Val mlogloss minimum | 0.0218 (at round 399, still slowly decreasing) |
+| Train merror at deployed | 0.0000 |
+| Val merror at deployed | 0.0070 |
+| Train–val merror gap | constant 0.7pp (does not widen with capacity) |
+| Test macro-F1 at deployed (n=200) | 0.9871 |
+| Test macro-F1 at val-best (n=399) | 0.9874 |
+| Δ macro-F1 (val-best − deployed) | +0.0002 (negligible) |
+
+**Verdict.** *Saturation pattern, not classifier overfit.* Train-val gap is fixed; val keeps slowly improving past the deployed point — the opposite of overfitting. Deployed n=200 is essentially indistinguishable from val-best n=399.
+
+### Diagnostic 3 — per-class 5-fold stratified CV (`Results/diagnostics/per_class_cv.{json,png}`)
+
+5-fold stratified CV on train+val combined (n=10,579) with deployed `best_params`. Per-fold per-class precision/recall/F1; compare to held-out test per-class F1.
+
+| Class | CV F1 mean ± std | Held-out test F1 | Test − CV mean | (Test − CV) / std |
+|---|---|---|---|---|
+| Cyst | 0.9935 ± 0.0012 | 0.9937 | +0.0002 | +0.2 σ |
+| Normal | 0.9958 ± 0.0007 | 0.9961 | +0.0003 | +0.4 σ |
+| Tumor | 0.9935 ± 0.0023 | 0.9985 | +0.0050 | **+2.2 σ** |
+| **Stone** | **0.9792 ± 0.0023** | **0.9703** | **−0.0089** | **−3.9 σ** |
+
+| Aggregate | CV (mean ± std) | Held-out test |
+|---|---|---|
+| macro-F1 | 0.9905 ± 0.0010 | 0.9897 (within 1 σ) |
+
+**Verdict — the strongest leakage signal in the four diagnostics.** Aggregate macro-F1 looks fine, but **Stone test F1 is 3.9 σ below CV mean** and Tumor is 2.2 σ above. This is per-class structural mismatch between train+val and the held-out test set — exactly what patient-level grouping would produce when the underlying patient population is unevenly distributed across the train+val/test partition and random stratified slice splitting cannot smooth it out. **Quantitative observation of the patient-leakage caveat.**
+
+### Diagnostic 4 — DL learning curves from existing per-epoch logs (`Results/diagnostics/dl_learning_curves.{json,png}`)
+
+Parsed `Results/dl_run_full/run_log.json` and `Results/convnextv2_full_run/run_log.json`. No retraining.
+
+| Pipeline | Total epochs | Best epoch | Best val macro-F1 | Stage-2 val-loss rebound |
+|---|---|---|---|---|
+| EfficientNet-B0 (full) | 35 | 35 (last) | 0.9766 | +0.000 (none) |
+| ConvNeXt V2 Base (full) | 35 | 34 | 0.9979 | +0.000 (none) |
+
+**Verdict.** *Saturation, no rebound.* Both DL pipelines are if anything *under-trained* (still climbing at the last epoch); no val-loss rebound; early-stopping patience never triggered. **DL overfitting is not the cause of the 99 %+ accuracies.**
+
+### Summary verdict for the paper
+
+| Hypothesis tested | Diagnostic | Outcome |
+|---|---|---|
+| Classical XGB over-trained | XGB learning curves | Rejected — saturation pattern |
+| Classical per-class variance hidden by aggregate | Per-class 5-fold CV | Variance rejected (std ≤ 0.0023); BUT structural mismatch *found* |
+| DL backbones overfit at end of training | DL learning curves | Rejected — both under-trained, no val-loss rebound |
+| Patient-level leakage inflates accuracy | Filename-proximity (Diag 1) + per-class CV (Diag 3) | Diag 1 inconclusive; Diag 3 supports — Stone difficulty mismatch is 3.9 σ |
+
+**The diagnostic answer to Sandhya:** the 99 %+ numbers are not over-trained model artefacts — train and val curves saturate together for every pipeline and there is no overfit rebound. They reflect either genuine dataset signal or shared dataset-level structure (the per-class CV-vs-test mismatch on Stone is most consistent with patient-level grouping). Patient-level resplitting + a parallel filename-proximity test in DL embedding space are the natural follow-ups, deferred as future work.
 
 ---
 

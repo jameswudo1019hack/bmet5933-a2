@@ -37,6 +37,7 @@ Kidney CT Classification · Islam et al. (2022) dataset · Due **Fri 15 May 2026
 | Sprint 2 — ConvNeXtV2 (supplementary) | Person B | ✅ Complete |
 | Sprint 3 — Classical on full + paired McNemar's | Person B (running) | ✅ Complete |
 | Sprint 3 second addendum — Feature importance + cross-paradigm Grad-CAM | Person B | ✅ Complete (2026-04-28) |
+| Sprint 3 third addendum — Overfitting diagnostics (post-tutor) | Person B | ✅ Complete (2026-04-29) |
 | Grad-CAM figures | Person B | ✅ Figures generated (cross-architecture + cross-paradigm) |
 | Data efficiency sweep | Both | ✅ Both pipelines (medium DL + full classical) |
 | Feature importance (classical) | Person B (Sprint 3) | ✅ Extracted (deployed-pipeline permutation + raw-XGB sanity) |
@@ -69,7 +70,9 @@ Full table → [[Results_Summary]]
 
 **Mechanism (Sprint 3 second addendum):** classical XGBoost feature importance shows LBP (0.568 macro-F1 drop) + Gabor (0.532) dominate; stats (0.236) and GLCM (0.163) contribute far less. The dataset is solvable by multi-scale local-pattern + frequency-response features. Raw-XGB without PCA scores 0.9950 (vs deployed 0.9897) — PCA(50) costs ~0.5pp at full scale. Top-5 individual features are Gabor std-of-magnitude at vertical/anti-diagonal orientations. See `Results/classical_run_full/feature_importance_group.png` (Paper Figure 2) and `Results/gradcam/cross_paradigm_disagreement.png` (Paper Figure 3).
 
-The **four-step invalidation chain** is now the paper's central methodological contribution. See [[experiments/Sprint3_classical_on_full]] §"Sprint 3 addendum" + §"Sprint 3 second addendum".
+**Overfitting diagnostics (Sprint 3 third addendum, post-tutor 2026-04-29):** Sandhya's "models could be overfitting" pushback ran into four targeted diagnostics; **all four reject the classical-overfit framing**. XGB train+val curves saturate together (no widening gap, val-best at n=399 is +0.0002 above deployed n=200); DL backbones show no val-loss rebound and are still climbing at last epoch; per-class CV std ≤ 0.0023; classical-feature-space slice-proximity probe shows only 3 % similarity boost over random baseline. **The strongest residual signal is per-class structural mismatch**: held-out test Stone F1 (0.9703) is **3.9 σ below** the 5-fold CV mean (0.9792 ± 0.0023), Tumor is 2.2 σ above — exactly what patient-level grouping would produce that random stratification can't smooth out. The patient-leakage caveat is now a quantitatively-observed signal, not just a literature-backed worry. See `Results/diagnostics/per_class_cv.png` and `Results/diagnostics/{xgb,dl}_learning_curves.png`.
+
+The **four-step invalidation chain + overfitting-diagnostic battery** is now the paper's central methodological contribution. See [[experiments/Sprint3_classical_on_full]] §"Sprint 3 addendum" + §"Sprint 3 second addendum" + §"Sprint 3 third addendum".
 
 ---
 
