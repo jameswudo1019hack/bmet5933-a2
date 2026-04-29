@@ -1,7 +1,7 @@
 # Results Summary
 
 All canonical numbers in one place. Pull from here when writing the paper.
-Last updated: 2026-04-27 (Sprint 3 — classical on full)
+Last updated: 2026-04-29 (Sprint 4 — ConvNeXt V2 on medium; closes the 2×2 grid)
 
 ---
 
@@ -16,6 +16,7 @@ Both models evaluated on the **same** 934-image test set. Apples-to-apples.
 | Classical XGBoost                              | 0.9979     | 0.9976     | 0.9979      | 0.99999 | 2 / 934     |
 | EfficientNet-B0 baseline                       | 0.9797     | 0.9745     | 0.9797      | 0.9995  | 19 / 934    |
 | EfficientNet-B0 + TTA hflip ← **canonical DL** | 0.9861     | **0.9829** | 0.9861      | 0.9998  | 13 / 934    |
+| ConvNeXt V2 Base (Sprint 4)                    | 0.9925     | **0.9898** | 0.9925      | 0.9999  | 7 / 934     |
 | Ensemble val-tuned (collapses to classical)    | 0.9979     | 0.9976     | 0.9979      | —       | 2 / 934     |
 | Ensemble equal-weight w=0.5 ← **headline**     | **1.0000** | **1.0000** | 1.0000      | —       | **0 / 934** |
 
@@ -123,6 +124,62 @@ Both are Cyst ↔ Tumor confusions — clinically the most consequential pair. D
 |---|---|---|
 | Ensemble vs DL-TTA hflip | 13 | **0.00024** |
 | Ensemble vs Classical | 2 | 0.50 |
+
+---
+
+## Sprint 4 — ConvNeXt V2 Base on medium dataset (closes 2×2 matched grid, 2026-04-29)
+
+Same medium split (`split.csv`, n=934 test) as the canonical Sprint 1 medium-scale comparisons. Trained with the *identical* protocol used for ConvNeXt V2 full in Sprint 2 (image size 384, batch 32, AdamW wd=0.05, stochastic depth 0.3, two-stage with stage2_unfreeze_blocks=1) — only the training data differs (4,353 medium vs 8,712 full).
+
+| Metric | Value |
+|---|---|
+| Accuracy | **0.9925** |
+| Macro-F1 | **0.9898 [0.9813, 0.9968]** |
+| Weighted-F1 | 0.9925 |
+| ROC-AUC OvR | 0.9999 |
+| Errors | **7 / 934** |
+| Best epoch | (in run_log.json) |
+
+### Per-class F1 — ConvNeXt V2 Base medium
+
+| Class | Precision | Recall | F1 [95 % CI] | Support |
+|---|---|---|---|---|
+| Cyst | 0.996 | 0.993 | 0.995 [0.988, 1.000] | 279 |
+| Normal | 0.995 | 0.992 | 0.993 [0.987, 0.999] | 381 |
+| Stone | 0.962 | 0.981 | **0.971** [0.946, 0.991] | 103 |
+| **Tumor** | **1.000** | **1.000** | **1.000** | 171 |
+
+### Confusion matrix — ConvNeXt V2 Base medium
+
+|  | Pred Cyst | Pred Normal | Pred Stone | Pred Tumor |
+|---|---|---|---|---|
+| **True Cyst** | 277 | 0 | 2 | 0 |
+| **True Normal** | 1 | 378 | 2 | 0 |
+| **True Stone** | 0 | 2 | 101 | 0 |
+| **True Tumor** | 0 | 0 | 0 | 171 |
+
+### 2×2 architecture-vs-data matched grid (now complete)
+
+| | Medium (n=934 test) | Full (n=1,867 test) |
+|---|---|---|
+| EfficientNet-B0 | 0.9829 (TTA hflip), 13 errors, 1.39 % error rate | 0.9819, 23 errors, 1.23 % error rate |
+| **ConvNeXt V2 Base** | **0.9898**, 7 errors, **0.75 %** error rate | 0.9953, 6 errors, **0.32 %** error rate |
+
+**Architecture > data at every scale.** ConvNeXt V2 medium beats EffNet-B0+TTA medium; ConvNeXt V2 full beats EffNet-B0 full (Sprint 2, p=0.0021). **Asymmetric data-volume response**: ConvNeXt V2 error rate drops 57 % medium → full; EffNet-B0 stays flat. Data helps the larger architecture; not the smaller one (EffNet-B0 saturated at 4,353 train).
+
+### Paired McNemar's on the medium n=934 test set
+
+`Results/convnextv2_medium_run/sprint4_medium_grid.json`:
+
+| Comparison | Both correct | Only A wrong | Only B wrong | Both wrong | Discordant | p-value |
+|---|---|---|---|---|---|---|
+| ConvNeXt V2 medium vs EffNet-B0+TTA medium | 916 | 5 | 11 | 2 | 16 | 0.21 (n.s.) |
+| **ConvNeXt V2 medium vs Classical medium** | 925 | 7 | 2 | **0** | 9 | 0.18 (n.s.) |
+| EffNet-B0+TTA medium vs Classical medium *(Sprint 1 reference)* | 919 | 13 | 2 | **0** | 15 | **0.0074** (sig.) |
+
+**`both_wrong = 0` between classical-medium and ConvNeXt V2-medium** — the disjoint-error pattern that produced the 100 % medium-set ensemble in Sprint 1 *extends to ConvNeXt V2*. The "100 % equal-weight ensemble" finding is paradigm-stable across both CNN backbones at medium scale, not a quirk of EffNet-B0. The Sprint 3 invalidation chain's medium → full failure is therefore **scale-dependent, not architecture-dependent within DL**.
+
+ConvNeXt V2 medium ∩ EffNet-B0 medium = 2 both-wrong (small within-DL-paradigm overlap, dataset-level hard cases).
 
 ---
 

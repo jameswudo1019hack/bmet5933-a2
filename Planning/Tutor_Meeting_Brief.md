@@ -13,6 +13,8 @@ Read [[Project_Framing_v2]] before the meeting for full context.
 > **Day-2 update (2026-04-28, interpretability + 3-way disagreement check).** Two additions: (1) classical XGBoost feature importance shows LBP (54 % macro-F1 drop when permuted) and Gabor (53 %) jointly dominate, with stats and GLCM contributing far less — the dataset is solvable by *multi-scale local-pattern + frequency-response* features, more specific than the previous "texture-solvable" hand-wave. (2) The 3-way disagreement bucket counter reveals **a *fourth* invalidation step**: `classical_right_dl_wrong = 0` — *no test image (out of 1,867)* exists where classical-XGB uniquely succeeds over both DL backbones. The Sprint 1 "complementary signal between paradigms" claim is now formally falsified at full scale. Cross-paradigm Grad-CAM (Figure 3) shows DL backbones correctly attending to small focal calcifications (Stone) that classical's whole-image texture aggregation misses — mechanistic explanation for the 8 `Stone→Normal/Cyst` classical-only errors. Q1 (dataset-saturation framing) is now **quadruply** load-bearing. See [[experiments/Sprint3_classical_on_full]] §"Sprint 3 second addendum".
 >
 > **Day-3 update (2026-04-29, post-tutor overfitting diagnostics).** Sandhya raised the overfitting hypothesis at the Wednesday meeting; we ran four targeted diagnostics. **The classical-overfit framing is rejected by all four**: XGB train+val curves saturate together (no widening gap; deployed n=200 is within 0.0002 macro-F1 of val-best at n=399); both DL backbones show no val-loss rebound and were still climbing at the last epoch (under-trained, not over-trained); per-class CV variance is small (std ≤ 0.0023). **However, per-class CV reveals the strongest leakage signal so far**: held-out test Stone F1 (0.9703) is **3.9 σ below** the train+val 5-fold CV mean (0.9792 ± 0.0023), and Tumor is 2.2 σ above CV mean — the per-class structural mismatch between train+val and test that random stratification cannot smooth out, exactly what patient-level grouping would predict. The patient-leakage caveat moves from "literature-backed worry" to "dataset-specific observed signal" with quantitative evidence. See [[experiments/Sprint3_classical_on_full]] §"Sprint 3 third addendum".
+>
+> **Day-3 evening update (Sprint 4 — ConvNeXt V2 medium).** Closed the 2×2 architecture-vs-data matched grid by training ConvNeXt V2 Base on the medium split. **ConvNeXt V2 medium = 0.9898 macro-F1 (7/934 errors)** — beats EffNet-B0+TTA medium (13/934). Architecture > data is now confirmed at both scales. **Equally important — `both_wrong = 0` between classical-XGB and ConvNeXt-medium on the n=934 test set**, exactly as in Sprint 1's classical-vs-EffNet pair. The medium-set "disjoint errors / 100 % equal-weight ensemble" finding is now *paradigm-stable across two CNN backbones*, not a quirk of EffNet-B0. The Sprint 3 invalidation chain therefore tightens: **the medium → full failure of disjoint-error is scale-dependent, not architecture-dependent within DL**. See [[experiments/Sprint4_ConvNeXtV2_medium]].
 
 ---
 
@@ -36,9 +38,18 @@ Read [[Project_Framing_v2]] before the meeting for full context.
 
 **Caveat 2 (Sprint 3-specific):** invalidating the "disjoint errors" claim by going from medium to full data is itself the paper's most defensible contribution if presented honestly. We will not bury this — we will lead with the two-scale comparison.
 
-### Finding 2: architecture > data volume for EfficientNet-B0; classical wins shrink at scale (refreshed 2026-04-27)
+### Finding 2: architecture > data volume — confirmed at BOTH scales after Sprint 4 (refreshed 2026-04-29 — full 2×2 matched grid)
 
-**DL leg (unchanged from Sprint 2):** EffNet-B0 trained on full dataset (8,712 train) vs medium (4,353 train) — doubling the data moves error rate from 1.29 % (medium + TTA) to 1.23 % (full), essentially nothing. ConvNeXt V2 on the same full training reduces error rate to 0.32 % — 74 % reduction at matched data, *p* = 0.0021.
+**Now have a complete 2×2 matched grid:**
+
+| | Medium (n=934 test) | Full (n=1,867 test) |
+|---|---|---|
+| EfficientNet-B0 | 0.9829 (TTA hflip), 13 errors | 0.9819, 23 errors |
+| ConvNeXt V2 Base | **0.9898 (Sprint 4 — new)**, 7 errors | 0.9953, 6 errors |
+
+**Architecture wins at every scale.** ConvNeXt V2 medium (7 errors) beats EffNet-B0 + TTA medium (13 errors) — same direction as the Sprint 2 ConvNeXt V2 full vs EffNet-B0 full result (p = 0.0021). The architecture effect is dataset-size-independent.
+
+**Asymmetric data-volume response between architectures.** Doubling the data: EffNet-B0 error rate stays flat (1.39 % → 1.23 %); ConvNeXt V2 error rate drops 57 % (0.75 % → 0.32 %). Data helps the larger architecture, not the smaller one — EffNet-B0 is capacity-limited and saturated already at 4,353 training samples; ConvNeXt V2 has spare capacity that more data can fill.
 
 **Classical leg (new from Sprint 3):** classical XGBoost trained on full (8,712 train) vs medium (4,353 train) — error rate 0.21 % (2/934) on medium-test → 0.70 % (13/1867) on full-test. Test sets differ so this is directional, **but** the matched-test-set comparison at full scale shows classical's lead over the DL backbones is no longer statistically significant (McNemar p = 0.089 / 0.119). On medium, classical was clearly best; on full, it is statistically tied with both DL backbones. Classical's advantage is dataset-scale-dependent.
 

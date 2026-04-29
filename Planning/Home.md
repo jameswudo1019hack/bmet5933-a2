@@ -18,6 +18,7 @@ Kidney CT Classification · Islam et al. (2022) dataset · Due **Fri 15 May 2026
 - [[experiments/Sprint2_evaluation_ConvNeXtV2]] — ConvNeXtV2 decision rationale
 - [[experiments/Sprint2_ConvNeXtV2_on_full]] — ConvNeXtV2 on full dataset
 - [[experiments/Sprint3_classical_on_full]] — classical on full + paired McNemar's at matched scale
+- [[experiments/Sprint4_ConvNeXtV2_medium]] — ConvNeXt V2 on medium (closes the 2×2 architecture-vs-data matched grid)
 - [[Validation_and_Verification]] — overfitting diagnostics + V&V infrastructure (post-tutor 2026-04-29) ← **the answer to Sandhya's overfitting question**
 
 ### Paper Writing
@@ -39,6 +40,7 @@ Kidney CT Classification · Islam et al. (2022) dataset · Due **Fri 15 May 2026
 | Sprint 3 — Classical on full + paired McNemar's | Person B (running) | ✅ Complete |
 | Sprint 3 second addendum — Feature importance + cross-paradigm Grad-CAM | Person B | ✅ Complete (2026-04-28) |
 | Sprint 3 third addendum — Overfitting diagnostics (post-tutor) | Person B | ✅ Complete (2026-04-29) |
+| Sprint 4 — ConvNeXt V2 on medium (closes 2×2 matched grid) | Person B | ✅ Complete (2026-04-29) |
 | Grad-CAM figures | Person B | ✅ Figures generated (cross-architecture + cross-paradigm) |
 | Data efficiency sweep | Both | ✅ Both pipelines (medium DL + full classical) |
 | Feature importance (classical) | Person B (Sprint 3) | ✅ Extracted (deployed-pipeline permutation + raw-XGB sanity) |
@@ -56,6 +58,7 @@ Full table → [[Results_Summary]]
 | ------------------------------------ | -------------- | ---------- | ---------- |
 | Classical XGBoost                    | Medium (n=934) | **0.9976** | 2 / 934    |
 | EfficientNet-B0 + TTA hflip          | Medium (n=934) | **0.9829** | 13 / 934   |
+| ConvNeXtV2 Base (medium)             | Medium (n=934) | **0.9898** | 7 / 934    |
 | Ensemble equal-weight w=0.5          | Medium (n=934) | **1.0000** | 0 / 934    |
 | Classical SVM (full)                 | Full (n=1867)  | 0.8515     | 238 / 1867 |
 | Classical RF (full)                  | Full (n=1867)  | 0.9801     | 27 / 1867  |
