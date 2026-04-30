@@ -254,6 +254,34 @@ Sandhya noted at the 2026-04-29 meeting that multiple published papers have used
 
 **5. The clinical literature on slice-level leakage in 2D medical CNNs is well-established.** Yagis et al. (Sci Rep 2021) quantify 29–55 % accuracy inflation in 2D MRI CNN studies that do not stratify by patient; Veetil et al. (2024) replicate at +67 % on Parkinson's data. Neither applies directly to our dataset, but both motivate our diagnostic Q3 finding as expected behaviour rather than an isolated artefact.
 
+### Direct classical-ML comparison — Suresh et al. 2025 (Sci Rep)
+
+The most directly comparable paper to our classical pipeline is **"Optimized machine learning based comparative analysis of predictive models for classification of kidney tumors"** (Scientific Reports 2025, [PMC12365197](https://pmc.ncbi.nlm.nih.gov/articles/PMC12365197/)). It uses the *same* Islam 12,446-image dataset, *same* set of classical classifiers (SVM, Random Forest, XGBoost, KNN, Decision Tree), and **handcrafted features** — the closest published like-for-like to our methodology.
+
+| Classifier | Suresh et al. 2025 (handcrafted, 80:20 split, no CV) | Ours (medium 70/15/15, 5-fold CV, n=934 test) | Ours (full 70/15/15, 5-fold CV, n=1,867 test) |
+|---|---|---|---|
+| SVM | **95 %** (RBF kernel) | not reported separately | 87.25 % (linear kernel — collapses at scale, see Sprint 3 addendum) |
+| KNN | 93 % | not used | not used |
+| XGBoost | 91 % | **99.79 %** | **99.30 %** |
+| Decision Tree | 88 % | not used | not used |
+| Random Forest | 86 % | 97.91 % (val) | 98.55 % |
+
+Three things drop out of this comparison:
+
+1. **Our XGBoost numbers (99.79 % medium / 99.30 % full) are 8–9 pp above their best classical model (SVM 95 %).** This is a substantial gap that *demands explanation*. Two non-mutually-exclusive readings:
+   - **Pipeline engineering**: our classical pipeline is more carefully constructed than theirs (CLAHE preprocessing → 108-dim handcrafted vector spanning four feature families [stats, GLCM, LBP, Gabor] → StandardScaler → PCA(50) capacity cap → class-balanced sample weights → grid-searched hyperparameters via 5-fold stratified CV). Their paper reports "specific features related to the structure and texture of the images were manually created" without further detail; the lower XGBoost accuracy (91 %) is consistent with a less-specified feature pipeline.
+   - **Leakage exposure**: their 80:20 single split with no CV discussion likely has *less* patient-level overlap than our 70:15:15 split simply because their test set is smaller and randomly-chosen test slices are less likely to share patients with the (smaller) training set. **The fact that our numbers are 8–9 pp higher than theirs on the same dataset is itself further evidence consistent with — though not proof of — the patient-grouping signal we surfaced in Diagnostic 3.**
+
+2. **The kernel-vs-paradigm ranking inverts.** Suresh et al. find SVM(RBF) > XGBoost; we find XGBoost > SVM(linear). The likely cause is the kernel choice: RBF can fit non-linear class boundaries in handcrafted-feature space; linear SVM with a 50-component PCA bottleneck cannot. This is consistent with our Sprint 3 addendum finding that SVM(linear) "collapsed at full scale" (medium val 0.9099 → full val 0.8248), while RF and XGBoost held up. It also suggests a future-work item: re-running our SVM with an RBF kernel may close the gap and reach Suresh-comparable numbers.
+
+3. **Suresh et al. do not discuss patient-level stratification or leakage.** Like every other paper we've surveyed, they treat the dataset as independent images and use a single random split. **Their 86–95 % accuracy band is what handcrafted-feature classical ML on this dataset looks like *with a less-rigorous evaluation setup* and *no leakage diagnostic* — so the fact that our pipeline scores higher is expected if our train/val/test split has structural overlap their does not, OR if our features are simply better.** Either explanation supports our paper's central narrative: paradigm-level claims on this benchmark demand the kind of multi-scale + multi-classifier + diagnostic-battery scrutiny we have built in.
+
+### Other classical-feature kidney-CT papers (less direct match)
+
+- **Bingol et al. 2023** (PeerJ CS) — already in the literature table (§6 of this doc). Uses *Relief feature selection* on top of CNN features (not pure classical). Reports 99.37 % on the Islam dataset.
+- **Cascading GLCM + T-SNE 2025** (Springer EPJS) — GLCM features + lightweight ML for kidney tumor detection. Could not fetch full text (paywall redirect); abstract suggests it's *kidney tumor* (not 4-class) detection on a related dataset. Less direct match.
+- **Detection & Classification 2024** (MDPI Technologies) and **Fine-tuned 2025** (Sci Rep) — both use *deep features* (DenseNet121 + EfficientNetB0) into SVM/RF/XGBoost soft-vote ensembles. Reported 99.24 % / 99 % F1. Methodologically a hybrid, not pure-classical; included in §6 of this doc.
+
 ### Implication for the paper
 
 The Discussion can lead with two complementary observations: (a) we replicate the saturation pattern that nine independent papers have observed on this dataset, and (b) we are the first to quantify a patient-level structural mismatch via per-class CV vs test gaps. The novelty is not the score, it is the *failure mode of the score* under stricter analysis — which is the contribution none of the prior papers have made on this benchmark.
