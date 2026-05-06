@@ -41,6 +41,7 @@ Kidney CT Classification · Islam et al. (2022) dataset · Due **Fri 15 May 2026
 | Sprint 3 second addendum — Feature importance + cross-paradigm Grad-CAM | Person B | ✅ Complete (2026-04-28) |
 | Sprint 3 third addendum — Overfitting diagnostics (post-tutor) | Person B | ✅ Complete (2026-04-29) |
 | Sprint 4 — ConvNeXt V2 on medium (closes 2×2 matched grid) | Person B | ✅ Complete (2026-04-29) |
+| Diagnostic 5 — image-hash leakage probe **(critical finding)** | Person B | ✅ Complete (2026-04-30) — see [[Validation_and_Verification]] §3.5 |
 | Grad-CAM figures | Person B | ✅ Figures generated (cross-architecture + cross-paradigm) |
 | Data efficiency sweep | Both | ✅ Both pipelines (medium DL + full classical) |
 | Feature importance (classical) | Person B (Sprint 3) | ✅ Extracted (deployed-pipeline permutation + raw-XGB sanity) |

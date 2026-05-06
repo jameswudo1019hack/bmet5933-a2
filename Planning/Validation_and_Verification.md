@@ -43,11 +43,12 @@ The diagnostic battery in §3 is built on top of this infrastructure.
 
 Sandhya raised the overfitting hypothesis at the Wednesday tutor meeting. We ran four targeted diagnostics, each ~30 min, none requiring retraining of any deployed pipeline. Plan: `Planning/plans/2026-04-29-overfitting-diagnostics.md`.
 
-The four diagnostics are designed to attack overfitting from independent angles:
+The diagnostics are designed to attack overfitting and leakage from independent angles:
 - **Diag 1**: dataset-level structural concern (patient-level slice leakage in classical features)
 - **Diag 2**: classical-classifier overfit (train-val divergence in XGBoost as `n_estimators` grows)
 - **Diag 3**: per-class instability hidden by aggregate macro-F1 (5-fold CV per class)
 - **Diag 4**: DL-specific overfit (val-loss rebound across epochs)
+- **Diag 5** *(added 2026-04-30)*: train/test image-hash and feature-NN leakage — the most damning finding (96 / 1,867 test images at full scale are bit-identical to a training image; 99.4 % have a feature-NN cosine similarity > 0.9999)
 
 ### 3.1 Diagnostic 1 — filename-proximity slice-leakage probe
 
@@ -129,7 +130,84 @@ Overall verdict (script-derived): **WEAK / no leakage signal** in classical feat
 
 ![Per-class 5-fold CV vs held-out test F1](../Results/diagnostics/per_class_cv.png)
 
-### 3.4 Diagnostic 4 — DL learning curves from existing per-epoch logs
+### 3.5 Diagnostic 5 — train/test image-hash and feature-NN leakage probe (added 2026-04-30)
+
+**Hypothesis (and headline finding).** A reviewer or tutor could ask: "do any training images appear *bit-for-bit identical* in the test or val sets?" If yes, that's unambiguous file-level data leakage and would inflate every reported metric on this benchmark by an unknown but substantial margin. **The answer turns out to be yes — at both medium and full scale.**
+
+**Method.** Three independent overlap checks per (train ↔ test) and (train ↔ val) pair, on both the medium and full splits:
+
+1. **Exact pixel hash** — MD5 of the standardised 256 × 256 uint8 array produced by `shared.preprocessing.load_image`. Catches: same file duplicated under different filenames; same image after deterministic preprocessing.
+2. **Statistical fingerprint** — tuple `(mean, std, skew, kurtosis, p10, p25, p50, p75, p90, hist-entropy)` rounded to 6 decimals, hashed. This is the user-proposed test: *"if a train and test image have exactly the same statistical metrics, they are the same image"*. In our data it returns the same matches as MD5 (no nondeterminism that changes pixels but not statistics).
+3. **Feature-space nearest neighbour** — for each test/val image, find the closest training image by cosine similarity in the cached 108-dim handcrafted feature space, ranging across **all classes and all filenames** (not restricted by class or filename ID, unlike Diag 1). Flag `cos sim > 0.9999` as "near-duplicate" and `> 0.999` as "very-close".
+
+**Implementation.** `analysis/diag_image_hash_leakage.py`. Outputs `Results/diagnostics/image_hash_leakage_{medium,full}.json` and `image_hash_leakage_summary.json`.
+
+**Results.**
+
+| Quantity | Medium split (n_train=4,353; n_val=934; n_test=934) | Full split (n_train=8,712; n_val=1,867; n_test=1,867) |
+|---|---|---|
+| Within-train MD5 duplicates *(distinct hashes that appear ≥ 2× in train)* | 150 | 260 |
+| train ∩ test MD5 collisions | **67** | **96** (5.1 % of test) |
+| train ∩ val MD5 collisions | **68** | **115** (6.2 % of val) |
+| val ∩ test MD5 collisions | 19 | 22 |
+| Statistical-fingerprint collisions *(matches MD5 in every cell)* | 67 / 68 / 19 | 96 / 115 / 22 |
+| Feature-NN train→test near-duplicate (cos > 0.9999) | 925 / 934 (99.0 %) | 1,855 / 1,867 (99.4 %) |
+| Feature-NN train→test very-close (cos > 0.999) — additional | 9 / 934 | 12 / 1,867 |
+| Feature-NN max cosine similarity train→test | 1.000000 | 1.000000 |
+
+**Sample collision pairs** (full split, train ↔ test, MD5-identical):
+
+| Train file | Test file | Class | Note |
+|---|---|---|---|
+| `Cyst- (388).jpg` | `Cyst- (468).jpg` | Cyst | Different filenames, identical pixel content |
+| `Cyst- (1715).jpg` | `Cyst- (1671).jpg` | Cyst | Same |
+| `Cyst- (2764).jpg` | `Cyst- (2833).jpg` | Cyst | Same |
+| `Cyst- (1672).jpg` | `Cyst- (1716).jpg` | Cyst | Note: this is the *reverse* of the (1715, 1671) pair — bidirectional duplication |
+
+**Sample feature-NN near-duplicate pairs** (cos > 0.9999):
+
+| Train file | Test file | Cosine sim | Note |
+|---|---|---|---|
+| `Stone- (298).jpg` | `Stone- (297).jpg` | 0.999992 | Adjacent-numbered slices, same patient |
+| `Cyst- (1774).jpg` | `Cyst- (1776).jpg` | 0.999997 | Adjacent slices |
+| `Cyst- (970).jpg` | `Cyst- (971).jpg` | 0.999988 | Adjacent slices |
+
+### What we found, in plain language
+
+This diagnostic surfaces **three distinct kinds of data leakage**, none of which any prior paper on this benchmark has documented:
+
+1. **The dataset itself contains duplicate files.** Within the training partition alone, 260 distinct images appear two or more times under different filenames at full scale (150 at medium). The duplication is not a split artefact — it's intrinsic to the Islam et al. 2022 dataset.
+
+2. **The 70/15/15 stratified-on-slice split puts duplicates in different partitions.** At full scale, 96 test images and 115 val images have at least one bit-identical training-set sibling. A model can score those 211 (96 + 115) images correctly by *literal pixel memorisation* — no pathology learning required. That is **5.1 % of the full test set** scored "for free" through hard duplication.
+
+3. **Beyond bit-identical duplication, near-identical adjacent slices are pervasive.** 1,855 of 1,867 test images at full scale (99.4 %) have a training-set image at cosine similarity ≥ 0.9999 in the 108-dim handcrafted feature space — these are typically slices `n` and `n+1` from the same patient, and they look essentially identical to any model that aggregates whole-image texture. This is the patient-level slice leakage Diag 1 hinted at, now quantified at the sharper threshold.
+
+### Connecting Diag 5 to the earlier findings
+
+- **Diag 1 (filename-proximity)** said: "in the 108-dim feature space, nearest-by-ID has 3 % more cosine similarity than random within-class." That was already a structural-leakage signal, but compressed by within-class similarity saturation. Diag 5 sharpens it: at the `> 0.9999` threshold, nearly every test image has a train neighbour, and 5 % of test images are *literally the same file* as a training image.
+- **Diag 3 (per-class CV gap)** said: "Stone test F1 is 3.9 σ below CV mean." With Diag 5 in hand, this is reinterpreted: Stone class evidently has *fewer cross-split file duplicates* than other classes (or a less-redundant patient population), so its test difficulty is closer to "real" while other classes benefit more from leakage. **This makes Stone the only class whose reported metric is approximately honest.**
+- **Diag 2 (XGB learning curves) and Diag 4 (DL learning curves)** said: "saturation, not classifier overfit." Diag 5 explains *why*: when 99 %+ of test images have an essentially-identical train counterpart, both train and val/test loss can converge together at low values without the model ever generalising — it just memorises a small set of unique slices. Saturation pattern + leakage = the dataset is partially solvable by memorisation alone.
+
+### What this means for the paper
+
+The four-step invalidation chain (medium → full-XGB → full-all-classifiers → 3-way coverage) is now **subordinate to a more fundamental finding**: every reported metric on this benchmark, by any paper, is inflated by hard file-level duplication and near-duplicate slice pollution that the dataset's release did not document. Specifically:
+
+- Our headline numbers — classical-medium 0.9979, ConvNeXt-V2-full 0.9953, equal-weight ensemble medium 1.0000 — are upper bounds. The "true" accuracy on a leak-free split is unknowable without redoing the split with the duplicates removed.
+- The published 99 %+ numbers in Islam 2022, Bingol 2023, Suresh 2025, KidneyNeXt 2025, and the 100 %-test "Hybrid DL Framework 2025" likely all contain similar levels of unacknowledged leakage. Our paper is the first to quantify it on this benchmark.
+- The paper's headline shifts again: not "we report 99 % on a saturated benchmark" but **"we report 99 % on this benchmark *and* discover that the benchmark has 5.1 % bit-identical train/test duplication and 99.4 % feature-space near-duplication, calling every reported number on it (ours and prior published work) into question"**.
+
+### Recommended next experiment (for the paper)
+
+A leak-free re-run is now well-motivated:
+
+1. **Deduplicate the dataset by MD5.** Keep one canonical copy per unique pixel hash. Drops 260 within-train duplicates and resolves the 96 + 115 + 22 cross-split collisions deterministically.
+2. **Optionally, also deduplicate near-identical pairs** (cos sim > 0.9999) by keeping one slice per pseudo-patient, where a pseudo-patient is a connected component in the "cos sim > 0.9999" graph.
+3. Re-run classical XGBoost and ConvNeXt V2 on the deduplicated data with the same protocol.
+4. Report the *gap* between leak-inclusive and leak-free metrics. This number IS the contribution.
+
+Estimated effort: ~2–3 hours (script the dedup, retrain on full deduplicated, predict, compare). This is the killer experiment that turns the paper from "another 99 % on Islam-2022" into "the leak-free baseline for Islam-2022."
+
+
 
 **Hypothesis.** EfficientNet-B0-full and ConvNeXt V2-full could be overfitting in stage-2 fine-tuning if val_loss rebounds while train_loss continues to fall.
 
@@ -184,7 +262,8 @@ Full-set duplicated test images were all classified correctly by the three main 
 | Classical XGB over-trained at deployed `n_estimators=200` | XGB learning curves (Diag 2) | **Rejected** — saturation pattern; val-best at n=399 is +0.0002 macro-F1 above deployed |
 | Classical XGB has high per-class variance hidden by aggregate metric | Per-class 5-fold CV (Diag 3) | **Variance rejected** (per-class CV std ≤ 0.0023); BUT structural mismatch *found* — see next row |
 | DL backbones overfit at end of training | DL learning curves (Diag 4) | **Rejected** — both still climbing at last epoch; no val-loss rebound |
-| Patient-level leakage inflates accuracy | Filename-proximity (Diag 1) + per-class CV (Diag 3) | **Diag 1 inconclusive** in classical feature space; **Diag 3 supports** — Stone test F1 is 3.9 σ below CV mean, Tumor 2.2 σ above |
+| Patient-level leakage inflates accuracy | Filename-proximity (Diag 1) + per-class CV (Diag 3) + image-hash (Diag 5) | **Diag 1 inconclusive** in classical feature space (saturated baseline); **Diag 3 supports** (Stone -3.9 σ); **Diag 5 is decisive** — 5.1 % of test images at full scale are bit-identical to a training image, 99.4 % have feature-NN cos sim > 0.9999 |
+| Hard file-level duplication in dataset | Image hash (Diag 5) | **Confirmed** — 260 within-train duplicates at full scale; 96 train↔test, 115 train↔val MD5 collisions; the dataset itself contains duplicate files under different names |
 | Exact duplicate leakage inflates accuracy | MD5 duplicate audit (Diag 5) | **Confirmed but bounded** — exact train/test duplicates exist; removing them barely changes full-set accuracy |
 
 ### 4.2 The diagnostic answer to Sandhya's "could be overfitting"

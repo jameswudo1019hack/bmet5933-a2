@@ -1,0 +1,2437 @@
+{
+  "split_label": "full",
+  "n_train": 8712,
+  "n_val": 1867,
+  "n_test": 1867,
+  "within_train_md5_duplicates_count": 260,
+  "within_train_md5_duplicates_examples": [
+    {
+      "md5": "03654e612c0d512f6f0412df83a28cb3",
+      "n": 2
+    },
+    {
+      "md5": "052c260075a56c00072cc8c8ec37d3a2",
+      "n": 2
+    },
+    {
+      "md5": "d1250688b8af77974408dba02eb70868",
+      "n": 2
+    },
+    {
+      "md5": "ca2320a4dd8321b4b830994a77e51515",
+      "n": 2
+    },
+    {
+      "md5": "7e35fb765bd21a17a55290f703501d14",
+      "n": 2
+    },
+    {
+      "md5": "97ee456351eb70d1f19b321d7d7c6ca8",
+      "n": 2
+    },
+    {
+      "md5": "72bed18bdfb874af9da7231db1407818",
+      "n": 2
+    },
+    {
+      "md5": "e9c97c9fa7ab31d6bdc2ddece7d4422a",
+      "n": 2
+    },
+    {
+      "md5": "56cab0fadb079268c523d69d06478ce2",
+      "n": 2
+    },
+    {
+      "md5": "37df7d216cac01ab5271a6487b904f09",
+      "n": 2
+    },
+    {
+      "md5": "dc2629547833521d80fdbbced5ae5e5f",
+      "n": 2
+    },
+    {
+      "md5": "bd5b97a5a69c1a17ac645133c1807a5a",
+      "n": 2
+    },
+    {
+      "md5": "2b933de85528d75eebcffd30eb753cae",
+      "n": 2
+    },
+    {
+      "md5": "e9f6f7b8d7c5556bf480ee132dbac02c",
+      "n": 2
+    },
+    {
+      "md5": "0dd2f91023722a366681c9fca26e55bc",
+      "n": 2
+    },
+    {
+      "md5": "d34e20fc42dec65be51f4980212f54f4",
+      "n": 2
+    },
+    {
+      "md5": "ca13913401397a41793eba0dbb0b80b3",
+      "n": 2
+    },
+    {
+      "md5": "09a3c1fb89b431789cd30b5b0b3db61f",
+      "n": 2
+    },
+    {
+      "md5": "807dd9646864c17a1467580ed5f96f1a",
+      "n": 2
+    },
+    {
+      "md5": "10564d19e476d52eaf74654a14766b3f",
+      "n": 2
+    }
+  ],
+  "overlap_train_test": {
+    "label_a": "train",
+    "label_b": "test",
+    "n_a": 8712,
+    "n_b": 1867,
+    "md5_exact_duplicates_count": 96,
+    "fingerprint_exact_duplicates_count": 96,
+    "md5_pairs": [
+      {
+        "md5": "73aacdc76c5f71cfbdaf65ac8738f676",
+        "train_idx": 4016,
+        "train_filename": "Cyst/Cyst- (388).jpg",
+        "train_class": "Cyst",
+        "test_idx": 16,
+        "test_filename": "Cyst/Cyst- (468).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "a04ccb5100137132015d96f4991a6bae",
+        "train_idx": 23,
+        "train_filename": "Cyst/Cyst- (431).jpg",
+        "train_class": "Cyst",
+        "test_idx": 34,
+        "test_filename": "Cyst/Cyst- (351).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "bc2c1b4a89599fb2d095bfca5b565c88",
+        "train_idx": 8575,
+        "train_filename": "Cyst/Cyst- (2764).jpg",
+        "train_class": "Cyst",
+        "test_idx": 39,
+        "test_filename": "Cyst/Cyst- (2833).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "eaea1ab8ba851c797635bd7b5758b241",
+        "train_idx": 1256,
+        "train_filename": "Cyst/Cyst- (1715).jpg",
+        "train_class": "Cyst",
+        "test_idx": 41,
+        "test_filename": "Cyst/Cyst- (1671).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "e6528a7d9b2ebac80592780543e5d74b",
+        "train_idx": 3420,
+        "train_filename": "Cyst/Cyst- (374).jpg",
+        "train_class": "Cyst",
+        "test_idx": 64,
+        "test_filename": "Cyst/Cyst- (454).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "323ed913b80807929b8f116309093498",
+        "train_idx": 7753,
+        "train_filename": "Cyst/Cyst- (1672).jpg",
+        "train_class": "Cyst",
+        "test_idx": 69,
+        "test_filename": "Cyst/Cyst- (1716).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "eeb5abe1edb4ca093f6e52111ce28423",
+        "train_idx": 2008,
+        "train_filename": "Cyst/Cyst- (1255).jpg",
+        "train_class": "Cyst",
+        "test_idx": 78,
+        "test_filename": "Cyst/Cyst- (1105).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "af01f56c980a20d63161b2489cbee6ab",
+        "train_idx": 126,
+        "train_filename": "Cyst/Cyst- (1660).jpg",
+        "train_class": "Cyst",
+        "test_idx": 137,
+        "test_filename": "Cyst/Cyst- (1704).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "d12301d182cca754a97dfbb9403203ca",
+        "train_idx": 6030,
+        "train_filename": "Cyst/Cyst- (2901).jpg",
+        "train_class": "Cyst",
+        "test_idx": 155,
+        "test_filename": "Cyst/Cyst- (2798).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "f59b9f02bdffac3de024598fa84d05dd",
+        "train_idx": 7922,
+        "train_filename": "Cyst/Cyst- (415).jpg",
+        "train_class": "Cyst",
+        "test_idx": 189,
+        "test_filename": "Cyst/Cyst- (335).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "411aa33c2aa81b12a37877555b2643f6",
+        "train_idx": 8144,
+        "train_filename": "Cyst/Cyst- (2768).jpg",
+        "train_class": "Cyst",
+        "test_idx": 212,
+        "test_filename": "Cyst/Cyst- (2841).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "d40af97595ecfbd9e1d168390e60f3a3",
+        "train_idx": 6598,
+        "train_filename": "Cyst/Cyst- (2331).jpg",
+        "train_class": "Cyst",
+        "test_idx": 251,
+        "test_filename": "Cyst/Cyst- (2293).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "49bf691428f19c0133ce5b4f33aa6e8a",
+        "train_idx": 8501,
+        "train_filename": "Cyst/Cyst- (477).jpg",
+        "train_class": "Cyst",
+        "test_idx": 258,
+        "test_filename": "Cyst/Cyst- (397).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "b8bf0651db9261ead9f7aed951ad288f",
+        "train_idx": 2276,
+        "train_filename": "Cyst/Cyst- (1252).jpg",
+        "train_class": "Cyst",
+        "test_idx": 260,
+        "test_filename": "Cyst/Cyst- (1102).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "d571157789623f7b7a76686c996f0eee",
+        "train_idx": 1177,
+        "train_filename": "Normal/Normal- (1669).jpg",
+        "train_class": "Normal",
+        "test_idx": 261,
+        "test_filename": "Normal/Normal- (1594).jpg",
+        "test_class": "Normal"
+      },
+      {
+        "md5": "092775ffc545bc6db63e6a1cddb9d0e3",
+        "train_idx": 4527,
+        "train_filename": "Cyst/Cyst- (648).jpg",
+        "train_class": "Cyst",
+        "test_idx": 271,
+        "test_filename": "Cyst/Cyst- (605).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "4d96d2ad985a0221f329875facae454a",
+        "train_idx": 1170,
+        "train_filename": "Cyst/Cyst- (1134).jpg",
+        "train_class": "Cyst",
+        "test_idx": 299,
+        "test_filename": "Cyst/Cyst- (1284).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "845987d498b22fe37df6fc763c4230d4",
+        "train_idx": 6872,
+        "train_filename": "Cyst/Cyst- (1329).jpg",
+        "train_class": "Cyst",
+        "test_idx": 313,
+        "test_filename": "Cyst/Cyst- (1179).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "0e2ec76164e2e3bb7453575e0f97c36a",
+        "train_idx": 444,
+        "train_filename": "Cyst/Cyst- (486).jpg",
+        "train_class": "Cyst",
+        "test_idx": 378,
+        "test_filename": "Cyst/Cyst- (406).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "03e500be64da01e21336e093b4e72821",
+        "train_idx": 2070,
+        "train_filename": "Cyst/Cyst- (1647).jpg",
+        "train_class": "Cyst",
+        "test_idx": 408,
+        "test_filename": "Cyst/Cyst- (1691).jpg",
+        "test_class": "Cyst"
+      }
+    ],
+    "fingerprint_pairs": [
+      {
+        "fingerprint": [
+          16.229706,
+          35.082525,
+          2.939279,
+          11.153026,
+          0.0,
+          0.0,
+          0.0,
+          7.0,
+          69.0,
+          2.890519
+        ],
+        "train_idx": 4016,
+        "train_filename": "Cyst/Cyst- (388).jpg",
+        "train_class": "Cyst",
+        "test_idx": 16,
+        "test_filename": "Cyst/Cyst- (468).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          18.135117,
+          38.055714,
+          2.744901,
+          9.270787,
+          0.0,
+          0.0,
+          0.0,
+          11.0,
+          77.0,
+          3.009107
+        ],
+        "train_idx": 23,
+        "train_filename": "Cyst/Cyst- (431).jpg",
+        "train_class": "Cyst",
+        "test_idx": 34,
+        "test_filename": "Cyst/Cyst- (351).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          23.140579,
+          42.077534,
+          2.347422,
+          6.972717,
+          0.0,
+          0.0,
+          0.0,
+          44.0,
+          81.0,
+          3.275504
+        ],
+        "train_idx": 8575,
+        "train_filename": "Cyst/Cyst- (2764).jpg",
+        "train_class": "Cyst",
+        "test_idx": 39,
+        "test_filename": "Cyst/Cyst- (2833).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          41.415054,
+          62.464186,
+          1.970649,
+          3.571183,
+          0.0,
+          0.0,
+          3.0,
+          68.0,
+          93.0,
+          4.747641
+        ],
+        "train_idx": 1256,
+        "train_filename": "Cyst/Cyst- (1715).jpg",
+        "train_class": "Cyst",
+        "test_idx": 41,
+        "test_filename": "Cyst/Cyst- (1671).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          17.00209,
+          35.430637,
+          2.696633,
+          9.169364,
+          0.0,
+          0.0,
+          0.0,
+          10.0,
+          72.0,
+          2.96558
+        ],
+        "train_idx": 3420,
+        "train_filename": "Cyst/Cyst- (374).jpg",
+        "train_class": "Cyst",
+        "test_idx": 64,
+        "test_filename": "Cyst/Cyst- (454).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          41.060837,
+          62.171715,
+          1.977656,
+          3.61638,
+          0.0,
+          0.0,
+          2.0,
+          67.0,
+          93.0,
+          4.730814
+        ],
+        "train_idx": 7753,
+        "train_filename": "Cyst/Cyst- (1672).jpg",
+        "train_class": "Cyst",
+        "test_idx": 69,
+        "test_filename": "Cyst/Cyst- (1716).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          28.925644,
+          45.36235,
+          1.534132,
+          2.283841,
+          0.0,
+          0.0,
+          0.0,
+          71.0,
+          96.0,
+          3.668519
+        ],
+        "train_idx": 2008,
+        "train_filename": "Cyst/Cyst- (1255).jpg",
+        "train_class": "Cyst",
+        "test_idx": 78,
+        "test_filename": "Cyst/Cyst- (1105).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          39.850739,
+          58.282754,
+          2.032287,
+          4.28638,
+          0.0,
+          0.0,
+          5.0,
+          67.0,
+          89.0,
+          4.820506
+        ],
+        "train_idx": 126,
+        "train_filename": "Cyst/Cyst- (1660).jpg",
+        "train_class": "Cyst",
+        "test_idx": 137,
+        "test_filename": "Cyst/Cyst- (1704).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          15.687302,
+          34.025776,
+          2.961538,
+          11.903851,
+          0.0,
+          0.0,
+          0.0,
+          4.0,
+          67.0,
+          2.745587
+        ],
+        "train_idx": 6030,
+        "train_filename": "Cyst/Cyst- (2901).jpg",
+        "train_class": "Cyst",
+        "test_idx": 155,
+        "test_filename": "Cyst/Cyst- (2798).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          19.675385,
+          38.793251,
+          2.472841,
+          7.527459,
+          0.0,
+          0.0,
+          0.0,
+          20.0,
+          80.0,
+          3.091665
+        ],
+        "train_idx": 7922,
+        "train_filename": "Cyst/Cyst- (415).jpg",
+        "train_class": "Cyst",
+        "test_idx": 189,
+        "test_filename": "Cyst/Cyst- (335).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          22.184113,
+          41.902345,
+          2.497053,
+          7.825994,
+          0.0,
+          0.0,
+          0.0,
+          38.0,
+          80.0,
+          3.208159
+        ],
+        "train_idx": 8144,
+        "train_filename": "Cyst/Cyst- (2768).jpg",
+        "train_class": "Cyst",
+        "test_idx": 212,
+        "test_filename": "Cyst/Cyst- (2841).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          17.785294,
+          36.994149,
+          3.134172,
+          12.904677,
+          0.0,
+          0.0,
+          0.0,
+          20.0,
+          67.0,
+          3.248969
+        ],
+        "train_idx": 6598,
+        "train_filename": "Cyst/Cyst- (2331).jpg",
+        "train_class": "Cyst",
+        "test_idx": 251,
+        "test_filename": "Cyst/Cyst- (2293).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          16.17981,
+          34.594952,
+          2.956371,
+          11.756392,
+          0.0,
+          0.0,
+          0.0,
+          8.0,
+          69.0,
+          2.909504
+        ],
+        "train_idx": 8501,
+        "train_filename": "Cyst/Cyst- (477).jpg",
+        "train_class": "Cyst",
+        "test_idx": 258,
+        "test_filename": "Cyst/Cyst- (397).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          29.253571,
+          45.265979,
+          1.468032,
+          1.941916,
+          0.0,
+          0.0,
+          0.0,
+          72.0,
+          96.0,
+          3.676801
+        ],
+        "train_idx": 2276,
+        "train_filename": "Cyst/Cyst- (1252).jpg",
+        "train_class": "Cyst",
+        "test_idx": 260,
+        "test_filename": "Cyst/Cyst- (1102).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          77.625534,
+          76.300929,
+          0.582773,
+          -0.699251,
+          0.0,
+          0.0,
+          57.0,
+          141.0,
+          162.0,
+          5.552587
+        ],
+        "train_idx": 1177,
+        "train_filename": "Normal/Normal- (1669).jpg",
+        "train_class": "Normal",
+        "test_idx": 261,
+        "test_filename": "Normal/Normal- (1594).jpg",
+        "test_class": "Normal"
+      },
+      {
+        "fingerprint": [
+          17.114288,
+          40.044159,
+          2.852096,
+          9.510927,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          87.0,
+          2.605578
+        ],
+        "train_idx": 4527,
+        "train_filename": "Cyst/Cyst- (648).jpg",
+        "train_class": "Cyst",
+        "test_idx": 271,
+        "test_filename": "Cyst/Cyst- (605).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          24.136902,
+          42.451934,
+          1.958205,
+          4.399602,
+          0.0,
+          0.0,
+          0.0,
+          39.0,
+          91.0,
+          3.49798
+        ],
+        "train_idx": 1170,
+        "train_filename": "Cyst/Cyst- (1134).jpg",
+        "train_class": "Cyst",
+        "test_idx": 299,
+        "test_filename": "Cyst/Cyst- (1284).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          23.491074,
+          43.119586,
+          2.035221,
+          4.601606,
+          0.0,
+          0.0,
+          0.0,
+          29.0,
+          94.0,
+          3.37371
+        ],
+        "train_idx": 6872,
+        "train_filename": "Cyst/Cyst- (1329).jpg",
+        "train_class": "Cyst",
+        "test_idx": 313,
+        "test_filename": "Cyst/Cyst- (1179).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          15.995468,
+          34.679691,
+          2.947428,
+          11.548429,
+          0.0,
+          0.0,
+          0.0,
+          6.0,
+          71.0,
+          2.870947
+        ],
+        "train_idx": 444,
+        "train_filename": "Cyst/Cyst- (486).jpg",
+        "train_class": "Cyst",
+        "test_idx": 378,
+        "test_filename": "Cyst/Cyst- (406).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          41.436996,
+          56.300425,
+          1.885854,
+          3.988687,
+          0.0,
+          0.0,
+          12.0,
+          71.0,
+          90.0,
+          4.907022
+        ],
+        "train_idx": 2070,
+        "train_filename": "Cyst/Cyst- (1647).jpg",
+        "train_class": "Cyst",
+        "test_idx": 408,
+        "test_filename": "Cyst/Cyst- (1691).jpg",
+        "test_class": "Cyst"
+      }
+    ]
+  },
+  "overlap_train_val": {
+    "label_a": "train",
+    "label_b": "val",
+    "n_a": 8712,
+    "n_b": 1867,
+    "md5_exact_duplicates_count": 115,
+    "fingerprint_exact_duplicates_count": 115,
+    "md5_pairs": [
+      {
+        "md5": "0bc36bc77f5ac75cad1b5dbd71cc6ebf",
+        "train_idx": 4760,
+        "train_filename": "Cyst/Cyst- (630).jpg",
+        "train_class": "Cyst",
+        "val_idx": 27,
+        "val_filename": "Cyst/Cyst- (587).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "md5": "3287fa31212c366823d80562cd1cd94a",
+        "train_idx": 3653,
+        "train_filename": "Cyst/Cyst- (2316).jpg",
+        "train_class": "Cyst",
+        "val_idx": 28,
+        "val_filename": "Cyst/Cyst- (2354).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "md5": "863b4727262c28c2e57671dae548fe50",
+        "train_idx": 3380,
+        "train_filename": "Cyst/Cyst- (1078).jpg",
+        "train_class": "Cyst",
+        "val_idx": 36,
+        "val_filename": "Cyst/Cyst- (1228).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "md5": "dff44a86348daadb132103dbb46d3a4d",
+        "train_idx": 7323,
+        "train_filename": "Cyst/Cyst- (1216).jpg",
+        "train_class": "Cyst",
+        "val_idx": 57,
+        "val_filename": "Cyst/Cyst- (1066).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "md5": "3a6a671fa26c9037e35153d6a6bee12a",
+        "train_idx": 3645,
+        "train_filename": "Cyst/Cyst- (2343).jpg",
+        "train_class": "Cyst",
+        "val_idx": 83,
+        "val_filename": "Cyst/Cyst- (2305).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "md5": "a82eca1ddf6ef36749a7c7a717297662",
+        "train_idx": 4347,
+        "train_filename": "Cyst/Cyst- (2779).jpg",
+        "train_class": "Cyst",
+        "val_idx": 91,
+        "val_filename": "Cyst/Cyst- (2863).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "md5": "0fa6405a875b9e65fb464d852d662192",
+        "train_idx": 4435,
+        "train_filename": "Cyst/Cyst- (1352).jpg",
+        "train_class": "Cyst",
+        "val_idx": 109,
+        "val_filename": "Cyst/Cyst- (1202).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "md5": "202042ad2d2d1c31fb54a33a968ad780",
+        "train_idx": 1244,
+        "train_filename": "Cyst/Cyst- (357).jpg",
+        "train_class": "Cyst",
+        "val_idx": 112,
+        "val_filename": "Cyst/Cyst- (437).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "md5": "da3b2653ee24e849095b93d72fe03c35",
+        "train_idx": 2919,
+        "train_filename": "Cyst/Cyst- (1099).jpg",
+        "train_class": "Cyst",
+        "val_idx": 121,
+        "val_filename": "Cyst/Cyst- (1249).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "md5": "1936926deae9747a02a43c700718ac4e",
+        "train_idx": 2304,
+        "train_filename": "Cyst/Cyst- (2780).jpg",
+        "train_class": "Cyst",
+        "val_idx": 125,
+        "val_filename": "Cyst/Cyst- (2865).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "md5": "137d539c45ff86fa6967dfe815297033",
+        "train_idx": 3445,
+        "train_filename": "Cyst/Cyst- (449).jpg",
+        "train_class": "Cyst",
+        "val_idx": 127,
+        "val_filename": "Cyst/Cyst- (369).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "md5": "028ead377a0417a185bd650b7aa30604",
+        "train_idx": 5322,
+        "train_filename": "Cyst/Cyst- (585).jpg",
+        "train_class": "Cyst",
+        "val_idx": 146,
+        "val_filename": "Cyst/Cyst- (628).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "md5": "18efb2794e1201bc0fb1abd32bb68487",
+        "train_idx": 8400,
+        "train_filename": "Cyst/Cyst- (1656).jpg",
+        "train_class": "Cyst",
+        "val_idx": 156,
+        "val_filename": "Cyst/Cyst- (1700).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "md5": "564757f32c3e848993ac514f9e79db46",
+        "train_idx": 609,
+        "train_filename": "Cyst/Cyst- (1271).jpg",
+        "train_class": "Cyst",
+        "val_idx": 185,
+        "val_filename": "Cyst/Cyst- (1121).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "md5": "bd9628ed94b63a89da31c1ee80465171",
+        "train_idx": 6254,
+        "train_filename": "Cyst/Cyst- (595).jpg",
+        "train_class": "Cyst",
+        "val_idx": 200,
+        "val_filename": "Cyst/Cyst- (638).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "md5": "632e47855ebec577fa9328f8dbbe67c6",
+        "train_idx": 188,
+        "train_filename": "Cyst/Cyst- (1101).jpg",
+        "train_class": "Cyst",
+        "val_idx": 202,
+        "val_filename": "Cyst/Cyst- (1251).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "md5": "6a1a22a740f2204d3de5737c2911fe00",
+        "train_idx": 6865,
+        "train_filename": "Cyst/Cyst- (1273).jpg",
+        "train_class": "Cyst",
+        "val_idx": 207,
+        "val_filename": "Cyst/Cyst- (1123).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "md5": "4212a230d0f9551405458840a1199ba3",
+        "train_idx": 3738,
+        "train_filename": "Cyst/Cyst- (1664).jpg",
+        "train_class": "Cyst",
+        "val_idx": 218,
+        "val_filename": "Cyst/Cyst- (1708).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "md5": "e9c5eea84a717a47c660f20ac7a41c23",
+        "train_idx": 2265,
+        "train_filename": "Cyst/Cyst- (332).jpg",
+        "train_class": "Cyst",
+        "val_idx": 220,
+        "val_filename": "Cyst/Cyst- (412).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "md5": "8a185faa7a3c232bf18cccd20abd9ae8",
+        "train_idx": 1128,
+        "train_filename": "Stone/Stone- (1367).jpg",
+        "train_class": "Stone",
+        "val_idx": 233,
+        "val_filename": "Stone/Stone- (1357).jpg",
+        "val_class": "Stone"
+      }
+    ],
+    "fingerprint_pairs": [
+      {
+        "fingerprint": [
+          18.420685,
+          42.00031,
+          2.808339,
+          9.161632,
+          0.0,
+          0.0,
+          0.0,
+          2.0,
+          89.0,
+          2.705176
+        ],
+        "train_idx": 4760,
+        "train_filename": "Cyst/Cyst- (630).jpg",
+        "train_class": "Cyst",
+        "val_idx": 27,
+        "val_filename": "Cyst/Cyst- (587).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          16.902466,
+          35.703171,
+          3.163293,
+          13.231624,
+          0.0,
+          0.0,
+          0.0,
+          15.0,
+          65.0,
+          3.164847
+        ],
+        "train_idx": 3653,
+        "train_filename": "Cyst/Cyst- (2316).jpg",
+        "train_class": "Cyst",
+        "val_idx": 28,
+        "val_filename": "Cyst/Cyst- (2354).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          31.094147,
+          46.651482,
+          1.487211,
+          2.395459,
+          0.0,
+          0.0,
+          0.0,
+          74.0,
+          96.0,
+          3.730798
+        ],
+        "train_idx": 3380,
+        "train_filename": "Cyst/Cyst- (1078).jpg",
+        "train_class": "Cyst",
+        "val_idx": 36,
+        "val_filename": "Cyst/Cyst- (1228).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          32.120651,
+          47.295568,
+          1.399863,
+          1.857698,
+          0.0,
+          0.0,
+          0.0,
+          76.0,
+          98.0,
+          3.806702
+        ],
+        "train_idx": 7323,
+        "train_filename": "Cyst/Cyst- (1216).jpg",
+        "train_class": "Cyst",
+        "val_idx": 57,
+        "val_filename": "Cyst/Cyst- (1066).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          16.808472,
+          35.233368,
+          3.104197,
+          12.776668,
+          0.0,
+          0.0,
+          0.0,
+          15.0,
+          65.0,
+          3.179402
+        ],
+        "train_idx": 3645,
+        "train_filename": "Cyst/Cyst- (2343).jpg",
+        "train_class": "Cyst",
+        "val_idx": 83,
+        "val_filename": "Cyst/Cyst- (2305).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          19.58902,
+          38.911369,
+          2.649382,
+          9.185759,
+          0.0,
+          0.0,
+          0.0,
+          21.25,
+          77.0,
+          3.03381
+        ],
+        "train_idx": 4347,
+        "train_filename": "Cyst/Cyst- (2779).jpg",
+        "train_class": "Cyst",
+        "val_idx": 91,
+        "val_filename": "Cyst/Cyst- (2863).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          21.052628,
+          42.213117,
+          2.32398,
+          6.226822,
+          0.0,
+          0.0,
+          0.0,
+          12.0,
+          95.0,
+          3.132723
+        ],
+        "train_idx": 4435,
+        "train_filename": "Cyst/Cyst- (1352).jpg",
+        "train_class": "Cyst",
+        "val_idx": 109,
+        "val_filename": "Cyst/Cyst- (1202).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          17.353821,
+          35.667328,
+          2.654677,
+          9.202019,
+          0.0,
+          0.0,
+          0.0,
+          11.0,
+          75.0,
+          3.008757
+        ],
+        "train_idx": 1244,
+        "train_filename": "Cyst/Cyst- (357).jpg",
+        "train_class": "Cyst",
+        "val_idx": 112,
+        "val_filename": "Cyst/Cyst- (437).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          29.575714,
+          45.475481,
+          1.476422,
+          2.072119,
+          0.0,
+          0.0,
+          0.0,
+          72.0,
+          96.0,
+          3.688839
+        ],
+        "train_idx": 2919,
+        "train_filename": "Cyst/Cyst- (1099).jpg",
+        "train_class": "Cyst",
+        "val_idx": 121,
+        "val_filename": "Cyst/Cyst- (1249).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          19.976562,
+          41.618038,
+          2.973309,
+          11.159338,
+          0.0,
+          0.0,
+          0.0,
+          19.0,
+          77.0,
+          2.999528
+        ],
+        "train_idx": 2304,
+        "train_filename": "Cyst/Cyst- (2780).jpg",
+        "train_class": "Cyst",
+        "val_idx": 125,
+        "val_filename": "Cyst/Cyst- (2865).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          17.663834,
+          37.036777,
+          2.804161,
+          9.962941,
+          0.0,
+          0.0,
+          0.0,
+          11.0,
+          73.0,
+          3.015579
+        ],
+        "train_idx": 3445,
+        "train_filename": "Cyst/Cyst- (449).jpg",
+        "train_class": "Cyst",
+        "val_idx": 127,
+        "val_filename": "Cyst/Cyst- (369).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          18.577118,
+          42.371378,
+          2.799988,
+          9.043554,
+          0.0,
+          0.0,
+          0.0,
+          2.0,
+          90.0,
+          2.699787
+        ],
+        "train_idx": 5322,
+        "train_filename": "Cyst/Cyst- (585).jpg",
+        "train_class": "Cyst",
+        "val_idx": 146,
+        "val_filename": "Cyst/Cyst- (628).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          40.628616,
+          57.786635,
+          1.973148,
+          4.15426,
+          0.0,
+          0.0,
+          7.0,
+          69.0,
+          90.0,
+          4.838449
+        ],
+        "train_idx": 8400,
+        "train_filename": "Cyst/Cyst- (1656).jpg",
+        "train_class": "Cyst",
+        "val_idx": 156,
+        "val_filename": "Cyst/Cyst- (1700).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          26.298203,
+          42.740723,
+          1.552194,
+          2.246234,
+          0.0,
+          0.0,
+          0.0,
+          58.0,
+          95.0,
+          3.549737
+        ],
+        "train_idx": 609,
+        "train_filename": "Cyst/Cyst- (1271).jpg",
+        "train_class": "Cyst",
+        "val_idx": 185,
+        "val_filename": "Cyst/Cyst- (1121).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          17.719482,
+          41.621411,
+          2.945564,
+          10.202932,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          88.0,
+          2.626718
+        ],
+        "train_idx": 6254,
+        "train_filename": "Cyst/Cyst- (595).jpg",
+        "train_class": "Cyst",
+        "val_idx": 200,
+        "val_filename": "Cyst/Cyst- (638).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          29.34494,
+          45.300558,
+          1.468244,
+          1.9726,
+          0.0,
+          0.0,
+          0.0,
+          72.0,
+          96.0,
+          3.678604
+        ],
+        "train_idx": 188,
+        "train_filename": "Cyst/Cyst- (1101).jpg",
+        "train_class": "Cyst",
+        "val_idx": 202,
+        "val_filename": "Cyst/Cyst- (1251).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          25.79776,
+          42.340327,
+          1.565612,
+          2.246276,
+          0.0,
+          0.0,
+          0.0,
+          55.0,
+          94.0,
+          3.520433
+        ],
+        "train_idx": 6865,
+        "train_filename": "Cyst/Cyst- (1273).jpg",
+        "train_class": "Cyst",
+        "val_idx": 207,
+        "val_filename": "Cyst/Cyst- (1123).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          40.623978,
+          60.430457,
+          2.00468,
+          3.901208,
+          0.0,
+          0.0,
+          4.0,
+          66.0,
+          92.0,
+          4.824055
+        ],
+        "train_idx": 3738,
+        "train_filename": "Cyst/Cyst- (1664).jpg",
+        "train_class": "Cyst",
+        "val_idx": 218,
+        "val_filename": "Cyst/Cyst- (1708).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          19.878143,
+          38.469733,
+          2.338156,
+          6.586378,
+          0.0,
+          0.0,
+          0.0,
+          21.0,
+          80.0,
+          3.108347
+        ],
+        "train_idx": 2265,
+        "train_filename": "Cyst/Cyst- (332).jpg",
+        "train_class": "Cyst",
+        "val_idx": 220,
+        "val_filename": "Cyst/Cyst- (412).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          56.18486,
+          64.760383,
+          0.995127,
+          0.449688,
+          0.0,
+          0.0,
+          20.0,
+          110.0,
+          121.0,
+          5.382676
+        ],
+        "train_idx": 1128,
+        "train_filename": "Stone/Stone- (1367).jpg",
+        "train_class": "Stone",
+        "val_idx": 233,
+        "val_filename": "Stone/Stone- (1357).jpg",
+        "val_class": "Stone"
+      }
+    ]
+  },
+  "overlap_val_test": {
+    "label_a": "val",
+    "label_b": "test",
+    "n_a": 1867,
+    "n_b": 1867,
+    "md5_exact_duplicates_count": 22,
+    "fingerprint_exact_duplicates_count": 22,
+    "md5_pairs": [
+      {
+        "md5": "f4e34c383f4c331f847da1aa16a3ea7a",
+        "val_idx": 560,
+        "val_filename": "Cyst/Cyst- (1237).jpg",
+        "val_class": "Cyst",
+        "test_idx": 31,
+        "test_filename": "Cyst/Cyst- (1087).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "93c60d1b91c89d37341db27465ac0754",
+        "val_idx": 1593,
+        "val_filename": "Normal/Normal- (1622).jpg",
+        "val_class": "Normal",
+        "test_idx": 252,
+        "test_filename": "Normal/Normal- (1697).jpg",
+        "test_class": "Normal"
+      },
+      {
+        "md5": "e5cdba17a67e49773c828d53c50b9d04",
+        "val_idx": 253,
+        "val_filename": "Cyst/Cyst- (1651).jpg",
+        "val_class": "Cyst",
+        "test_idx": 279,
+        "test_filename": "Cyst/Cyst- (1695).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "97a8a117b3abcd0d0e9015196867398f",
+        "val_idx": 450,
+        "val_filename": "Cyst/Cyst- (1189).jpg",
+        "val_class": "Cyst",
+        "test_idx": 419,
+        "test_filename": "Cyst/Cyst- (1339).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "005a11ffa5e1a84d93c6ed70265dbe13",
+        "val_idx": 1785,
+        "val_filename": "Cyst/Cyst- (2306).jpg",
+        "val_class": "Cyst",
+        "test_idx": 470,
+        "test_filename": "Cyst/Cyst- (2344).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "c4d3ace4c6b7cf35d67e682f073b4dfa",
+        "val_idx": 1555,
+        "val_filename": "Cyst/Cyst- (598).jpg",
+        "val_class": "Cyst",
+        "test_idx": 501,
+        "test_filename": "Cyst/Cyst- (641).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "92e10735c5bd9ab1f9525e0b0c383fb5",
+        "val_idx": 867,
+        "val_filename": "Cyst/Cyst- (1653).jpg",
+        "val_class": "Cyst",
+        "test_idx": 525,
+        "test_filename": "Cyst/Cyst- (1697).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "caaab784a1e080be160da747f0e0c01b",
+        "val_idx": 1120,
+        "val_filename": "Cyst/Cyst- (1076).jpg",
+        "val_class": "Cyst",
+        "test_idx": 579,
+        "test_filename": "Cyst/Cyst- (1226).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "953c0d870b5b6e5f37b2a47c28966aba",
+        "val_idx": 1835,
+        "val_filename": "Normal/Normal- (1640).jpg",
+        "val_class": "Normal",
+        "test_idx": 594,
+        "test_filename": "Normal/Normal- (1715).jpg",
+        "test_class": "Normal"
+      },
+      {
+        "md5": "e57802bb2d3c2bac7da619b51be2b7da",
+        "val_idx": 1066,
+        "val_filename": "Cyst/Cyst- (1310).jpg",
+        "val_class": "Cyst",
+        "test_idx": 657,
+        "test_filename": "Cyst/Cyst- (1160).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "9146c87ba97d2a63a71a8dca679228ab",
+        "val_idx": 1204,
+        "val_filename": "Cyst/Cyst- (589).jpg",
+        "val_class": "Cyst",
+        "test_idx": 733,
+        "test_filename": "Cyst/Cyst- (632).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "c3377b7378afdea538739e6e13fbfe6a",
+        "val_idx": 901,
+        "val_filename": "Cyst/Cyst- (1208).jpg",
+        "val_class": "Cyst",
+        "test_idx": 819,
+        "test_filename": "Cyst/Cyst- (1358).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "32fec2ec3cb57a87a0c71a8f09535def",
+        "val_idx": 509,
+        "val_filename": "Cyst/Cyst- (1201).jpg",
+        "val_class": "Cyst",
+        "test_idx": 829,
+        "test_filename": "Cyst/Cyst- (1351).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "f7982485b73e1e53e968711b30432467",
+        "val_idx": 1393,
+        "val_filename": "Cyst/Cyst- (2769).jpg",
+        "val_class": "Cyst",
+        "test_idx": 870,
+        "test_filename": "Cyst/Cyst- (2843).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "572f4bd65dc254db5b738f75634322d6",
+        "val_idx": 1446,
+        "val_filename": "Cyst/Cyst- (1287).jpg",
+        "val_class": "Cyst",
+        "test_idx": 936,
+        "test_filename": "Cyst/Cyst- (1137).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "eaedf27e01b9b14279be36b319a681e9",
+        "val_idx": 183,
+        "val_filename": "Normal/Normal- (1662).jpg",
+        "val_class": "Normal",
+        "test_idx": 1096,
+        "test_filename": "Normal/Normal- (1737).jpg",
+        "test_class": "Normal"
+      },
+      {
+        "md5": "7327d82f6041eafe6b2d0fec44131e0d",
+        "val_idx": 323,
+        "val_filename": "Cyst/Cyst- (2314).jpg",
+        "val_class": "Cyst",
+        "test_idx": 1145,
+        "test_filename": "Cyst/Cyst- (2352).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "d3ba83fb549f828dad02c59652ecbefd",
+        "val_idx": 953,
+        "val_filename": "Cyst/Cyst- (3420).jpg",
+        "val_class": "Cyst",
+        "test_idx": 1357,
+        "test_filename": "Cyst/Cyst- (3406).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "11af60e673f0b4af03a07d4ac9c36986",
+        "val_idx": 565,
+        "val_filename": "Cyst/Cyst- (2775).jpg",
+        "val_class": "Cyst",
+        "test_idx": 1375,
+        "test_filename": "Cyst/Cyst- (2855).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "md5": "9f45cf99bc7907fa2dc21c9f355bcd87",
+        "val_idx": 18,
+        "val_filename": "Cyst/Cyst- (586).jpg",
+        "val_class": "Cyst",
+        "test_idx": 1602,
+        "test_filename": "Cyst/Cyst- (629).jpg",
+        "test_class": "Cyst"
+      }
+    ],
+    "fingerprint_pairs": [
+      {
+        "fingerprint": [
+          30.609344,
+          46.575836,
+          1.546478,
+          2.686704,
+          0.0,
+          0.0,
+          0.0,
+          74.0,
+          96.0,
+          3.712983
+        ],
+        "val_idx": 560,
+        "val_filename": "Cyst/Cyst- (1237).jpg",
+        "val_class": "Cyst",
+        "test_idx": 31,
+        "test_filename": "Cyst/Cyst- (1087).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          76.160828,
+          77.902014,
+          0.711773,
+          -0.54923,
+          0.0,
+          0.0,
+          52.0,
+          138.0,
+          177.0,
+          5.602701
+        ],
+        "val_idx": 1593,
+        "val_filename": "Normal/Normal- (1622).jpg",
+        "val_class": "Normal",
+        "test_idx": 252,
+        "test_filename": "Normal/Normal- (1697).jpg",
+        "test_class": "Normal"
+      },
+      {
+        "fingerprint": [
+          40.992584,
+          56.602078,
+          1.922161,
+          4.11115,
+          0.0,
+          0.0,
+          9.0,
+          71.0,
+          90.0,
+          4.880422
+        ],
+        "val_idx": 253,
+        "val_filename": "Cyst/Cyst- (1651).jpg",
+        "val_class": "Cyst",
+        "test_idx": 279,
+        "test_filename": "Cyst/Cyst- (1695).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          23.414505,
+          43.397658,
+          2.06316,
+          4.7732,
+          0.0,
+          0.0,
+          0.0,
+          27.0,
+          95.0,
+          3.312589
+        ],
+        "val_idx": 450,
+        "val_filename": "Cyst/Cyst- (1189).jpg",
+        "val_class": "Cyst",
+        "test_idx": 419,
+        "test_filename": "Cyst/Cyst- (1339).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          16.777863,
+          35.228291,
+          3.121505,
+          12.935418,
+          0.0,
+          0.0,
+          0.0,
+          15.0,
+          65.0,
+          3.176862
+        ],
+        "val_idx": 1785,
+        "val_filename": "Cyst/Cyst- (2306).jpg",
+        "val_class": "Cyst",
+        "test_idx": 470,
+        "test_filename": "Cyst/Cyst- (2344).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          17.502716,
+          41.255002,
+          2.937313,
+          10.151128,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          87.0,
+          2.597551
+        ],
+        "val_idx": 1555,
+        "val_filename": "Cyst/Cyst- (598).jpg",
+        "val_class": "Cyst",
+        "test_idx": 501,
+        "test_filename": "Cyst/Cyst- (641).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          40.907333,
+          57.181078,
+          1.941906,
+          4.115872,
+          0.0,
+          0.0,
+          8.0,
+          70.0,
+          90.0,
+          4.855036
+        ],
+        "val_idx": 867,
+        "val_filename": "Cyst/Cyst- (1653).jpg",
+        "val_class": "Cyst",
+        "test_idx": 525,
+        "test_filename": "Cyst/Cyst- (1697).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          31.296738,
+          47.000931,
+          1.52125,
+          2.596447,
+          0.0,
+          0.0,
+          0.0,
+          75.0,
+          96.0,
+          3.752986
+        ],
+        "val_idx": 1120,
+        "val_filename": "Cyst/Cyst- (1076).jpg",
+        "val_class": "Cyst",
+        "test_idx": 579,
+        "test_filename": "Cyst/Cyst- (1226).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          71.041977,
+          74.284946,
+          0.788245,
+          -0.34646,
+          0.0,
+          0.0,
+          48.0,
+          132.0,
+          165.0,
+          5.574705
+        ],
+        "val_idx": 1835,
+        "val_filename": "Normal/Normal- (1640).jpg",
+        "val_class": "Normal",
+        "test_idx": 594,
+        "test_filename": "Normal/Normal- (1715).jpg",
+        "test_class": "Normal"
+      },
+      {
+        "fingerprint": [
+          23.923935,
+          42.348145,
+          1.926619,
+          4.262276,
+          0.0,
+          0.0,
+          0.0,
+          36.0,
+          93.0,
+          3.432868
+        ],
+        "val_idx": 1066,
+        "val_filename": "Cyst/Cyst- (1310).jpg",
+        "val_class": "Cyst",
+        "test_idx": 657,
+        "test_filename": "Cyst/Cyst- (1160).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          18.332855,
+          42.070672,
+          2.852894,
+          9.525367,
+          0.0,
+          0.0,
+          0.0,
+          2.0,
+          89.0,
+          2.690488
+        ],
+        "val_idx": 1204,
+        "val_filename": "Cyst/Cyst- (589).jpg",
+        "val_class": "Cyst",
+        "test_idx": 733,
+        "test_filename": "Cyst/Cyst- (632).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          19.723633,
+          39.579812,
+          2.107639,
+          4.544217,
+          0.0,
+          0.0,
+          0.0,
+          7.25,
+          95.0,
+          2.997766
+        ],
+        "val_idx": 901,
+        "val_filename": "Cyst/Cyst- (1208).jpg",
+        "val_class": "Cyst",
+        "test_idx": 819,
+        "test_filename": "Cyst/Cyst- (1358).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          21.365891,
+          43.113356,
+          2.445391,
+          7.177848,
+          0.0,
+          0.0,
+          0.0,
+          12.0,
+          94.0,
+          3.134357
+        ],
+        "val_idx": 509,
+        "val_filename": "Cyst/Cyst- (1201).jpg",
+        "val_class": "Cyst",
+        "test_idx": 829,
+        "test_filename": "Cyst/Cyst- (1351).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          22.069183,
+          42.005342,
+          2.547707,
+          8.16944,
+          0.0,
+          0.0,
+          0.0,
+          37.0,
+          80.0,
+          3.202942
+        ],
+        "val_idx": 1393,
+        "val_filename": "Cyst/Cyst- (2769).jpg",
+        "val_class": "Cyst",
+        "test_idx": 870,
+        "test_filename": "Cyst/Cyst- (2843).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          23.497467,
+          41.910689,
+          1.968635,
+          4.359197,
+          0.0,
+          0.0,
+          0.0,
+          34.0,
+          91.0,
+          3.459115
+        ],
+        "val_idx": 1446,
+        "val_filename": "Cyst/Cyst- (1287).jpg",
+        "val_class": "Cyst",
+        "test_idx": 936,
+        "test_filename": "Cyst/Cyst- (1137).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          62.019821,
+          66.840514,
+          0.833052,
+          -0.134826,
+          0.0,
+          0.0,
+          45.0,
+          123.0,
+          146.0,
+          5.281414
+        ],
+        "val_idx": 183,
+        "val_filename": "Normal/Normal- (1662).jpg",
+        "val_class": "Normal",
+        "test_idx": 1096,
+        "test_filename": "Normal/Normal- (1737).jpg",
+        "test_class": "Normal"
+      },
+      {
+        "fingerprint": [
+          16.845428,
+          35.774486,
+          3.207872,
+          13.64332,
+          0.0,
+          0.0,
+          0.0,
+          15.0,
+          65.0,
+          3.150826
+        ],
+        "val_idx": 323,
+        "val_filename": "Cyst/Cyst- (2314).jpg",
+        "val_class": "Cyst",
+        "test_idx": 1145,
+        "test_filename": "Cyst/Cyst- (2352).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          47.033401,
+          68.349305,
+          1.618429,
+          1.947572,
+          0.0,
+          0.0,
+          0.0,
+          81.0,
+          141.0,
+          4.605699
+        ],
+        "val_idx": 953,
+        "val_filename": "Cyst/Cyst- (3420).jpg",
+        "val_class": "Cyst",
+        "test_idx": 1357,
+        "test_filename": "Cyst/Cyst- (3406).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          20.555328,
+          41.179467,
+          2.826847,
+          10.25907,
+          0.0,
+          0.0,
+          0.0,
+          27.0,
+          77.0,
+          3.090919
+        ],
+        "val_idx": 565,
+        "val_filename": "Cyst/Cyst- (2775).jpg",
+        "val_class": "Cyst",
+        "test_idx": 1375,
+        "test_filename": "Cyst/Cyst- (2855).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "fingerprint": [
+          18.4841,
+          42.152114,
+          2.803013,
+          9.091259,
+          0.0,
+          0.0,
+          0.0,
+          2.0,
+          89.0,
+          2.705943
+        ],
+        "val_idx": 18,
+        "val_filename": "Cyst/Cyst- (586).jpg",
+        "val_class": "Cyst",
+        "test_idx": 1602,
+        "test_filename": "Cyst/Cyst- (629).jpg",
+        "test_class": "Cyst"
+      }
+    ]
+  },
+  "feature_nn_train_test": {
+    "label_a": "train",
+    "label_b": "test",
+    "n_a": 8712,
+    "n_b": 1867,
+    "near_duplicate_threshold": 0.9999,
+    "very_close_threshold": 0.999,
+    "near_duplicate_count": 1855,
+    "very_close_count": 12,
+    "near_duplicate_pairs": [
+      {
+        "cosine_sim": 0.999992311000824,
+        "train_idx": 7410,
+        "train_filename": "Stone/Stone- (298).jpg",
+        "train_class": "Stone",
+        "test_idx": 0,
+        "test_filename": "Stone/Stone- (297).jpg",
+        "test_class": "Stone"
+      },
+      {
+        "cosine_sim": 0.9999775886535645,
+        "train_idx": 4573,
+        "train_filename": "Stone/Stone- (1274).jpg",
+        "train_class": "Stone",
+        "test_idx": 1,
+        "test_filename": "Stone/Stone- (1270).jpg",
+        "test_class": "Stone"
+      },
+      {
+        "cosine_sim": 0.9999821782112122,
+        "train_idx": 5067,
+        "train_filename": "Normal/Normal- (4088).jpg",
+        "train_class": "Normal",
+        "test_idx": 2,
+        "test_filename": "Normal/Normal- (4086).jpg",
+        "test_class": "Normal"
+      },
+      {
+        "cosine_sim": 0.9999974966049194,
+        "train_idx": 1894,
+        "train_filename": "Cyst/Cyst- (1774).jpg",
+        "train_class": "Cyst",
+        "test_idx": 3,
+        "test_filename": "Cyst/Cyst- (1776).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "cosine_sim": 0.9999881982803345,
+        "train_idx": 5941,
+        "train_filename": "Cyst/Cyst- (970).jpg",
+        "train_class": "Cyst",
+        "test_idx": 4,
+        "test_filename": "Cyst/Cyst- (971).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "cosine_sim": 0.9999961256980896,
+        "train_idx": 617,
+        "train_filename": "Normal/Normal- (3172).jpg",
+        "train_class": "Normal",
+        "test_idx": 5,
+        "test_filename": "Normal/Normal- (3171).jpg",
+        "test_class": "Normal"
+      },
+      {
+        "cosine_sim": 0.9999918937683105,
+        "train_idx": 3324,
+        "train_filename": "Stone/Stone- (790).jpg",
+        "train_class": "Stone",
+        "test_idx": 6,
+        "test_filename": "Stone/Stone- (788).jpg",
+        "test_class": "Stone"
+      },
+      {
+        "cosine_sim": 0.9999931454658508,
+        "train_idx": 4428,
+        "train_filename": "Tumor/Tumor- (363).jpg",
+        "train_class": "Tumor",
+        "test_idx": 7,
+        "test_filename": "Tumor/Tumor- (362).jpg",
+        "test_class": "Tumor"
+      },
+      {
+        "cosine_sim": 0.9999984502792358,
+        "train_idx": 4277,
+        "train_filename": "Normal/Normal- (1563).jpg",
+        "train_class": "Normal",
+        "test_idx": 8,
+        "test_filename": "Normal/Normal- (1564).jpg",
+        "test_class": "Normal"
+      },
+      {
+        "cosine_sim": 0.9999963045120239,
+        "train_idx": 6229,
+        "train_filename": "Tumor/Tumor- (356).jpg",
+        "train_class": "Tumor",
+        "test_idx": 9,
+        "test_filename": "Tumor/Tumor- (354).jpg",
+        "test_class": "Tumor"
+      },
+      {
+        "cosine_sim": 0.9999972581863403,
+        "train_idx": 7378,
+        "train_filename": "Normal/Normal- (4303).jpg",
+        "train_class": "Normal",
+        "test_idx": 10,
+        "test_filename": "Normal/Normal- (4305).jpg",
+        "test_class": "Normal"
+      },
+      {
+        "cosine_sim": 0.999989926815033,
+        "train_idx": 5827,
+        "train_filename": "Normal/Normal- (2080).jpg",
+        "train_class": "Normal",
+        "test_idx": 11,
+        "test_filename": "Normal/Normal- (2079).jpg",
+        "test_class": "Normal"
+      },
+      {
+        "cosine_sim": 0.9999947547912598,
+        "train_idx": 7309,
+        "train_filename": "Normal/Normal- (527).jpg",
+        "train_class": "Normal",
+        "test_idx": 12,
+        "test_filename": "Normal/Normal- (516).jpg",
+        "test_class": "Normal"
+      },
+      {
+        "cosine_sim": 0.9999878406524658,
+        "train_idx": 4682,
+        "train_filename": "Normal/Normal- (2542).jpg",
+        "train_class": "Normal",
+        "test_idx": 13,
+        "test_filename": "Normal/Normal- (2544).jpg",
+        "test_class": "Normal"
+      },
+      {
+        "cosine_sim": 0.9999967217445374,
+        "train_idx": 7093,
+        "train_filename": "Normal/Normal- (4622).jpg",
+        "train_class": "Normal",
+        "test_idx": 14,
+        "test_filename": "Normal/Normal- (4623).jpg",
+        "test_class": "Normal"
+      },
+      {
+        "cosine_sim": 0.9999945759773254,
+        "train_idx": 5503,
+        "train_filename": "Normal/Normal- (566).jpg",
+        "train_class": "Normal",
+        "test_idx": 15,
+        "test_filename": "Normal/Normal- (565).jpg",
+        "test_class": "Normal"
+      },
+      {
+        "cosine_sim": 0.9999998807907104,
+        "train_idx": 4016,
+        "train_filename": "Cyst/Cyst- (388).jpg",
+        "train_class": "Cyst",
+        "test_idx": 16,
+        "test_filename": "Cyst/Cyst- (468).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "cosine_sim": 0.9999985098838806,
+        "train_idx": 1928,
+        "train_filename": "Normal/Normal- (1836).jpg",
+        "train_class": "Normal",
+        "test_idx": 17,
+        "test_filename": "Normal/Normal- (1835).jpg",
+        "test_class": "Normal"
+      },
+      {
+        "cosine_sim": 0.9999837875366211,
+        "train_idx": 115,
+        "train_filename": "Tumor/Tumor- (1285).jpg",
+        "train_class": "Tumor",
+        "test_idx": 18,
+        "test_filename": "Tumor/Tumor- (1286).jpg",
+        "test_class": "Tumor"
+      },
+      {
+        "cosine_sim": 0.999998152256012,
+        "train_idx": 7220,
+        "train_filename": "Normal/Normal- (4959).jpg",
+        "train_class": "Normal",
+        "test_idx": 19,
+        "test_filename": "Normal/Normal- (4961).jpg",
+        "test_class": "Normal"
+      }
+    ],
+    "very_close_pairs": [
+      {
+        "cosine_sim": 0.9998952150344849,
+        "train_idx": 2537,
+        "train_filename": "Tumor/Tumor- (300).jpg",
+        "train_class": "Tumor",
+        "test_idx": 120,
+        "test_filename": "Tumor/Tumor- (299).jpg",
+        "test_class": "Tumor"
+      },
+      {
+        "cosine_sim": 0.9998079538345337,
+        "train_idx": 3619,
+        "train_filename": "Cyst/Cyst- (3185).jpg",
+        "train_class": "Cyst",
+        "test_idx": 176,
+        "test_filename": "Stone/Stone- (895).jpg",
+        "test_class": "Stone"
+      },
+      {
+        "cosine_sim": 0.9998971223831177,
+        "train_idx": 7214,
+        "train_filename": "Cyst/Cyst- (807).jpg",
+        "train_class": "Cyst",
+        "test_idx": 230,
+        "test_filename": "Cyst/Cyst- (809).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "cosine_sim": 0.9998911023139954,
+        "train_idx": 195,
+        "train_filename": "Cyst/Cyst- (2969).jpg",
+        "train_class": "Cyst",
+        "test_idx": 446,
+        "test_filename": "Cyst/Cyst- (2978).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "cosine_sim": 0.9998867511749268,
+        "train_idx": 4586,
+        "train_filename": "Cyst/Cyst- (3498).jpg",
+        "train_class": "Cyst",
+        "test_idx": 700,
+        "test_filename": "Cyst/Cyst- (3495).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "cosine_sim": 0.999893307685852,
+        "train_idx": 8024,
+        "train_filename": "Tumor/Tumor- (2070).jpg",
+        "train_class": "Tumor",
+        "test_idx": 973,
+        "test_filename": "Tumor/Tumor- (2069).jpg",
+        "test_class": "Tumor"
+      },
+      {
+        "cosine_sim": 0.999855101108551,
+        "train_idx": 4415,
+        "train_filename": "Cyst/Cyst- (3556).jpg",
+        "train_class": "Cyst",
+        "test_idx": 1153,
+        "test_filename": "Cyst/Cyst- (3552).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "cosine_sim": 0.9997817277908325,
+        "train_idx": 7322,
+        "train_filename": "Normal/Normal- (1169).jpg",
+        "train_class": "Normal",
+        "test_idx": 1394,
+        "test_filename": "Normal/Normal- (1171).jpg",
+        "test_class": "Normal"
+      },
+      {
+        "cosine_sim": 0.9998913407325745,
+        "train_idx": 1886,
+        "train_filename": "Tumor/Tumor- (1306).jpg",
+        "train_class": "Tumor",
+        "test_idx": 1508,
+        "test_filename": "Tumor/Tumor- (1305).jpg",
+        "test_class": "Tumor"
+      },
+      {
+        "cosine_sim": 0.9998915791511536,
+        "train_idx": 4586,
+        "train_filename": "Cyst/Cyst- (3498).jpg",
+        "train_class": "Cyst",
+        "test_idx": 1663,
+        "test_filename": "Cyst/Cyst- (3496).jpg",
+        "test_class": "Cyst"
+      },
+      {
+        "cosine_sim": 0.9998759627342224,
+        "train_idx": 4768,
+        "train_filename": "Normal/Normal- (1176).jpg",
+        "train_class": "Normal",
+        "test_idx": 1791,
+        "test_filename": "Normal/Normal- (1173).jpg",
+        "test_class": "Normal"
+      },
+      {
+        "cosine_sim": 0.9997826814651489,
+        "train_idx": 7322,
+        "train_filename": "Normal/Normal- (1169).jpg",
+        "train_class": "Normal",
+        "test_idx": 1801,
+        "test_filename": "Normal/Normal- (1172).jpg",
+        "test_class": "Normal"
+      }
+    ],
+    "max_cosine_sim": 1.000000238418579,
+    "mean_max_cosine_sim": 0.9999886751174927
+  },
+  "feature_nn_train_val": {
+    "label_a": "train",
+    "label_b": "val",
+    "n_a": 8712,
+    "n_b": 1867,
+    "near_duplicate_threshold": 0.9999,
+    "very_close_threshold": 0.999,
+    "near_duplicate_count": 1859,
+    "very_close_count": 8,
+    "near_duplicate_pairs": [
+      {
+        "cosine_sim": 0.9999646544456482,
+        "train_idx": 6638,
+        "train_filename": "Stone/Stone- (1146).jpg",
+        "train_class": "Stone",
+        "val_idx": 0,
+        "val_filename": "Stone/Stone- (1145).jpg",
+        "val_class": "Stone"
+      },
+      {
+        "cosine_sim": 0.999993622303009,
+        "train_idx": 7140,
+        "train_filename": "Normal/Normal- (1033).jpg",
+        "train_class": "Normal",
+        "val_idx": 1,
+        "val_filename": "Normal/Normal- (1032).jpg",
+        "val_class": "Normal"
+      },
+      {
+        "cosine_sim": 0.9999804496765137,
+        "train_idx": 6729,
+        "train_filename": "Normal/Normal- (1951).jpg",
+        "train_class": "Normal",
+        "val_idx": 2,
+        "val_filename": "Normal/Normal- (1952).jpg",
+        "val_class": "Normal"
+      },
+      {
+        "cosine_sim": 0.9999406337738037,
+        "train_idx": 2252,
+        "train_filename": "Cyst/Cyst- (2262).jpg",
+        "train_class": "Cyst",
+        "val_idx": 3,
+        "val_filename": "Cyst/Cyst- (2261).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "cosine_sim": 0.9999930262565613,
+        "train_idx": 7122,
+        "train_filename": "Tumor/Tumor- (790).jpg",
+        "train_class": "Tumor",
+        "val_idx": 4,
+        "val_filename": "Tumor/Tumor- (788).jpg",
+        "val_class": "Tumor"
+      },
+      {
+        "cosine_sim": 0.9999971389770508,
+        "train_idx": 773,
+        "train_filename": "Normal/Normal- (4619).jpg",
+        "train_class": "Normal",
+        "val_idx": 5,
+        "val_filename": "Normal/Normal- (4616).jpg",
+        "val_class": "Normal"
+      },
+      {
+        "cosine_sim": 0.9999991655349731,
+        "train_idx": 2150,
+        "train_filename": "Normal/Normal- (2027).jpg",
+        "train_class": "Normal",
+        "val_idx": 6,
+        "val_filename": "Normal/Normal- (2026).jpg",
+        "val_class": "Normal"
+      },
+      {
+        "cosine_sim": 0.9999902248382568,
+        "train_idx": 2598,
+        "train_filename": "Normal/Normal- (2919).jpg",
+        "train_class": "Normal",
+        "val_idx": 7,
+        "val_filename": "Normal/Normal- (2918).jpg",
+        "val_class": "Normal"
+      },
+      {
+        "cosine_sim": 0.9999983310699463,
+        "train_idx": 2110,
+        "train_filename": "Normal/Normal- (2456).jpg",
+        "train_class": "Normal",
+        "val_idx": 8,
+        "val_filename": "Normal/Normal- (2460).jpg",
+        "val_class": "Normal"
+      },
+      {
+        "cosine_sim": 0.999993622303009,
+        "train_idx": 8612,
+        "train_filename": "Stone/Stone- (743).jpg",
+        "train_class": "Stone",
+        "val_idx": 9,
+        "val_filename": "Stone/Stone- (742).jpg",
+        "val_class": "Stone"
+      },
+      {
+        "cosine_sim": 0.9999971389770508,
+        "train_idx": 1291,
+        "train_filename": "Cyst/Cyst- (3399).jpg",
+        "train_class": "Cyst",
+        "val_idx": 10,
+        "val_filename": "Cyst/Cyst- (3400).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "cosine_sim": 0.9999921917915344,
+        "train_idx": 4642,
+        "train_filename": "Stone/Stone- (607).jpg",
+        "train_class": "Stone",
+        "val_idx": 11,
+        "val_filename": "Stone/Stone- (606).jpg",
+        "val_class": "Stone"
+      },
+      {
+        "cosine_sim": 0.9999810457229614,
+        "train_idx": 3871,
+        "train_filename": "Cyst/Cyst- (263).jpg",
+        "train_class": "Cyst",
+        "val_idx": 12,
+        "val_filename": "Cyst/Cyst- (267).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "cosine_sim": 0.999996542930603,
+        "train_idx": 6223,
+        "train_filename": "Normal/Normal- (302).jpg",
+        "train_class": "Normal",
+        "val_idx": 13,
+        "val_filename": "Normal/Normal- (301).jpg",
+        "val_class": "Normal"
+      },
+      {
+        "cosine_sim": 0.999997079372406,
+        "train_idx": 3336,
+        "train_filename": "Normal/Normal- (4218).jpg",
+        "train_class": "Normal",
+        "val_idx": 14,
+        "val_filename": "Normal/Normal- (4214).jpg",
+        "val_class": "Normal"
+      },
+      {
+        "cosine_sim": 0.9999992847442627,
+        "train_idx": 7022,
+        "train_filename": "Cyst/Cyst- (31).jpg",
+        "train_class": "Cyst",
+        "val_idx": 15,
+        "val_filename": "Cyst/Cyst- (29).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "cosine_sim": 0.9999958276748657,
+        "train_idx": 4445,
+        "train_filename": "Stone/Stone- (751).jpg",
+        "train_class": "Stone",
+        "val_idx": 16,
+        "val_filename": "Stone/Stone- (753).jpg",
+        "val_class": "Stone"
+      },
+      {
+        "cosine_sim": 0.9999799728393555,
+        "train_idx": 739,
+        "train_filename": "Cyst/Cyst- (181).jpg",
+        "train_class": "Cyst",
+        "val_idx": 17,
+        "val_filename": "Cyst/Cyst- (180).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "cosine_sim": 0.9999948740005493,
+        "train_idx": 81,
+        "train_filename": "Cyst/Cyst- (623).jpg",
+        "train_class": "Cyst",
+        "val_idx": 18,
+        "val_filename": "Cyst/Cyst- (586).jpg",
+        "val_class": "Cyst"
+      },
+      {
+        "cosine_sim": 0.9999970197677612,
+        "train_idx": 4314,
+        "train_filename": "Cyst/Cyst- (1621).jpg",
+        "train_class": "Cyst",
+        "val_idx": 19,
+        "val_filename": "Cyst/Cyst- (1623).jpg",
+        "val_class": "Cyst"
+      }
+    ],
+    "very_close_pairs": [
+      {
+        "cosine_sim": 0.999875009059906,
+        "train_idx": 6803,
+        "train_filename": "Tumor/Tumor- (1071).jpg",
+        "train_class": "Tumor",
+        "val_idx": 52,
+        "val_filename": "Tumor/Tumor- (1069).jpg",
+        "val_class": "Tumor"
+      },
+      {
+        "cosine_sim": 0.9998405575752258,
+        "train_idx": 7322,
+        "train_filename": "Normal/Normal- (1169).jpg",
+        "train_class": "Normal",
+        "val_idx": 536,
+        "val_filename": "Normal/Normal- (1170).jpg",
+        "val_class": "Normal"
+      },
+      {
+        "cosine_sim": 0.9998897314071655,
+        "train_idx": 1013,
+        "train_filename": "Tumor/Tumor- (578).jpg",
+        "train_class": "Tumor",
+        "val_idx": 995,
+        "val_filename": "Tumor/Tumor- (298).jpg",
+        "val_class": "Tumor"
+      },
+      {
+        "cosine_sim": 0.9998712539672852,
+        "train_idx": 4154,
+        "train_filename": "Normal/Normal- (3595).jpg",
+        "train_class": "Normal",
+        "val_idx": 1323,
+        "val_filename": "Normal/Normal- (3596).jpg",
+        "val_class": "Normal"
+      },
+      {
+        "cosine_sim": 0.9998971223831177,
+        "train_idx": 8035,
+        "train_filename": "Normal/Normal- (2982).jpg",
+        "train_class": "Normal",
+        "val_idx": 1394,
+        "val_filename": "Normal/Normal- (2979).jpg",
+        "val_class": "Normal"
+      },
+      {
+        "cosine_sim": 0.9998186230659485,
+        "train_idx": 6803,
+        "train_filename": "Tumor/Tumor- (1071).jpg",
+        "train_class": "Tumor",
+        "val_idx": 1486,
+        "val_filename": "Tumor/Tumor- (1068).jpg",
+        "val_class": "Tumor"
+      },
+      {
+        "cosine_sim": 0.9998677372932434,
+        "train_idx": 6638,
+        "train_filename": "Stone/Stone- (1146).jpg",
+        "train_class": "Stone",
+        "val_idx": 1614,
+        "val_filename": "Stone/Stone- (1144).jpg",
+        "val_class": "Stone"
+      },
+      {
+        "cosine_sim": 0.9998918175697327,
+        "train_idx": 2948,
+        "train_filename": "Cyst/Cyst- (3704).jpg",
+        "train_class": "Cyst",
+        "val_idx": 1858,
+        "val_filename": "Cyst/Cyst- (3705).jpg",
+        "val_class": "Cyst"
+      }
+    ],
+    "max_cosine_sim": 1.0000001192092896,
+    "mean_max_cosine_sim": 0.9999889135360718
+  }
+}
