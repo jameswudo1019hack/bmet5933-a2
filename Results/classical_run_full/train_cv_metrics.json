@@ -1,0 +1,59 @@
+{
+  "model_name": "svm",
+  "train_metrics": {
+    "Cyst": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "Normal": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "Stone": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "Tumor": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "macro avg": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    }
+  },
+  "cv_metrics": {
+    "Cyst": {
+      "precision": 0.84189850809213,
+      "recall": 0.8692029231060359,
+      "f1": 0.8545667466991389
+    },
+    "Normal": {
+      "precision": 0.9285202213800904,
+      "recall": 0.9249500311009744,
+      "f1": 0.9259208908213494
+    },
+    "Stone": {
+      "precision": 0.7297598721160304,
+      "recall": 0.7509444444444445,
+      "f1": 0.7326794577037544
+    },
+    "Tumor": {
+      "precision": 0.8844307364819898,
+      "recall": 0.8260936095880282,
+      "f1": 0.845345748749426
+    },
+    "macro avg": {
+      "precision": 0.8461523345175601,
+      "recall": 0.8427977520598707,
+      "f1": 0.8396282109934172
+    }
+  },
+  "train_accuracy": 1.0,
+  "cv_accuracy": 0.8703550981610562
+}

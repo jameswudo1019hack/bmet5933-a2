@@ -16,6 +16,7 @@ from pathlib import Path
 import yaml
 
 SEED: int = 42
+GROUP_SIZE: int = 50          # numeric-ID block size for patient-group splitting
 
 CLASSES: tuple[str, ...] = ("Cyst", "Normal", "Stone", "Tumor")
 CLASS_TO_IDX: dict[str, int] = {c: i for i, c in enumerate(CLASSES)}

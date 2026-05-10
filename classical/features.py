@@ -1,19 +1,22 @@
 """Classical feature extraction for kidney CT images (Person A).
 
-Four complementary feature groups, each applied to the CLAHE-enhanced
-256×256 grayscale output of shared.preprocessing.load_image():
+Seven complementary feature groups applied to the 256×256 grayscale image
+returned by shared.preprocessing.load_image().  Groups 1–5 use the
+CLAHE-enhanced image; groups 6–7 use the raw (pre-CLAHE) image to preserve
+Stone's absolute radiodensity signature that CLAHE suppresses.
 
   1. First-order intensity statistics (10 features)
   2. Haralick GLCM texture, rotation-averaged (12 features)
   3. Multi-scale uniform LBP histograms (54 features)
   4. Gabor filter-bank mean + std (32 features)
+  5. Intensity histogram + high-end percentiles (18 features)
+  6. Pre-CLAHE raw intensity statistics (7 features)
+  7. Morphological bright-region features (5 features)
 
-Total raw feature vector: 108 dimensions.
-HOG was intentionally excluded: its 1764-dimensional shape descriptor
-dominates the feature space and achieves near-perfect separation on this
-dataset due to the high visual distinctiveness of the four classes, leaving
-no meaningful signal for the other feature groups.
-StandardScaler + PCA in train.py reduce this before the classifier sees it.
+Total raw feature vector: 138 dimensions.
+HOG excluded: its 1764-dim shape descriptor dominates the feature space and
+achieves near-perfect but leakage-inflated separation on this dataset.
+StandardScaler in train.py normalises this before the classifier sees it.
 
 Key references
 --------------
@@ -35,6 +38,7 @@ from scipy.signal import fftconvolve
 from skimage.exposure import equalize_adapthist
 from skimage.feature import graycomatrix, graycoprops, local_binary_pattern
 from skimage.filters import gabor_kernel
+from skimage.measure import label, regionprops
 
 from shared.preprocessing import load_image
 from classical.config import (
@@ -46,6 +50,7 @@ from classical.config import (
     GLCM_DISTANCES,
     GLCM_LEVELS,
     GLCM_PROPS,
+    HIST_BINS,
     LBP_PARAMS,
 )
 
@@ -126,6 +131,22 @@ def _lbp_features(img: np.ndarray) -> np.ndarray:
     return np.array(feats, dtype=np.float32)
 
 
+def _hist_features(img: np.ndarray) -> np.ndarray:
+    """18 intensity histogram + high-percentile features.
+
+    16-bin normalized histogram captures the full intensity distribution shape.
+    p95 and p99 target the bright-pixel tail where Stone's calcifications sit.
+    """
+    flat = img.flatten().astype(np.float64)
+    hist, _ = np.histogram(flat, bins=HIST_BINS, range=(0.0, 256.0), density=False)
+    hist_norm = (hist / (hist.sum() + 1e-12)).astype(np.float32)
+    extra = np.array([
+        float(np.percentile(flat, 95)),
+        float(np.percentile(flat, 99)),
+    ], dtype=np.float32)
+    return np.concatenate([hist_norm, extra])
+
+
 def _gabor_features(img_float: np.ndarray) -> np.ndarray:
     """32 Gabor filter-bank features (mean + std of response magnitude).
 
@@ -143,10 +164,55 @@ def _gabor_features(img_float: np.ndarray) -> np.ndarray:
     return np.array(feats, dtype=np.float32)
 
 
+def _raw_intensity_features(img_raw: np.ndarray) -> np.ndarray:
+    """7 features from the pre-CLAHE image preserving absolute radiodensity.
+
+    CLAHE equalises the histogram and suppresses Stone's bright calcification
+    signal.  Max, p95/p99, bright-pixel fraction, and statistics of the bright
+    subset are computed on the original image before any enhancement.
+    """
+    flat = img_raw.flatten().astype(np.float64)
+    bright = flat[flat > 200]
+    return np.array([
+        float(flat.max()),
+        float(np.percentile(flat, 95)),
+        float(np.percentile(flat, 99)),
+        float(len(bright) / len(flat)),                          # bright fraction
+        float(bright.mean()) if len(bright) > 0 else 0.0,       # mean of bright pixels
+        float(bright.std())  if len(bright) > 1 else 0.0,       # std of bright pixels
+        float(flat.std()),                                        # overall raw std
+    ], dtype=np.float32)
+
+
+def _morphological_features(img_raw: np.ndarray) -> np.ndarray:
+    """5 features from bright connected regions — classical calcification detector.
+
+    Stone produces small, compact, very bright blobs (calcifications) that are
+    absent in Normal tissue.  Thresholding at p90 of the raw image isolates
+    these high-density regions for structural analysis.
+    """
+    threshold = float(np.percentile(img_raw, 90))
+    binary = img_raw >= threshold
+    labeled = label(binary)
+    regions = regionprops(labeled)
+
+    if not regions:
+        return np.zeros(5, dtype=np.float32)
+
+    areas = np.array([r.area for r in regions], dtype=np.float64)
+    return np.array([
+        float(len(regions)),                                      # number of bright blobs
+        float(areas.max()),                                       # largest blob area
+        float(areas.mean()),                                      # average blob area
+        float(areas.std()) if len(areas) > 1 else 0.0,           # variation in blob sizes
+        float((areas < 500).sum() / len(areas)),                  # fraction of small blobs
+    ], dtype=np.float32)
+
+
 def extract_features(img: np.ndarray) -> np.ndarray:
     """Extract the 108-dimensional feature vector from one image.
 
-    Input must be a 256×256 uint8 grayscale array as returned by
+    Input must be a 256x256 uint8 grayscale array as returned by
     shared.preprocessing.load_image().
     """
     enhanced = _clahe(img)
@@ -157,6 +223,9 @@ def extract_features(img: np.ndarray) -> np.ndarray:
         _glcm_features(enhanced),
         _lbp_features(enhanced),
         _gabor_features(img_float),
+        _hist_features(enhanced),
+        _raw_intensity_features(img),
+        _morphological_features(img),
     ])
 
 

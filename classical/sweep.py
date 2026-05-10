@@ -37,7 +37,6 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.decomposition import PCA
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import f1_score as sk_f1
 from sklearn.preprocessing import StandardScaler
@@ -52,7 +51,6 @@ from shared.preprocessing import load_split
 from classical.config import (
     FEATURES_CACHE_SUBDIR,
     PIPELINE_FILENAME,
-    PCA_N_COMPONENTS,
     RESULTS_FILENAME,
 )
 from classical.features import build_feature_matrix
@@ -152,33 +150,21 @@ def run_sweep(
 
         print(f"\n[sweep {tag}] n_train={len(y_tr)}")
 
-        # Fit scaler + PCA on this fraction's training data
-        scaler = StandardScaler()
-        X_tr_sc = scaler.fit_transform(X_tr)
-        pca_n = min(PCA_N_COMPONENTS, X_tr_sc.shape[0] - 1, X_tr_sc.shape[1])
-        pca = PCA(n_components=pca_n, svd_solver="full", random_state=SEED)
-        X_tr_pca = pca.fit_transform(X_tr_sc)
-        print(f"[sweep {tag}] PCA: {X_tr.shape[1]} -> {X_tr_pca.shape[1]} components")
-
         # Combine train + val for final fit (same protocol as full training)
         X_tv = np.concatenate([X_tr, X_val], axis=0)
         y_tv = np.concatenate([y_tr, y_val], axis=0)
         final_scaler = StandardScaler()
-        X_tv_sc = final_scaler.fit_transform(X_tv)
-        final_pca_n = min(PCA_N_COMPONENTS, X_tv_sc.shape[0] - 1, X_tv_sc.shape[1])
-        final_pca = PCA(n_components=final_pca_n, svd_solver="full", random_state=SEED)
-        X_tv_pca = final_pca.fit_transform(X_tv_sc)
+        final_scaler.fit_transform(X_tv)
 
-        clf = _rebuild_clf(model_name, best_params, X_tv_pca, y_tv)
+        clf = _rebuild_clf(model_name, best_params, final_scaler.transform(X_tv), y_tv)
 
         # Evaluate on test
-        X_test_pca = final_pca.transform(final_scaler.transform(X_test))
-        y_pred = clf.predict(X_test_pca)
-        y_prob = clf.predict_proba(X_test_pca)
+        y_pred = clf.predict(final_scaler.transform(X_test))
+        y_prob = clf.predict_proba(final_scaler.transform(X_test))
 
         frac_val_f1 = sk_f1(
             y_val,
-            clf.predict(final_pca.transform(final_scaler.transform(X_val))),
+            clf.predict(final_scaler.transform(X_val)),
             average="macro",
             zero_division=0,
         )

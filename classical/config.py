@@ -60,6 +60,18 @@ HOG_ORIENTATIONS: int = 9
 HOG_PIXELS_PER_CELL: tuple[int, int] = (32, 32)
 HOG_CELLS_PER_BLOCK: tuple[int, int] = (2, 2)
 
+# ── RF Stone class weight ─────────────────────────────────────────────────────
+# Stone is confused with Normal at the decision boundary even after SMOTE.
+# Boosting Stone's misclassification cost forces RF to prioritise Stone splits.
+# Cyst=0, Normal=1, Stone=2, Tumor=3  (matches shared.config.CLASSES order)
+RF_CLASS_WEIGHT: str = "balanced"
+
+# ── Intensity histogram (Haralick 1979; Unser et al. 1986) ───────────────────
+# 16 coarse bins capture the full pixel-intensity distribution shape.
+# Kidney stones appear as bright calcifications in CT (high HU); bins in the
+# upper range and p95/p99 directly encode this radiodensity signature.
+HIST_BINS: int = 16
+
 # ── Dimensionality reduction ──────────────────────────────────────────────────
 # Capped at 50 components (not 95 % variance) to prevent the classifier from
 # memorising patient-specific fine-texture patterns that arise from slice-level
@@ -71,25 +83,26 @@ PCA_N_COMPONENTS: int = 50
 CV_FOLDS: int = 5                 # stratified k-fold, Phase 0 §2
 CV_SCORING: str = "f1_macro"      # primary metric, Phase 0 §5
 
-# Linear kernel preferred over RBF: in high-dimensional PCA-projected spaces a
-# linear decision boundary is sufficient and is substantially less prone to
-# memorising patient-specific texture (Valyon & Horvath 2004; Hsieh et al. 2008).
-# C range is kept small for the same regularisation reason.
-SVM_PARAM_GRID: dict = {
-    "C": [0.001, 0.01, 0.1, 1.0],
-    "kernel": ["linear"],
-}
+SVM_PARAM_GRID: list = [
+    {"kernel": ["linear"], "C": [0.1, 1.0, 10.0, 100.0]},
+    {"kernel": ["rbf"], "C": [1.0, 10.0, 100.0, 1000.0], "gamma": ["scale", "auto", 0.001, 0.01]},
+]
 
 RF_PARAM_GRID: dict = {
-    "n_estimators": [100, 200, 300],
-    "max_depth": [None, 10, 20],
-    "min_samples_split": [2, 5],
+    "n_estimators": [300, 500],
+    "max_depth": [10, 20, None],
+    "max_features": ["sqrt", "log2"],
+    "min_samples_leaf": [1, 2, 4],
 }
 
 XGB_PARAM_GRID: dict = {
-    "n_estimators": [100, 200],
-    "max_depth": [3, 6],
+    "n_estimators": [500, 700],
+    "max_depth": [4, 5, 6],
     "learning_rate": [0.05, 0.1],
+    "colsample_bytree": [0.7, 0.8],
+    "subsample": [0.8],
+    "min_child_weight": [1],
+    "gamma": [0],
 }
 
 # ── Artefact filenames ────────────────────────────────────────────────────────
