@@ -19,6 +19,7 @@ Kidney CT Classification · Islam et al. (2022) dataset · Due **Fri 15 May 2026
 - [[experiments/Sprint2_ConvNeXtV2_on_full]] — ConvNeXtV2 on full dataset
 - [[experiments/Sprint3_classical_on_full]] — classical on full + paired McNemar's at matched scale
 - [[experiments/Sprint4_ConvNeXtV2_medium]] — ConvNeXt V2 on medium (closes the 2×2 architecture-vs-data matched grid)
+- [[experiments/Sprint5_clean_dataset_retrain]] — DL retrain on instructor's deduplicated dataset ← **the paper headline: 17–21 pp DL leakage gap, classical now dominates**
 - [[Validation_and_Verification]] — overfitting diagnostics + V&V infrastructure (post-tutor 2026-04-29) ← **the answer to Sandhya's overfitting question**
 
 ### Paper Writing
@@ -42,6 +43,7 @@ Kidney CT Classification · Islam et al. (2022) dataset · Due **Fri 15 May 2026
 | Sprint 3 third addendum — Overfitting diagnostics (post-tutor) | Person B | ✅ Complete (2026-04-29) |
 | Sprint 4 — ConvNeXt V2 on medium (closes 2×2 matched grid) | Person B | ✅ Complete (2026-04-29) |
 | Diagnostic 5 — image-hash leakage probe **(critical finding)** | Person B | ✅ Complete (2026-04-30) — see [[Validation_and_Verification]] §3.5 |
+| Sprint 5 — DL retrain on instructor's clean dataset **(paper headline)** | Person B | ✅ Complete (2026-05-11) — see [[experiments/Sprint5_clean_dataset_retrain]] |
 | Grad-CAM figures | Person B | ✅ Figures generated (cross-architecture + cross-paradigm) |
 | Data efficiency sweep | Both | ✅ Both pipelines (medium DL + full classical) |
 | Feature importance (classical) | Person B (Sprint 3) | ✅ Extracted (deployed-pipeline permutation + raw-XGB sanity) |

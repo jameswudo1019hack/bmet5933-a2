@@ -1,0 +1,490 @@
+{
+  "n_test_clean": 1888,
+  "headline": {
+    "efficientnet_b0_leaky": {
+      "n_test": 1867,
+      "accuracy": 0.987680771290841,
+      "macro_f1": 0.9818689843251681,
+      "weighted_f1": 0.9877144668014578,
+      "per_class_f1": {
+        "Cyst": 0.9847,
+        "Normal": 0.9961,
+        "Stone": 0.9496,
+        "Tumor": 0.9971
+      }
+    },
+    "efficientnet_b0_clean": {
+      "n_test": 1888,
+      "accuracy": 0.8013771186440678,
+      "macro_f1": 0.767940515572302,
+      "weighted_f1": 0.8042567638167114,
+      "per_class_f1": {
+        "Cyst": 0.8523,
+        "Normal": 0.8586,
+        "Stone": 0.6102,
+        "Tumor": 0.7507
+      }
+    },
+    "convnextv2_leaky": {
+      "n_test": 1867,
+      "accuracy": 0.9967862881628281,
+      "macro_f1": 0.9953328726589137,
+      "weighted_f1": 0.9967880930239924,
+      "per_class_f1": {
+        "Cyst": 0.9955,
+        "Normal": 0.9993,
+        "Stone": 0.988,
+        "Tumor": 0.9985
+      }
+    },
+    "convnextv2_clean": {
+      "n_test": 1888,
+      "accuracy": 0.8538135593220338,
+      "macro_f1": 0.8218578942951466,
+      "weighted_f1": 0.8527638476001667,
+      "per_class_f1": {
+        "Cyst": 0.8938,
+        "Normal": 0.9015,
+        "Stone": 0.698,
+        "Tumor": 0.7942
+      }
+    },
+    "classical_clean": {
+      "n_test": 1888,
+      "accuracy": 0.9279661016949152,
+      "macro_f1": 0.9090587097629588,
+      "weighted_f1": 0.9263217019936351,
+      "per_class_f1": {
+        "Cyst": 0.9612,
+        "Normal": 0.9392,
+        "Stone": 0.7991,
+        "Tumor": 0.9367
+      }
+    }
+  },
+  "leak_inclusive_vs_leak_free_gap_macro_f1": {
+    "efficientnet_b0": -0.21392846875286609,
+    "convnextv2": -0.17347497836376713,
+    "classical_xgb_estimated_from_partner": -0.0806
+  },
+  "pairwise_mcnemar_on_clean_test": {
+    "classical_vs_effnetb0": {
+      "model_a": "classical",
+      "model_b": "effnetb0",
+      "both_correct": 1426,
+      "only_classical_wrong_count": 87,
+      "only_effnetb0_wrong_count": 326,
+      "both_wrong_count": 49,
+      "discordant_pairs": 413,
+      "mcnemar_pvalue": 1.11668633496278e-31,
+      "classical_only_wrong_pairs": [
+        {
+          "true": "Tumor",
+          "pred": "Normal",
+          "count": 32
+        },
+        {
+          "true": "Stone",
+          "pred": "Normal",
+          "count": 19
+        },
+        {
+          "true": "Cyst",
+          "pred": "Stone",
+          "count": 13
+        },
+        {
+          "true": "Stone",
+          "pred": "Cyst",
+          "count": 9
+        },
+        {
+          "true": "Normal",
+          "pred": "Stone",
+          "count": 7
+        },
+        {
+          "true": "Normal",
+          "pred": "Cyst",
+          "count": 4
+        },
+        {
+          "true": "Normal",
+          "pred": "Tumor",
+          "count": 2
+        },
+        {
+          "true": "Stone",
+          "pred": "Tumor",
+          "count": 1
+        }
+      ],
+      "effnetb0_only_wrong_pairs": [
+        {
+          "true": "Cyst",
+          "pred": "Stone",
+          "count": 70
+        },
+        {
+          "true": "Tumor",
+          "pred": "Normal",
+          "count": 64
+        },
+        {
+          "true": "Normal",
+          "pred": "Tumor",
+          "count": 61
+        },
+        {
+          "true": "Normal",
+          "pred": "Stone",
+          "count": 47
+        },
+        {
+          "true": "Stone",
+          "pred": "Cyst",
+          "count": 24
+        },
+        {
+          "true": "Stone",
+          "pred": "Normal",
+          "count": 24
+        },
+        {
+          "true": "Cyst",
+          "pred": "Tumor",
+          "count": 15
+        },
+        {
+          "true": "Tumor",
+          "pred": "Cyst",
+          "count": 15
+        },
+        {
+          "true": "Normal",
+          "pred": "Cyst",
+          "count": 6
+        }
+      ],
+      "both_wrong_pairs": [
+        {
+          "true": "Stone",
+          "pred": "Normal",
+          "count": 27
+        },
+        {
+          "true": "Stone",
+          "pred": "Cyst",
+          "count": 8
+        },
+        {
+          "true": "Normal",
+          "pred": "Tumor",
+          "count": 5
+        },
+        {
+          "true": "Cyst",
+          "pred": "Stone",
+          "count": 4
+        },
+        {
+          "true": "Stone",
+          "pred": "Tumor",
+          "count": 3
+        },
+        {
+          "true": "Normal",
+          "pred": "Cyst",
+          "count": 2
+        }
+      ]
+    },
+    "classical_vs_convnextv2": {
+      "model_a": "classical",
+      "model_b": "convnextv2",
+      "both_correct": 1529,
+      "only_classical_wrong_count": 83,
+      "only_convnextv2_wrong_count": 223,
+      "both_wrong_count": 53,
+      "discordant_pairs": 306,
+      "mcnemar_pvalue": 1.9247334253660616e-15,
+      "classical_only_wrong_pairs": [
+        {
+          "true": "Tumor",
+          "pred": "Normal",
+          "count": 32
+        },
+        {
+          "true": "Stone",
+          "pred": "Normal",
+          "count": 18
+        },
+        {
+          "true": "Cyst",
+          "pred": "Stone",
+          "count": 14
+        },
+        {
+          "true": "Normal",
+          "pred": "Stone",
+          "count": 7
+        },
+        {
+          "true": "Normal",
+          "pred": "Tumor",
+          "count": 5
+        },
+        {
+          "true": "Normal",
+          "pred": "Cyst",
+          "count": 4
+        },
+        {
+          "true": "Stone",
+          "pred": "Cyst",
+          "count": 2
+        },
+        {
+          "true": "Stone",
+          "pred": "Tumor",
+          "count": 1
+        }
+      ],
+      "convnextv2_only_wrong_pairs": [
+        {
+          "true": "Normal",
+          "pred": "Tumor",
+          "count": 62
+        },
+        {
+          "true": "Cyst",
+          "pred": "Stone",
+          "count": 35
+        },
+        {
+          "true": "Tumor",
+          "pred": "Normal",
+          "count": 34
+        },
+        {
+          "true": "Stone",
+          "pred": "Normal",
+          "count": 32
+        },
+        {
+          "true": "Cyst",
+          "pred": "Tumor",
+          "count": 27
+        },
+        {
+          "true": "Stone",
+          "pred": "Cyst",
+          "count": 14
+        },
+        {
+          "true": "Tumor",
+          "pred": "Cyst",
+          "count": 12
+        },
+        {
+          "true": "Tumor",
+          "pred": "Stone",
+          "count": 3
+        },
+        {
+          "true": "Cyst",
+          "pred": "Normal",
+          "count": 2
+        },
+        {
+          "true": "Normal",
+          "pred": "Stone",
+          "count": 2
+        }
+      ],
+      "both_wrong_pairs": [
+        {
+          "true": "Stone",
+          "pred": "Normal",
+          "count": 28
+        },
+        {
+          "true": "Stone",
+          "pred": "Cyst",
+          "count": 15
+        },
+        {
+          "true": "Cyst",
+          "pred": "Stone",
+          "count": 3
+        },
+        {
+          "true": "Stone",
+          "pred": "Tumor",
+          "count": 3
+        },
+        {
+          "true": "Normal",
+          "pred": "Cyst",
+          "count": 2
+        },
+        {
+          "true": "Normal",
+          "pred": "Tumor",
+          "count": 2
+        }
+      ]
+    },
+    "effnetb0_vs_convnextv2": {
+      "model_a": "effnetb0",
+      "model_b": "convnextv2",
+      "both_correct": 1374,
+      "only_effnetb0_wrong_count": 238,
+      "only_convnextv2_wrong_count": 139,
+      "both_wrong_count": 137,
+      "discordant_pairs": 377,
+      "mcnemar_pvalue": 4.481987778383018e-07,
+      "effnetb0_only_wrong_pairs": [
+        {
+          "true": "Cyst",
+          "pred": "Stone",
+          "count": 49
+        },
+        {
+          "true": "Normal",
+          "pred": "Stone",
+          "count": 47
+        },
+        {
+          "true": "Normal",
+          "pred": "Tumor",
+          "count": 42
+        },
+        {
+          "true": "Tumor",
+          "pred": "Normal",
+          "count": 34
+        },
+        {
+          "true": "Stone",
+          "pred": "Cyst",
+          "count": 16
+        },
+        {
+          "true": "Stone",
+          "pred": "Normal",
+          "count": 16
+        },
+        {
+          "true": "Tumor",
+          "pred": "Cyst",
+          "count": 15
+        },
+        {
+          "true": "Cyst",
+          "pred": "Tumor",
+          "count": 11
+        },
+        {
+          "true": "Normal",
+          "pred": "Cyst",
+          "count": 8
+        }
+      ],
+      "convnextv2_only_wrong_pairs": [
+        {
+          "true": "Normal",
+          "pred": "Tumor",
+          "count": 40
+        },
+        {
+          "true": "Stone",
+          "pred": "Normal",
+          "count": 29
+        },
+        {
+          "true": "Cyst",
+          "pred": "Tumor",
+          "count": 23
+        },
+        {
+          "true": "Tumor",
+          "pred": "Normal",
+          "count": 14
+        },
+        {
+          "true": "Cyst",
+          "pred": "Stone",
+          "count": 13
+        },
+        {
+          "true": "Stone",
+          "pred": "Cyst",
+          "count": 9
+        },
+        {
+          "true": "Tumor",
+          "pred": "Cyst",
+          "count": 3
+        },
+        {
+          "true": "Cyst",
+          "pred": "Normal",
+          "count": 2
+        },
+        {
+          "true": "Normal",
+          "pred": "Cyst",
+          "count": 2
+        },
+        {
+          "true": "Normal",
+          "pred": "Stone",
+          "count": 2
+        },
+        {
+          "true": "Tumor",
+          "pred": "Stone",
+          "count": 2
+        }
+      ],
+      "both_wrong_pairs": [
+        {
+          "true": "Tumor",
+          "pred": "Normal",
+          "count": 30
+        },
+        {
+          "true": "Cyst",
+          "pred": "Stone",
+          "count": 25
+        },
+        {
+          "true": "Normal",
+          "pred": "Tumor",
+          "count": 24
+        },
+        {
+          "true": "Stone",
+          "pred": "Tumor",
+          "count": 20
+        },
+        {
+          "true": "Stone",
+          "pred": "Cyst",
+          "count": 19
+        },
+        {
+          "true": "Stone",
+          "pred": "Normal",
+          "count": 15
+        },
+        {
+          "true": "Cyst",
+          "pred": "Tumor",
+          "count": 4
+        }
+      ]
+    }
+  }
+}
