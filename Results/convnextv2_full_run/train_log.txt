@@ -1,0 +1,32 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+[train] model=convnextv2_base  image_size=384  batch_size=32
+[train] device=cuda  seed=42  smoke=False  train_frac=1.0
+[train] split_csv=split_full.csv
+[train] out=Results/convnextv2_full_run
+[train] class weights: [0.7196497917175293, 0.46768859028816223, 1.7975144386291504, 1.0151472091674805]
+[stage1] trainable params: 6,148
+[stage1 epoch 1/5] train_loss=1.0122  val_loss=0.8513  val_macro_f1=0.6183
+[stage1 epoch 2/5] train_loss=0.7817  val_loss=0.7140  val_macro_f1=0.6137
+[stage1 epoch 3/5] train_loss=0.7146  val_loss=0.7127  val_macro_f1=0.6537
+[stage1 epoch 4/5] train_loss=0.6805  val_loss=0.6556  val_macro_f1=0.6928
+[stage1 epoch 5/5] train_loss=0.6738  val_loss=0.5713  val_macro_f1=0.7216
+[stage2] trainable params: 27,470,852
+[stage2 epoch 1/30] train_loss=0.6018  val_loss=0.4714  val_macro_f1=0.7886  *best*
+[stage2 epoch 2/30] train_loss=0.5052  val_loss=0.4291  val_macro_f1=0.7959  *best*
+[stage2 epoch 3/30] train_loss=0.4495  val_loss=0.3975  val_macro_f1=0.7998  *best*
+[stage2 epoch 4/30] train_loss=0.4137  val_loss=0.3738  val_macro_f1=0.8052  *best*
+[stage2 epoch 5/30] train_loss=0.3561  val_loss=0.3393  val_macro_f1=0.8377  *best*
+[stage2 epoch 6/30] train_loss=0.3225  val_loss=0.3019  val_macro_f1=0.8555  *best*
+[stage2 epoch 7/30] train_loss=0.3105  val_loss=0.3966  val_macro_f1=0.7898
+[stage2 epoch 8/30] train_loss=0.2750  val_loss=0.2569  val_macro_f1=0.8841  *best*
+[stage2 epoch 9/30] train_loss=0.2545  val_loss=0.2522  val_macro_f1=0.8863  *best*
+[stage2 epoch 10/30] train_loss=0.2500  val_loss=0.2681  val_macro_f1=0.8756
+[stage2 epoch 11/30] train_loss=0.2335  val_loss=0.2467  val_macro_f1=0.8899  *best*
+[stage2 epoch 12/30] train_loss=0.2254  val_loss=0.2181  val_macro_f1=0.9125  *best*
+[stage2 epoch 13/30] train_loss=0.2030  val_loss=0.2392  val_macro_f1=0.8876
+[stage2 epoch 14/30] train_loss=0.1845  val_loss=0.2233  val_macro_f1=0.8964
+[stage2 epoch 15/30] train_loss=0.1797  val_loss=0.2232  val_macro_f1=0.8886
+[stage2 epoch 16/30] train_loss=0.1664  val_loss=0.2286  val_macro_f1=0.8948
+[stage2 epoch 17/30] train_loss=0.1614  val_loss=0.2574  val_macro_f1=0.8890
+[stage2] early stopping after 5 epochs without improvement
+[train] done  best_val_macro_f1=0.9125  wall=1908.8s

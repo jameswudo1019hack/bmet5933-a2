@@ -1,0 +1,16 @@
+Model: efficientnet_b0  (n_test=1888)
+  Accuracy:    0.8014
+  Macro F1:    0.7679  [95% CI 0.7483, 0.7885]
+  Weighted F1: 0.8043
+  ROC-AUC OvR: 0.9571
+  Per-class:
+    Cyst    P=0.880  R=0.827  F1=0.852  [95% CI 0.828, 0.875]  (support=513)
+    Normal  P=0.874  R=0.844  F1=0.859  [95% CI 0.840, 0.877]  (support=777)
+    Stone   P=0.572  R=0.653  F1=0.610  [95% CI 0.559, 0.659]  (support=248)
+    Tumor   P=0.728  R=0.774  F1=0.751  [95% CI 0.717, 0.784]  (support=350)
+  Confusion matrix (rows=true, cols=pred):
+              Cyst  Normal   Stone   Tumor
+    Cyst         424       0      74      15
+    Normal         8     656      47      66
+    Stone         35      31     162      20
+    Tumor         15      64       0     271
