@@ -124,6 +124,10 @@ def train(
     batch_size: int | None = None,
     stage2_weight_decay: float = STAGE2_WEIGHT_DECAY,
     stage2_unfreeze_blocks: int = STAGE2_UNFREEZE_BLOCKS,
+    stage1_epochs_override: int | None = None,
+    stage2_epochs_override: int | None = None,
+    lr_schedule: str = "constant",
+    warmup_epochs: int = 0,
 ) -> dict:
     seed_all(seed)
     output_dir = Path(output_dir)
@@ -133,6 +137,7 @@ def train(
     print(f"[train] model={model_name}  image_size={image_size}  batch_size={batch_size}")
     print(f"[train] device={device}  seed={seed}  smoke={smoke}  train_frac={train_frac}")
     print(f"[train] split_csv={split_csv or 'default (medium split.csv)'}")
+    print(f"[train] lr_schedule={lr_schedule}  warmup_epochs={warmup_epochs}")
     print(f"[train] out={output_dir}")
 
     train_ds = KidneyCTDataset(
@@ -142,7 +147,7 @@ def train(
         "val", split_csv=split_csv, dataset_root=dataset_root, image_size=image_size
     )
     if train_frac < 1.0:
-        idxs = stratified_train_indices(train_frac, seed=SEED)
+        idxs = stratified_train_indices(train_frac, seed=seed)
         train_ds = Subset(train_ds, idxs)
         print(f"[train] subsetting train to {len(idxs)} samples ({train_frac:.0%})")
     if smoke:
@@ -173,6 +178,10 @@ def train(
         class_weights = None
     loss_fn = nn.CrossEntropyLoss(weight=class_weights)
 
+    # Resolve effective epoch counts (CLI override takes precedence over config)
+    s1_target = stage1_epochs_override if stage1_epochs_override is not None else STAGE1_EPOCHS
+    s2_target = stage2_epochs_override if stage2_epochs_override is not None else STAGE2_EPOCHS
+
     log: dict = {
         "device": str(device),
         "seed": seed,
@@ -185,14 +194,16 @@ def train(
             "image_size": image_size,
             "split_csv": str(split_csv) if split_csv else "split.csv",
             "batch_size": batch_size,
-            "stage1_epochs": STAGE1_EPOCHS if not smoke else 1,
+            "stage1_epochs": s1_target if not smoke else 1,
             "stage1_lr": STAGE1_LR,
-            "stage2_epochs": STAGE2_EPOCHS if not smoke else 1,
+            "stage2_epochs": s2_target if not smoke else 1,
             "stage2_lr": STAGE2_LR,
             "stage2_unfreeze_blocks": stage2_unfreeze_blocks,
             "stage2_weight_decay": stage2_weight_decay,
             "early_stopping_patience": EARLY_STOPPING_PATIENCE,
             "use_class_weights": USE_CLASS_WEIGHTS,
+            "lr_schedule": lr_schedule,
+            "warmup_epochs": warmup_epochs,
         },
         "epochs": [],
     }
@@ -209,7 +220,7 @@ def train(
     optimizer = torch.optim.Adam(
         [p for p in model.parameters() if p.requires_grad], lr=STAGE1_LR
     )
-    stage1_epochs = 1 if smoke else STAGE1_EPOCHS
+    stage1_epochs = 1 if smoke else s1_target
     for e in range(stage1_epochs):
         train_loss = run_epoch(model, train_loader, optimizer, loss_fn, device)
         val_f1, val_loss = evaluate_macro_f1(model, val_loader, device)
@@ -239,7 +250,25 @@ def train(
         lr=STAGE2_LR,
         weight_decay=stage2_weight_decay,
     )
-    stage2_epochs = 1 if smoke else STAGE2_EPOCHS
+    stage2_epochs = 1 if smoke else s2_target
+
+    # Optional LR schedule (default "constant" preserves prior behaviour).
+    # "cosine" applies linear warmup (LR 1% → 100% over warmup_epochs) then
+    # cosine anneal from STAGE2_LR to STAGE2_LR/100 over the remaining epochs.
+    scheduler = None
+    if lr_schedule == "cosine" and not smoke:
+        from torch.optim.lr_scheduler import CosineAnnealingLR, LinearLR, SequentialLR
+        eta_min = STAGE2_LR / 100.0
+        if warmup_epochs > 0 and warmup_epochs < stage2_epochs:
+            warm = LinearLR(optimizer, start_factor=0.01, end_factor=1.0, total_iters=warmup_epochs)
+            cos = CosineAnnealingLR(optimizer, T_max=stage2_epochs - warmup_epochs, eta_min=eta_min)
+            scheduler = SequentialLR(optimizer, schedulers=[warm, cos], milestones=[warmup_epochs])
+        else:
+            scheduler = CosineAnnealingLR(optimizer, T_max=stage2_epochs, eta_min=eta_min)
+        print(f"[stage2] LR schedule: cosine, warmup={warmup_epochs} epochs, eta_min={eta_min:.2e}")
+    elif lr_schedule == "constant":
+        print(f"[stage2] LR schedule: constant @ {STAGE2_LR:.2e}")
+
     epochs_since_improvement = 0
     for e in range(stage2_epochs):
         train_loss = run_epoch(model, train_loader, optimizer, loss_fn, device)
@@ -252,10 +281,12 @@ def train(
             epochs_since_improvement = 0
         else:
             epochs_since_improvement += 1
+        current_lr = optimizer.param_groups[0]["lr"]
         print(
             f"[stage2 epoch {e + 1}/{stage2_epochs}] "
             f"train_loss={train_loss:.4f}  val_loss={val_loss:.4f}  "
-            f"val_macro_f1={val_f1:.4f}{'  *best*' if improved else ''}"
+            f"val_macro_f1={val_f1:.4f}  lr={current_lr:.2e}"
+            f"{'  *best*' if improved else ''}"
         )
         log["epochs"].append(
             {
@@ -264,9 +295,12 @@ def train(
                 "train_loss": train_loss,
                 "val_loss": val_loss,
                 "val_macro_f1": val_f1,
+                "lr": current_lr,
                 "improved": improved,
             }
         )
+        if scheduler is not None:
+            scheduler.step()
         if not smoke and epochs_since_improvement >= EARLY_STOPPING_PATIENCE:
             print(f"[stage2] early stopping after {EARLY_STOPPING_PATIENCE} epochs without improvement")
             break
@@ -320,6 +354,27 @@ def main() -> None:
         help="number of last backbone stages to unfreeze in stage 2 "
              "(default 2 for EfficientNet-B0; use 1 for ConvNeXt V2 Base where stages are much larger)",
     )
+    parser.add_argument(
+        "--seed", type=int, default=SEED,
+        help=f"override the global SEED (default {SEED}). Use different seeds for ensemble runs.",
+    )
+    parser.add_argument(
+        "--stage1-epochs", type=int, default=None,
+        help=f"override STAGE1_EPOCHS (default {STAGE1_EPOCHS} from config)",
+    )
+    parser.add_argument(
+        "--stage2-epochs", type=int, default=None,
+        help=f"override STAGE2_EPOCHS (default {STAGE2_EPOCHS} from config)",
+    )
+    parser.add_argument(
+        "--lr-schedule", default="constant", choices=["constant", "cosine"],
+        help="stage-2 learning-rate schedule: 'constant' (default, original behaviour) "
+             "or 'cosine' (linear warmup then cosine anneal to STAGE2_LR/100)",
+    )
+    parser.add_argument(
+        "--warmup-epochs", type=int, default=0,
+        help="cosine schedule only — number of linear-warmup epochs at the start of stage 2",
+    )
     args = parser.parse_args()
 
     device = resolve_device(args.device)
@@ -327,6 +382,7 @@ def main() -> None:
         Path(args.output_dir),
         device=device,
         smoke=args.smoke,
+        seed=args.seed,
         train_frac=args.train_frac,
         model_name=args.model,
         split_csv=args.split_csv,
@@ -335,6 +391,10 @@ def main() -> None:
         batch_size=args.batch_size,
         stage2_weight_decay=args.stage2_weight_decay,
         stage2_unfreeze_blocks=args.stage2_unfreeze_blocks,
+        stage1_epochs_override=args.stage1_epochs,
+        stage2_epochs_override=args.stage2_epochs,
+        lr_schedule=args.lr_schedule,
+        warmup_epochs=args.warmup_epochs,
     )
 
 
