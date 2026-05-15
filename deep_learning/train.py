@@ -147,7 +147,10 @@ def train(
         "val", split_csv=split_csv, dataset_root=dataset_root, image_size=image_size
     )
     if train_frac < 1.0:
-        idxs = stratified_train_indices(train_frac, seed=seed)
+        idxs = stratified_train_indices(
+            train_frac, seed=seed,
+            split_csv=split_csv, dataset_root=dataset_root,
+        )
         train_ds = Subset(train_ds, idxs)
         print(f"[train] subsetting train to {len(idxs)} samples ({train_frac:.0%})")
     if smoke:
