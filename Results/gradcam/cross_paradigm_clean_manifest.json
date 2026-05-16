@@ -1,0 +1,70 @@
+{
+  "samples": [
+    {
+      "split_idx": 1538,
+      "bucket": "all_correct",
+      "y_true": "Tumor",
+      "classical_pred": "Tumor",
+      "classical_prob_predicted": 0.9867558346495303,
+      "effnetb0_pred": "Tumor",
+      "effnetb0_prob_predicted": 0.9851574897766113,
+      "convnextv2_pred": "Tumor",
+      "convnextv2_prob_predicted": 0.9985743761062622
+    },
+    {
+      "split_idx": 70,
+      "bucket": "classical_right_dl_wrong",
+      "y_true": "Cyst",
+      "classical_pred": "Cyst",
+      "classical_prob_predicted": 0.995356241068989,
+      "effnetb0_pred": "Stone",
+      "effnetb0_prob_predicted": 0.7583621144294739,
+      "convnextv2_pred": "Stone",
+      "convnextv2_prob_predicted": 0.5647229552268982
+    },
+    {
+      "split_idx": 71,
+      "bucket": "classical_right_dl_wrong",
+      "y_true": "Cyst",
+      "classical_pred": "Cyst",
+      "classical_prob_predicted": 0.9844880789914379,
+      "effnetb0_pred": "Stone",
+      "effnetb0_prob_predicted": 0.9562836289405823,
+      "convnextv2_pred": "Stone",
+      "convnextv2_prob_predicted": 0.6930070519447327
+    },
+    {
+      "split_idx": 1296,
+      "bucket": "dl_right_classical_wrong",
+      "y_true": "Stone",
+      "classical_pred": "Normal",
+      "classical_prob_predicted": 0.9468939217049058,
+      "effnetb0_pred": "Stone",
+      "effnetb0_prob_predicted": 0.987441897392273,
+      "convnextv2_pred": "Stone",
+      "convnextv2_prob_predicted": 0.9898266792297363
+    },
+    {
+      "split_idx": 1305,
+      "bucket": "dl_right_classical_wrong",
+      "y_true": "Stone",
+      "classical_pred": "Normal",
+      "classical_prob_predicted": 0.9952624109937179,
+      "effnetb0_pred": "Stone",
+      "effnetb0_prob_predicted": 0.9999392032623291,
+      "convnextv2_pred": "Stone",
+      "convnextv2_prob_predicted": 0.9158645868301392
+    },
+    {
+      "split_idx": 1297,
+      "bucket": "all_wrong",
+      "y_true": "Stone",
+      "classical_pred": "Normal",
+      "classical_prob_predicted": 0.3242274378826984,
+      "effnetb0_pred": "Normal",
+      "effnetb0_prob_predicted": 0.749926745891571,
+      "convnextv2_pred": "Normal",
+      "convnextv2_prob_predicted": 0.9983404874801636
+    }
+  ]
+}
