@@ -81,7 +81,7 @@ The four-step invalidation chain from Sprints 3 + addenda is now **subordinate**
 
 That paragraph is the paper's abstract.
 
-## Files written
+## Files written (Sprint 5 baseline)
 
 - `Results/dl_run_full/dl_predictions.npz`           — EfficientNet-B0 clean
 - `Results/dl_run_full/dl_results.json`              — EfficientNet-B0 clean headline
@@ -96,3 +96,100 @@ That paragraph is the paper's abstract.
 - `Results/sprint5_clean_vs_leaky.json`              — full headline + paired McNemar's report
 - `analysis/sprint5_clean_vs_leaky.py`               — rerunnable analysis script
 - `notebooks/colab_dl_clean_full.ipynb`              — Colab notebook used to retrain
+
+---
+
+## Sprint 5 addendum 1 — Tier 1 (TTA + ensemble) on clean (2026-05-12)
+
+After the clean-vs-leaky retrain showed DL collapsing 17–21 pp, we ran the cheapest possible improvements that don't require retraining: test-time augmentation (hflip) on the existing checkpoints + soft-vote ensembles within the DL paradigm.
+
+### Results
+
+| Pipeline | macro-F1 | Errors / 1,888 |
+|---|---|---|
+| EfficientNet-B0 raw (Sprint 5 baseline) | 0.7679 | 375 |
+| EfficientNet-B0 + TTA hflip | **0.7945** | 328 |
+| ConvNeXt V2 raw (Sprint 5 baseline) | 0.8219 | 276 |
+| ConvNeXt V2 + TTA hflip | **0.8370** | 252 |
+| EF-TTA + CN-TTA soft-vote ensemble | **0.8448** | 245 |
+| Classical SVM (partner's clean SVM) | 0.9091 | 137 |
+
+TTA adds +2.7 pp on EffNet, +1.5 pp on ConvNeXt — consistent with Sprint 1's medium-leaky TTA gain. The DL-only ensemble adds another +0.8 pp on top of ConvNeXt + TTA but is not statistically significant vs ConvNeXt-TTA alone (p=0.57, discordant=109): the two CNNs share too much error overlap to provide complementary coverage. Classical still dominates by ~6.4 pp.
+
+Artefacts: `Results/dl_run_full_tta_hflip/`, `Results/convnextv2_full_run_tta_hflip/`, `Results/tier1_ensemble_clean.json`, `analysis/tier1_ensemble_clean.py`, `analysis/tier1_tta_clean.py`.
+
+---
+
+## Sprint 5 addendum 2 — Tier 1A + 2C: 3-seed ConvNeXt V2 with cosine LR (2026-05-15)
+
+Pushed ConvNeXt V2 further by stacking two improvements: 3 additional seeds (0, 1, 2) for variance reduction, and cosine LR + 60 stage-2 epochs + 5-epoch warmup to address the under-training visible in Sprint 5 baseline logs. Final 4-seed TTA-ensembled ConvNeXt V2 result lives at `Results/convnextv2_4seed_cos_tta_ensemble/dl_results.json`.
+
+The single-seed cosine+60 anchor is now also the 100% point of the v2 data-efficiency sweep (next addendum).
+
+Artefacts: `Results/convnextv2_full_run_seed{0,1,2}_cos_tta_hflip/`, `Results/convnextv2_4seed_cos_tta_ensemble/`, `notebooks/colab_3seed_convnextv2_cos.ipynb`, several disconnect-resilience patches to the Colab notebook (v2.1 → v2.3).
+
+---
+
+## Sprint 5 addendum 3 — DL data-efficiency sweep on clean (2026-05-15, bug-fixed v2)
+
+### Why
+
+Three motivations:
+1. Partner's classical sweep ran on the clean dataset showing handcrafted features hit ~0.95 macro-F1 with only 10% of training data; we wanted a matched DL sweep on the same clean dataset to make the sample-efficiency contrast quantitative.
+2. The clean DL baseline (Sprint 5) is single-seed; a sweep across multiple data fractions provides an internal robustness check.
+3. ConvNeXt V2 baseline showed "still climbing at last epoch" in Diag 4 (V&V §3.4); the longer cosine schedule + warmup combined with the sweep tests whether under-training was the issue.
+
+### Bug discovered and fixed mid-sweep
+
+`deep_learning/train.py` line ~145 passed `train_frac` to `stratified_train_indices` without forwarding `split_csv` and `dataset_root`. The function defaulted to the medium split (`split.csv`, 4,353 train), so sub-100% sweeps used roughly half the intended sample count (e.g. 436 at 10%, not 815). 100% data points were unaffected because `train_frac=1.0` skips the subsetting branch.
+
+The bug was caught when v1's sub-100% sweep results showed ConvNeXt V2 and EffNet-B0 both collapsing to ~0.39 macro-F1 (near majority-class baseline) at 10/25/50%. Train logs confirmed catastrophic overfit with the wrong sample counts.
+
+Fix at `0c5c4a2`:
+
+```python
+idxs = stratified_train_indices(
+    train_frac, seed=seed,
+    split_csv=split_csv, dataset_root=dataset_root,
+)
+```
+
+Smoke-test confirmed: at `--train-frac 0.1` with the clean full split, training now uses 814 samples (was 436). v2 sweep notebook (`notebooks/colab_dl_sweep_clean_v2.ipynb`) reran the affected sub-100% fractions into new directories to avoid restoring the buggy Drive caches.
+
+### Final v2 sweep results (clean test, n=1,888)
+
+`Results/dl_sweep_clean_v2/sweep_summary_final.json` and `Results/dl_sweep_clean_v2/sweep_curves.png`:
+
+| Fraction | n_train | **ConvNeXt V2 raw** | **ConvNeXt V2 TTA** | **EffNet-B0 raw** | **EffNet-B0 TTA** |
+|---|---|---|---|---|---|
+| 10 % | 815 | 0.6472 | 0.6548 | 0.7208 | 0.7306 |
+| 25 % | 2,036 | 0.7821 | 0.7897 | 0.7252 | 0.7383 |
+| 50 % | 4,073 | 0.7927 | 0.8049 | 0.7434 | 0.7589 |
+| 100 % | 8,146 | 0.8219* | 0.8369 | 0.7175 | 0.7436 |
+
+*ConvNeXt 100% raw shown is the Sprint 5 baseline (constant LR + 30 ep, macro-F1 0.8219). The protocol-matched cosine+60 ConvNeXt 100% raw is **0.8381** (per v1 sweep_summary, lives at `Results/convnextv2_full_run_seed0_cos/dl_results.json` on user's local + Drive backup). Either is reportable; the cosine+60 value is the apples-to-apples match for the sub-100% rows.
+
+Classical SVM at 100% (partner) = **0.9091** — above both DL backbones at every data fraction.
+
+### Three clean findings from the sweep
+
+1. **Classical sample efficiency dominates DL at every fraction.** Classical SVM at 100% is 0.9091; ConvNeXt V2 caps at 0.84 with full data, EffNet at 0.74. Handcrafted features generalize from less data more reliably than transfer-learned CNNs on this benchmark.
+
+2. **ConvNeXt V2 has a real scaling curve; EffNet-B0 saturates immediately.** ConvNeXt jumps from 0.6472 (10%) to 0.7821 (25%, +14 pp), to 0.7927 (50%, +1 pp), to 0.8219 (100%, +3 pp). EffNet stays in a tight band 0.7175 → 0.7434 across all fractions. The larger model has capacity to absorb more data; the smaller one has saturated by 815 training images.
+
+3. **DL backbones cross over around 25 % data.** At 10% data, EffNet (0.7208) actually **beats** ConvNeXt V2 (0.6472) — the bigger model needs more data to fit; the smaller model adapts well with little. The crossover happens between 10% and 25% fractions. This is the textbook sample-efficiency-vs-capacity tradeoff visualised on a real medical-imaging benchmark with leakage controlled.
+
+### Implications for the paper
+
+This sweep extends the Sprint 5 leak-inclusive-vs-leak-free narrative into a **sample-efficiency** narrative on the leak-free benchmark:
+
+> *"On the deduplicated benchmark, we measured DL data-efficiency curves at 10/25/50/100% of training data and observed three patterns inconsistent with the leaky-benchmark literature. First, classical handcrafted features outperform both ConvNeXt V2 Base (89M params) and EfficientNet-B0 (5M params) at every data fraction, with classical SVM at 100% (0.9091 macro-F1) above ConvNeXt V2's 100% ceiling (0.8381). Second, the two DL backbones show qualitatively different scaling curves: ConvNeXt V2 climbs from 0.65 (10%) → 0.78 (25%) → 0.82 (100%), while EffNet-B0 saturates immediately at ~0.73 macro-F1 regardless of training-set size. Third, EffNet-B0 outperforms ConvNeXt V2 at very low data (10%), with the larger architecture crossing over only at the 25% fraction — consistent with the textbook capacity-vs-sample-efficiency tradeoff. Combined with the leak-inclusive-vs-leak-free gap finding, these data-efficiency curves provide the most defensible characterisation of the Islam 2022 benchmark's true DL performance regime to date."*
+
+### Files written (Sprint 5 addendum 3)
+
+- `analysis/sweep_v2_finalise.py` — combines v2 sub-100% with v1 100% anchor; builds curves
+- `Results/dl_sweep_clean_v2/sweep_summary_final.json` — the canonical sweep summary
+- `Results/dl_sweep_clean_v2/sweep_curves.png` — paper-quality plot, both backbones + classical horizontal reference
+- `Results/{convnextv2,effnetb0}_sweep_clean_v2/frac_{010,025,050}/` — v2 raw predictions per fraction
+- `Results/{convnextv2,effnetb0}_sweep_clean_v2/frac_{010,025,050}_tta_hflip/` — TTA predictions
+- `notebooks/colab_dl_sweep_clean_v2.ipynb` — bug-fixed disconnect-resilient sweep notebook

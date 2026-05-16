@@ -40,7 +40,25 @@ Read [[Project_Framing_v2]] before the meeting for full context.
 
 **Caveat 2 (Sprint 3-specific):** invalidating the "disjoint errors" claim by going from medium to full data is itself the paper's most defensible contribution if presented honestly. We will not bury this — we will lead with the two-scale comparison.
 
-### Finding 2: architecture > data volume — confirmed at BOTH scales after Sprint 4 (refreshed 2026-04-29 — full 2×2 matched grid)
+### Finding 2: DL data-efficiency curves on the clean dataset (refreshed 2026-05-15 — Sprint 5 addendum 3)
+
+The CLEAN-dataset data-efficiency sweep (v2 bug-fixed) measured both DL backbones at 10/25/50/100% of training data on the deduplicated test set (n=1,888):
+
+| Fraction | ConvNeXt V2 raw F1 | EffNet-B0 raw F1 | Classical SVM raw F1 (partner) |
+|---|---|---|---|
+| 10 % | 0.6472 | **0.7208** | ~0.95 (partner's curve) |
+| 25 % | **0.7821** | 0.7252 | ~0.97 |
+| 50 % | 0.7927 | 0.7434 | ~0.98 |
+| 100 % | 0.8219 (const-LR) / 0.8381 (cosine+60) | 0.7175 | **0.9091** |
+
+**Three findings:**
+1. **Classical dominates at every fraction.** Classical SVM at 100% (0.9091) exceeds ConvNeXt V2's 100% ceiling (0.8381). At 10% data, classical (~0.95) is more than 20 pp above ConvNeXt V2 (0.6472).
+2. **ConvNeXt V2 scales with data; EffNet-B0 saturates immediately.** ConvNeXt climbs 0.65 → 0.78 → 0.82 from 10% → 25% → 100%. EffNet stays in a tight band 0.71–0.74 across all four fractions — the smaller model has effectively saturated by ~815 training images.
+3. **DL crossover at ~25% data.** At 10% data, EffNet (0.72) **beats** ConvNeXt (0.65) — the larger model needs more data to fit. By 25% the order has reversed and ConvNeXt pulls ahead. Textbook capacity-vs-sample-efficiency tradeoff on a real medical-imaging benchmark.
+
+This sweep replaces the 2×2 matched-grid framing from Sprint 4 (which was on leaky data). The plot `Results/dl_sweep_clean_v2/sweep_curves.png` is paper-figure ready.
+
+#### (Previous Sprint 4 framing — retained for historical context)
 
 **Now have a complete 2×2 matched grid:**
 
