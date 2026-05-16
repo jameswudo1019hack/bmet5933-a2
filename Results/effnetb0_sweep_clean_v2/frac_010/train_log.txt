@@ -1,0 +1,32 @@
+[train] model=efficientnet_b0  image_size=224  batch_size=32
+[train] device=cuda  seed=0  smoke=False  train_frac=0.1
+[train] split_csv=split_full.csv
+[train] lr_schedule=cosine  warmup_epochs=5
+[train] out=Results/effnetb0_sweep_clean_v2/frac_010
+[train] subsetting train to 814 samples (10%)
+Downloading: "https://download.pytorch.org/models/efficientnet_b0_rwightman-7f5810bc.pth" to /root/.cache/torch/hub/checkpoints/efficientnet_b0_rwightman-7f5810bc.pth
+  0%|          | 0.00/20.5M [00:00<?, ?B/s] 48%|████▊     | 9.88M/20.5M [00:00<00:00, 103MB/s]100%|██████████| 20.5M/20.5M [00:00<00:00, 144MB/s]
+[train] class weights: [0.7196497917175293, 0.46768859028816223, 1.7975144386291504, 1.0151472091674805]
+[stage1] trainable params: 5,124
+[stage1 epoch 1/5] train_loss=1.2390  val_loss=1.0771  val_macro_f1=0.5949
+[stage1 epoch 2/5] train_loss=0.9860  val_loss=0.9604  val_macro_f1=0.6150
+[stage1 epoch 3/5] train_loss=0.8652  val_loss=0.8530  val_macro_f1=0.6498
+[stage1 epoch 4/5] train_loss=0.8058  val_loss=0.7714  val_macro_f1=0.6857
+[stage1 epoch 5/5] train_loss=0.7104  val_loss=0.7369  val_macro_f1=0.6975
+[stage2] trainable params: 1,134,516
+[stage2] LR schedule: cosine, warmup=5 epochs, eta_min=1.00e-07
+[stage2 epoch 1/60] train_loss=0.7102  val_loss=0.7312  val_macro_f1=0.6932  lr=1.00e-07
+[stage2 epoch 2/60] train_loss=0.6703  val_loss=0.7266  val_macro_f1=0.6949  lr=2.08e-06
+[stage2 epoch 3/60] train_loss=0.7127  val_loss=0.7352  val_macro_f1=0.6942  lr=4.06e-06
+[stage2 epoch 4/60] train_loss=0.6671  val_loss=0.7195  val_macro_f1=0.6945  lr=6.04e-06
+[stage2 epoch 5/60] train_loss=0.6769  val_loss=0.7137  val_macro_f1=0.7007  lr=8.02e-06  *best*
+[stage2 epoch 6/60] train_loss=0.6804  val_loss=0.7219  val_macro_f1=0.6877  lr=1.00e-05
+[stage2 epoch 7/60] train_loss=0.6359  val_loss=0.7016  val_macro_f1=0.6980  lr=9.99e-06
+[stage2 epoch 8/60] train_loss=0.6439  val_loss=0.6973  val_macro_f1=0.7049  lr=9.97e-06  *best*
+[stage2 epoch 9/60] train_loss=0.6119  val_loss=0.6906  val_macro_f1=0.6986  lr=9.93e-06
+[stage2 epoch 10/60] train_loss=0.6253  val_loss=0.6879  val_macro_f1=0.6917  lr=9.87e-06
+[stage2 epoch 11/60] train_loss=0.6254  val_loss=0.6911  val_macro_f1=0.7010  lr=9.80e-06
+[stage2 epoch 12/60] train_loss=0.6081  val_loss=0.6874  val_macro_f1=0.6943  lr=9.71e-06
+[stage2 epoch 13/60] train_loss=0.5787  val_loss=0.6833  val_macro_f1=0.6991  lr=9.61e-06
+[stage2] early stopping after 5 epochs without improvement
+[train] done  best_val_macro_f1=0.7049  wall=122.8s

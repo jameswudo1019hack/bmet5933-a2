@@ -1,0 +1,84 @@
+{
+  "n_train_total": 8146,
+  "sweep_clean_v2": {
+    "convnextv2_base": [
+      {
+        "fraction": 10,
+        "n_train": 815,
+        "raw_macro_f1": 0.6471571999057197,
+        "tta_macro_f1": 0.6547555092494824,
+        "raw_accuracy": 0.7002118644067796,
+        "raw_errors": 566,
+        "source": "v2"
+      },
+      {
+        "fraction": 25,
+        "n_train": 2036,
+        "raw_macro_f1": 0.7821087535029233,
+        "tta_macro_f1": 0.7897357105004318,
+        "raw_accuracy": 0.8151483050847458,
+        "raw_errors": 348,
+        "source": "v2"
+      },
+      {
+        "fraction": 50,
+        "n_train": 4073,
+        "raw_macro_f1": 0.7927494275102005,
+        "tta_macro_f1": 0.8049346628957439,
+        "raw_accuracy": 0.8268008474576272,
+        "raw_errors": 326,
+        "source": "v2"
+      },
+      {
+        "fraction": 100,
+        "n_train": 8146,
+        "raw_macro_f1": null,
+        "tta_macro_f1": null,
+        "raw_accuracy": null,
+        "raw_errors": null,
+        "source": "v1 (reused, unaffected by bug)"
+      }
+    ],
+    "efficientnet_b0": [
+      {
+        "fraction": 10,
+        "n_train": 815,
+        "raw_macro_f1": 0.720754126854526,
+        "tta_macro_f1": 0.7306494116132701,
+        "raw_accuracy": 0.7515889830508474,
+        "raw_errors": 469,
+        "source": "v2"
+      },
+      {
+        "fraction": 25,
+        "n_train": 2036,
+        "raw_macro_f1": 0.7251688205290625,
+        "tta_macro_f1": 0.7383153018613627,
+        "raw_accuracy": 0.7595338983050848,
+        "raw_errors": 453,
+        "source": "v2"
+      },
+      {
+        "fraction": 50,
+        "n_train": 4073,
+        "raw_macro_f1": 0.7434043416491405,
+        "tta_macro_f1": 0.75890896707423,
+        "raw_accuracy": 0.7823093220338984,
+        "raw_errors": 410,
+        "source": "v2"
+      },
+      {
+        "fraction": 100,
+        "n_train": 8146,
+        "raw_macro_f1": null,
+        "tta_macro_f1": null,
+        "raw_accuracy": null,
+        "raw_errors": null,
+        "source": "v1 (reused, unaffected by bug)"
+      }
+    ]
+  },
+  "notes": [
+    "v2 sub-100% used bug-fixed split_csv pass-through to stratified_train_indices; 100% reused from v1 (no subsetting branch \u2014 never affected by bug)."
+  ]
+}

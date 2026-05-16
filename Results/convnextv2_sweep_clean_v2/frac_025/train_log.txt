@@ -1,0 +1,47 @@
+[train] model=convnextv2_base  image_size=384  batch_size=32
+[train] device=cuda  seed=0  smoke=False  train_frac=0.25
+[train] split_csv=split_full.csv
+[train] lr_schedule=cosine  warmup_epochs=5
+[train] out=Results/convnextv2_sweep_clean_v2/frac_025
+[train] subsetting train to 2037 samples (25%)
+[train] class weights: [0.7196497917175293, 0.46768859028816223, 1.7975144386291504, 1.0151472091674805]
+[stage1] trainable params: 6,148
+[stage1 epoch 1/5] train_loss=1.2743  val_loss=1.0431  val_macro_f1=0.4866
+[stage1 epoch 2/5] train_loss=1.0252  val_loss=0.8946  val_macro_f1=0.6022
+[stage1 epoch 3/5] train_loss=0.9036  val_loss=0.9544  val_macro_f1=0.5449
+[stage1 epoch 4/5] train_loss=0.8844  val_loss=0.8111  val_macro_f1=0.6019
+[stage1 epoch 5/5] train_loss=0.8303  val_loss=0.7096  val_macro_f1=0.6602
+[stage2] trainable params: 27,470,852
+[stage2] LR schedule: cosine, warmup=5 epochs, eta_min=1.00e-07
+[stage2 epoch 1/60] train_loss=0.7837  val_loss=0.7106  val_macro_f1=0.6632  lr=1.00e-07  *best*
+[stage2 epoch 2/60] train_loss=0.7563  val_loss=0.7189  val_macro_f1=0.6752  lr=2.08e-06  *best*
+[stage2 epoch 3/60] train_loss=0.7373  val_loss=0.7036  val_macro_f1=0.6954  lr=4.06e-06  *best*
+[stage2 epoch 4/60] train_loss=0.7350  val_loss=0.6985  val_macro_f1=0.6911  lr=6.04e-06
+[stage2 epoch 5/60] train_loss=0.7012  val_loss=0.6806  val_macro_f1=0.7079  lr=8.02e-06  *best*
+[stage2 epoch 6/60] train_loss=0.6780  val_loss=0.6332  val_macro_f1=0.7042  lr=1.00e-05
+[stage2 epoch 7/60] train_loss=0.6437  val_loss=0.6081  val_macro_f1=0.7176  lr=9.99e-06  *best*
+[stage2 epoch 8/60] train_loss=0.6100  val_loss=0.5845  val_macro_f1=0.7321  lr=9.97e-06  *best*
+[stage2 epoch 9/60] train_loss=0.5917  val_loss=0.5866  val_macro_f1=0.7226  lr=9.93e-06
+[stage2 epoch 10/60] train_loss=0.5672  val_loss=0.5621  val_macro_f1=0.7460  lr=9.87e-06  *best*
+[stage2 epoch 11/60] train_loss=0.5514  val_loss=0.4984  val_macro_f1=0.7643  lr=9.80e-06  *best*
+[stage2 epoch 12/60] train_loss=0.5127  val_loss=0.4818  val_macro_f1=0.7660  lr=9.71e-06  *best*
+[stage2 epoch 13/60] train_loss=0.5231  val_loss=0.4756  val_macro_f1=0.7775  lr=9.61e-06  *best*
+[stage2 epoch 14/60] train_loss=0.4697  val_loss=0.4673  val_macro_f1=0.7812  lr=9.49e-06  *best*
+[stage2 epoch 15/60] train_loss=0.4897  val_loss=0.4848  val_macro_f1=0.7573  lr=9.36e-06
+[stage2 epoch 16/60] train_loss=0.4533  val_loss=0.4514  val_macro_f1=0.7797  lr=9.21e-06
+[stage2 epoch 17/60] train_loss=0.4451  val_loss=0.4277  val_macro_f1=0.7843  lr=9.05e-06  *best*
+[stage2 epoch 18/60] train_loss=0.4423  val_loss=0.4165  val_macro_f1=0.7917  lr=8.88e-06  *best*
+[stage2 epoch 19/60] train_loss=0.4100  val_loss=0.4299  val_macro_f1=0.7843  lr=8.70e-06
+[stage2 epoch 20/60] train_loss=0.3889  val_loss=0.4086  val_macro_f1=0.7976  lr=8.50e-06  *best*
+[stage2 epoch 21/60] train_loss=0.4057  val_loss=0.4213  val_macro_f1=0.7858  lr=8.29e-06
+[stage2 epoch 22/60] train_loss=0.4046  val_loss=0.3816  val_macro_f1=0.8039  lr=8.07e-06  *best*
+[stage2 epoch 23/60] train_loss=0.3717  val_loss=0.3677  val_macro_f1=0.8119  lr=7.84e-06  *best*
+[stage2 epoch 24/60] train_loss=0.3503  val_loss=0.3729  val_macro_f1=0.8062  lr=7.61e-06
+[stage2 epoch 25/60] train_loss=0.3618  val_loss=0.3372  val_macro_f1=0.8417  lr=7.36e-06  *best*
+[stage2 epoch 26/60] train_loss=0.3391  val_loss=0.3462  val_macro_f1=0.8235  lr=7.11e-06
+[stage2 epoch 27/60] train_loss=0.3355  val_loss=0.3572  val_macro_f1=0.8209  lr=6.85e-06
+[stage2 epoch 28/60] train_loss=0.3401  val_loss=0.3376  val_macro_f1=0.8291  lr=6.58e-06
+[stage2 epoch 29/60] train_loss=0.3336  val_loss=0.3355  val_macro_f1=0.8201  lr=6.31e-06
+[stage2 epoch 30/60] train_loss=0.3183  val_loss=0.3297  val_macro_f1=0.8262  lr=6.03e-06
+[stage2] early stopping after 5 epochs without improvement
+[train] done  best_val_macro_f1=0.8417  wall=1184.2s

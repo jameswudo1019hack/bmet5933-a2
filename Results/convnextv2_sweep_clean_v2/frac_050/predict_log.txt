@@ -1,0 +1,17 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Model: convnextv2_base  (n_test=1888)
+  Accuracy:    0.8268
+  Macro F1:    0.7927  [95% CI 0.7717, 0.8136]
+  Weighted F1: 0.8254
+  ROC-AUC OvR: 0.9692
+  Per-class:
+    Cyst    P=0.897  R=0.836  F1=0.866  [95% CI 0.844, 0.890]  (support=513)
+    Normal  P=0.852  R=0.919  F1=0.884  [95% CI 0.865, 0.901]  (support=777)
+    Stone   P=0.706  R=0.669  F1=0.687  [95% CI 0.639, 0.735]  (support=248)
+    Tumor   P=0.748  R=0.720  F1=0.734  [95% CI 0.697, 0.768]  (support=350)
+  Confusion matrix (rows=true, cols=pred):
+              Cyst  Normal   Stone   Tumor
+    Cyst         429       1      59      24
+    Normal         4     714       3      56
+    Stone         23      54     166       5
+    Tumor         22      69       7     252

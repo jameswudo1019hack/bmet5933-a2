@@ -1,0 +1,34 @@
+[train] model=efficientnet_b0  image_size=224  batch_size=32
+[train] device=cuda  seed=0  smoke=False  train_frac=0.25
+[train] split_csv=split_full.csv
+[train] lr_schedule=cosine  warmup_epochs=5
+[train] out=Results/effnetb0_sweep_clean_v2/frac_025
+[train] subsetting train to 2037 samples (25%)
+[train] class weights: [0.7196497917175293, 0.46768859028816223, 1.7975144386291504, 1.0151472091674805]
+[stage1] trainable params: 5,124
+[stage1 epoch 1/5] train_loss=1.0954  val_loss=0.9060  val_macro_f1=0.6321
+[stage1 epoch 2/5] train_loss=0.8093  val_loss=0.7179  val_macro_f1=0.6828
+[stage1 epoch 3/5] train_loss=0.6827  val_loss=0.6773  val_macro_f1=0.6868
+[stage1 epoch 4/5] train_loss=0.6461  val_loss=0.6524  val_macro_f1=0.6944
+[stage1 epoch 5/5] train_loss=0.5684  val_loss=0.6852  val_macro_f1=0.6667
+[stage2] trainable params: 1,134,516
+[stage2] LR schedule: cosine, warmup=5 epochs, eta_min=1.00e-07
+[stage2 epoch 1/60] train_loss=0.5539  val_loss=0.6603  val_macro_f1=0.6795  lr=1.00e-07
+[stage2 epoch 2/60] train_loss=0.5614  val_loss=0.6665  val_macro_f1=0.6724  lr=2.08e-06
+[stage2 epoch 3/60] train_loss=0.5484  val_loss=0.6556  val_macro_f1=0.6814  lr=4.06e-06
+[stage2 epoch 4/60] train_loss=0.5622  val_loss=0.6291  val_macro_f1=0.6954  lr=6.04e-06  *best*
+[stage2 epoch 5/60] train_loss=0.5323  val_loss=0.6258  val_macro_f1=0.6933  lr=8.02e-06
+[stage2 epoch 6/60] train_loss=0.5267  val_loss=0.6154  val_macro_f1=0.6940  lr=1.00e-05
+[stage2 epoch 7/60] train_loss=0.5182  val_loss=0.6163  val_macro_f1=0.7125  lr=9.99e-06  *best*
+[stage2 epoch 8/60] train_loss=0.4935  val_loss=0.6133  val_macro_f1=0.6924  lr=9.97e-06
+[stage2 epoch 9/60] train_loss=0.4800  val_loss=0.6010  val_macro_f1=0.6990  lr=9.93e-06
+[stage2 epoch 10/60] train_loss=0.4537  val_loss=0.5744  val_macro_f1=0.7153  lr=9.87e-06  *best*
+[stage2 epoch 11/60] train_loss=0.4615  val_loss=0.6060  val_macro_f1=0.6974  lr=9.80e-06
+[stage2 epoch 12/60] train_loss=0.4367  val_loss=0.5705  val_macro_f1=0.7196  lr=9.71e-06  *best*
+[stage2 epoch 13/60] train_loss=0.4239  val_loss=0.5809  val_macro_f1=0.7079  lr=9.61e-06
+[stage2 epoch 14/60] train_loss=0.4159  val_loss=0.5911  val_macro_f1=0.7054  lr=9.49e-06
+[stage2 epoch 15/60] train_loss=0.4084  val_loss=0.5666  val_macro_f1=0.7167  lr=9.36e-06
+[stage2 epoch 16/60] train_loss=0.4133  val_loss=0.5536  val_macro_f1=0.7182  lr=9.21e-06
+[stage2 epoch 17/60] train_loss=0.4045  val_loss=0.5749  val_macro_f1=0.7097  lr=9.05e-06
+[stage2] early stopping after 5 epochs without improvement
+[train] done  best_val_macro_f1=0.7196  wall=228.5s
