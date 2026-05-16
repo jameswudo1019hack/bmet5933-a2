@@ -1,0 +1,22 @@
+[train] model=efficientnet_b0  image_size=224  batch_size=32
+[train] device=cuda  seed=0  smoke=False  train_frac=0.5
+[train] split_csv=split_full.csv
+[train] lr_schedule=cosine  warmup_epochs=5
+[train] out=Results/effnetb0_sweep_clean/frac_050
+[train] subsetting train to 2176 samples (50%)
+[train] class weights: [0.7196497917175293, 0.46768859028816223, 1.7975144386291504, 1.0151472091674805]
+[stage1] trainable params: 5,124
+[stage1 epoch 1/5] train_loss=0.4023  val_loss=2.0479  val_macro_f1=0.4031
+[stage1 epoch 2/5] train_loss=0.1862  val_loss=2.2099  val_macro_f1=0.4062
+[stage1 epoch 3/5] train_loss=0.1271  val_loss=2.3746  val_macro_f1=0.4058
+[stage1 epoch 4/5] train_loss=0.1167  val_loss=2.5437  val_macro_f1=0.4035
+[stage1 epoch 5/5] train_loss=0.1031  val_loss=2.7310  val_macro_f1=0.4033
+[stage2] trainable params: 1,134,516
+[stage2] LR schedule: cosine, warmup=5 epochs, eta_min=1.00e-07
+[stage2 epoch 1/60] train_loss=0.0957  val_loss=2.6798  val_macro_f1=0.4040  lr=1.00e-07
+[stage2 epoch 2/60] train_loss=0.0966  val_loss=2.7558  val_macro_f1=0.4039  lr=2.08e-06
+[stage2 epoch 3/60] train_loss=0.0936  val_loss=2.6757  val_macro_f1=0.4033  lr=4.06e-06
+[stage2 epoch 4/60] train_loss=0.0870  val_loss=2.7656  val_macro_f1=0.4037  lr=6.04e-06
+[stage2 epoch 5/60] train_loss=0.0787  val_loss=2.7484  val_macro_f1=0.4036  lr=8.02e-06
+[stage2] early stopping after 5 epochs without improvement
+[train] done  best_val_macro_f1=0.4062  wall=107.2s

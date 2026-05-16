@@ -8,17 +8,8 @@
       "Bash(python -m classical.predict --output-dir Results/classical_run)",
       "Bash(echo \"DONE\")",
       "PowerShell($lines = Get-Content \"c:\\\\Users\\\\alee7\\\\OneDrive\\\\Documents\\\\GitHub\\\\bmet5933-a2\\\\Results\\\\classical_run\\\\classical_train_log.txt\"; $lines.Count; $lines[-20..-1])",
-      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('use_pca:', d.get\\('use_pca'\\)\\); print\\('n_pca_components:', d.get\\('n_pca_components'\\)\\)\")",
-      "Bash(python -c \"import imblearn; print\\('imblearn version:', imblearn.__version__\\)\")",
-      "Bash(Remove-Item \"c:\\\\Users\\\\alee7\\\\OneDrive\\\\Documents\\\\GitHub\\\\bmet5933-a2\\\\Results\\\\classical_features\\\\train_frac100.npz\" -Force)",
-      "Bash(Remove-Item \"c:\\\\Users\\\\alee7\\\\OneDrive\\\\Documents\\\\GitHub\\\\bmet5933-a2\\\\Results\\\\classical_features\\\\val.npz\" -Force)",
-      "Bash(Remove-Item \"c:\\\\Users\\\\alee7\\\\OneDrive\\\\Documents\\\\GitHub\\\\bmet5933-a2\\\\Results\\\\classical_features\\\\test.npz\" -Force)",
-      "Bash(Write-Host \"Deleted stale feature cache\")",
-      "Bash(Get-ChildItem \"c:\\\\Users\\\\alee7\\\\OneDrive\\\\Documents\\\\GitHub\\\\bmet5933-a2\\\\Results\\\\classical_features\\\\\" -ErrorAction SilentlyContinue)",
-      "Bash(python -m shared.config)",
-      "Bash(python -m classical.baseline --split-csv split_full.csv)",
-      "Bash(python -m shared.split --dataset-root \"Dataset/CT-KIDNEY-DATASET-Normal-Cyst-Tumor-Stone/CT-KIDNEY-DATASET-Normal-Cyst-Tumor-Stone_unique\" --output split_full.csv --group-size 50)",
-      "Bash(xargs grep -l \"feature_import\\\\|group_import\\\\|LBP\\\\|Gabor\\\\|importan\")"
+      "mcp__consensus__search",
+      "mcp__paper-search__search_pubmed"
     ]
   }
 }

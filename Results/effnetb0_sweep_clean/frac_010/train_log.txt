@@ -1,0 +1,25 @@
+[train] model=efficientnet_b0  image_size=224  batch_size=32
+[train] device=cuda  seed=0  smoke=False  train_frac=0.1
+[train] split_csv=split_full.csv
+[train] lr_schedule=cosine  warmup_epochs=5
+[train] out=Results/effnetb0_sweep_clean/frac_010
+[train] subsetting train to 436 samples (10%)
+Downloading: "https://download.pytorch.org/models/efficientnet_b0_rwightman-7f5810bc.pth" to /root/.cache/torch/hub/checkpoints/efficientnet_b0_rwightman-7f5810bc.pth
+  0%|          | 0.00/20.5M [00:00<?, ?B/s]100%|██████████| 20.5M/20.5M [00:00<00:00, 230MB/s]
+[train] class weights: [0.7196497917175293, 0.46768859028816223, 1.7975144386291504, 1.0151472091674805]
+[stage1] trainable params: 5,124
+[stage1 epoch 1/5] train_loss=0.8499  val_loss=1.6826  val_macro_f1=0.3255
+[stage1 epoch 2/5] train_loss=0.3973  val_loss=1.8739  val_macro_f1=0.3843
+[stage1 epoch 3/5] train_loss=0.2804  val_loss=1.9673  val_macro_f1=0.3843
+[stage1 epoch 4/5] train_loss=0.2291  val_loss=2.0582  val_macro_f1=0.3927
+[stage1 epoch 5/5] train_loss=0.2013  val_loss=2.0686  val_macro_f1=0.4046
+[stage2] trainable params: 1,134,516
+[stage2] LR schedule: cosine, warmup=5 epochs, eta_min=1.00e-07
+[stage2 epoch 1/60] train_loss=0.2118  val_loss=2.0774  val_macro_f1=0.4071  lr=1.00e-07  *best*
+[stage2 epoch 2/60] train_loss=0.1894  val_loss=2.0957  val_macro_f1=0.4067  lr=2.08e-06
+[stage2 epoch 3/60] train_loss=0.2080  val_loss=2.0619  val_macro_f1=0.4062  lr=4.06e-06
+[stage2 epoch 4/60] train_loss=0.2049  val_loss=2.0963  val_macro_f1=0.4069  lr=6.04e-06
+[stage2 epoch 5/60] train_loss=0.1764  val_loss=2.0923  val_macro_f1=0.4066  lr=8.02e-06
+[stage2 epoch 6/60] train_loss=0.1804  val_loss=2.0878  val_macro_f1=0.4063  lr=1.00e-05
+[stage2] early stopping after 5 epochs without improvement
+[train] done  best_val_macro_f1=0.4071  wall=63.4s
