@@ -1,0 +1,106 @@
+{
+  "n_train_total": 8146,
+  "n_test": 1888,
+  "notes": [
+    "v2 sub-100% retrained with split_csv passed to stratified_train_indices (commit 0c5c4a2 fix).",
+    "ConvNeXt V2 100% RAW shown here is Sprint 5 baseline (constant LR + 30 ep, Sprint 5 clean retrain) at 0.8219 macro-F1. The protocol-matched cosine+60 100% raw is 0.8381 (per v1 sweep_summary); update this once convnextv2_full_run_seed0_cos is committed.",
+    "ConvNeXt V2 100% TTA is the protocol-matched cosine+60 TTA result.",
+    "EffNet-B0 100% (both raw + TTA) is the v1 cosine+60 result (no subsetting bug)."
+  ],
+  "convnextv2_base": [
+    {
+      "fraction": 10,
+      "n_train": 815,
+      "raw_macro_f1": 0.6471571999057197,
+      "tta_macro_f1": 0.6547555092494824,
+      "raw_accuracy": 0.7002118644067796,
+      "raw_errors": 566,
+      "source": "v2",
+      "source_raw_path": "Results/convnextv2_sweep_clean_v2/frac_010/dl_results.json",
+      "source_tta_path": "Results/convnextv2_sweep_clean_v2/frac_010_tta_hflip/dl_results.json"
+    },
+    {
+      "fraction": 25,
+      "n_train": 2036,
+      "raw_macro_f1": 0.7821087535029233,
+      "tta_macro_f1": 0.7897357105004318,
+      "raw_accuracy": 0.8151483050847458,
+      "raw_errors": 349,
+      "source": "v2",
+      "source_raw_path": "Results/convnextv2_sweep_clean_v2/frac_025/dl_results.json",
+      "source_tta_path": "Results/convnextv2_sweep_clean_v2/frac_025_tta_hflip/dl_results.json"
+    },
+    {
+      "fraction": 50,
+      "n_train": 4073,
+      "raw_macro_f1": 0.7927494275102005,
+      "tta_macro_f1": 0.8049346628957439,
+      "raw_accuracy": 0.8268008474576272,
+      "raw_errors": 327,
+      "source": "v2",
+      "source_raw_path": "Results/convnextv2_sweep_clean_v2/frac_050/dl_results.json",
+      "source_tta_path": "Results/convnextv2_sweep_clean_v2/frac_050_tta_hflip/dl_results.json"
+    },
+    {
+      "fraction": 100,
+      "n_train": 8146,
+      "raw_macro_f1": 0.8218578942951466,
+      "tta_macro_f1": 0.8369321560621376,
+      "raw_accuracy": 0.8538135593220338,
+      "raw_errors": 276,
+      "source": "v1 100% (no subsetting bug)",
+      "source_raw_path": "Results/convnextv2_full_run/dl_results.json",
+      "source_tta_path": "Results/convnextv2_full_run_seed0_cos_tta_hflip/dl_results.json",
+      "source_raw_note": "Sprint 5 constant-LR baseline (not protocol-matched)",
+      "source_tta_note": "Sprint 5 + Tier 1A cosine+60 seed=0 TTA (protocol-matched)"
+    }
+  ],
+  "efficientnet_b0": [
+    {
+      "fraction": 10,
+      "n_train": 815,
+      "raw_macro_f1": 0.720754126854526,
+      "tta_macro_f1": 0.7306494116132701,
+      "raw_accuracy": 0.7515889830508474,
+      "raw_errors": 469,
+      "source": "v2",
+      "source_raw_path": "Results/effnetb0_sweep_clean_v2/frac_010/dl_results.json",
+      "source_tta_path": "Results/effnetb0_sweep_clean_v2/frac_010_tta_hflip/dl_results.json"
+    },
+    {
+      "fraction": 25,
+      "n_train": 2036,
+      "raw_macro_f1": 0.7251688205290625,
+      "tta_macro_f1": 0.7383153018613627,
+      "raw_accuracy": 0.7595338983050848,
+      "raw_errors": 454,
+      "source": "v2",
+      "source_raw_path": "Results/effnetb0_sweep_clean_v2/frac_025/dl_results.json",
+      "source_tta_path": "Results/effnetb0_sweep_clean_v2/frac_025_tta_hflip/dl_results.json"
+    },
+    {
+      "fraction": 50,
+      "n_train": 4073,
+      "raw_macro_f1": 0.7434043416491405,
+      "tta_macro_f1": 0.75890896707423,
+      "raw_accuracy": 0.7823093220338984,
+      "raw_errors": 411,
+      "source": "v2",
+      "source_raw_path": "Results/effnetb0_sweep_clean_v2/frac_050/dl_results.json",
+      "source_tta_path": "Results/effnetb0_sweep_clean_v2/frac_050_tta_hflip/dl_results.json"
+    },
+    {
+      "fraction": 100,
+      "n_train": 8146,
+      "raw_macro_f1": 0.7174770095553573,
+      "tta_macro_f1": 0.7436297530760108,
+      "raw_accuracy": 0.7563559322033898,
+      "raw_errors": 460,
+      "source": "v1 100% (no subsetting bug)",
+      "source_raw_path": "Results/effnetb0_sweep_clean/frac_100/dl_results.json",
+      "source_tta_path": "Results/effnetb0_sweep_clean/frac_100_tta_hflip/dl_results.json",
+      "source_raw_note": "v1 sweep 100% raw (no subsetting bug at 100%)",
+      "source_tta_note": "v1 sweep 100% TTA (no subsetting bug at 100%)"
+    }
+  ]
+}
