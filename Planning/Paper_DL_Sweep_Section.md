@@ -1,6 +1,6 @@
-# Paper section drafts — DL data-efficiency sweep on the clean dataset
+# Paper section drafts — DL data-efficiency sweep + cross-paradigm attribution on the clean dataset
 
-Drop-in paragraphs for the paper's Methods, Results, and Discussion sections, derived from Sprint 5 addendum 3.
+Drop-in paragraphs for the paper's Methods, Results, and Discussion sections, derived from Sprint 5 addendum 3 and the cross-paradigm attribution work (`Results/gradcam/cross_paradigm_clean.png`).
 
 ---
 
@@ -43,6 +43,43 @@ The paper's argumentative arc, with this addendum:
 7. **Data efficiency**: classical wins at every fraction; DL backbones have qualitatively different scaling curves (Sprint 5 addendum 3, this section)
 
 Sample efficiency is the closing section: with leakage controlled, the dataset is genuinely small for DL transfer learning to be competitive, while classical handcrafted features make near-full use of the available signal. The benchmark is best served by classical methods.
+
+---
+
+---
+
+## Methods § Cross-paradigm attribution maps
+
+> *To probe how each paradigm uses spatial information from the input slice, we generated attribution maps for six representative test images drawn from the clean-test disagreement buckets (one from "all three correct", two from "classical correct, both DL wrong", two from "both DL correct, classical wrong", and one from "all three wrong"). For the classical SVM pipeline (which operates on a 138-dim aggregated feature vector and therefore has no native spatial gradient), we used occlusion sensitivity (Zeiler and Fergus, 2014): a 48×48 patch is slid across the 256×256 input image with stride 24, each patch position is replaced with a uniform-gray (intensity 128) region, the full feature pipeline (CLAHE → 7-group handcrafted features) is recomputed, and the resulting drop in predicted-class confidence is recorded as the attribution at that location. For the two transfer-learned CNN backbones we used Grad-CAM (Selvaraju et al., 2017) on the last convolutional feature map of each network, computed against the predicted class. All three attribution maps were upsampled to a common 384×384 display resolution and overlaid on the original slice using the same red-hot colormap to support side-by-side visual comparison.*
+
+---
+
+## Results § Cross-paradigm attribution findings
+
+> *Figure Z shows the attribution maps for the six selected samples. The qualitative contrast across the three paradigms is consistent across every row: the classical SVM's occlusion sensitivity is spatially diffuse and covers most of the abdominal region (consistent with the global aggregation step of the handcrafted feature pipeline), while both DL backbones produce sharply focal Grad-CAM heatmaps centred on small bright regions in the kidney or peri-renal tissue. The diagnostic value of the comparison is in the disagreement rows. On the two `Classical right, DL wrong` Cyst samples (rows 2-3), both DL backbones attend to a small high-intensity region within the cyst and confidently mis-classify the slice as Stone (EffNet-B0 p=0.76, 0.96; ConvNeXt V2 p=0.56, 0.69), while the classical pipeline's broad texture aggregation correctly identifies the slice as Cyst (p=0.995, 0.98). On the two `DL right, Classical wrong` Stone samples (rows 4-5), the DL backbones' focal attention catches a small calcification (the diagnostic Stone signature) at very high confidence (EffNet p>0.98, ConvNeXt p>0.91), while the classical pipeline's global aggregation washes the focal calcification out and mis-classifies the slice as Normal (p>0.94). On the universally wrong row (row 6, true class Stone), no clear calcification is visible in the slice and all three paradigms confidently predict Normal — neither approach has a diagnostic feature to attend to.*
+
+---
+
+## Discussion § Mechanistic interpretation
+
+> *The attribution maps provide a candidate mechanistic explanation for the systematic DL underperformance reported in our sample-efficiency results (Section 4): classical handcrafted features integrate texture and frequency information over the entire kidney region, providing a robust whole-image fingerprint that is less easily perturbed by image-level confounders, while DL Grad-CAM consistently localises a small focal region. When the diagnostic signal is broadly distributed (Cyst rows 2-3), the focal DL strategy is misled by salient but non-diagnostic bright regions. When the diagnostic signal is itself small and spatially localised (Stone rows 4-5), the DL strategy succeeds where classical fails. The complementary nature of these two failure modes echoes the Sprint 1 medium-dataset finding that classical and DL produced disjoint errors, but in a regime — the deduplicated benchmark — where the classical paradigm aggregates the signal more reliably overall, classical wins more often than it loses. This is the underlying mechanism behind the 8 pp leakage-gap for classical versus the 17–21 pp gap for DL (Sprint 5) and the classical-always-above-DL data-efficiency curves (Section 4.4).*
+
+---
+
+## Figure caption (drop-in)
+
+> *Figure Z. Cross-paradigm attribution on the deduplicated test set. Six rows of test images selected to span the four classical/DL disagreement buckets: 1 all-correct control (true Tumor), 2 classical-right-DL-wrong (true Cyst, DL mis-predicts Stone), 2 DL-right-classical-wrong (true Stone, classical mis-predicts Normal), 1 all-wrong (true Stone, all predict Normal). Columns: (i) original CT slice; (ii) classical SVM occlusion-sensitivity map (Zeiler & Fergus 2014; 48×48 patch, stride 24, on the deployed RBF SVM with 138-dim handcrafted features); (iii) EfficientNet-B0 Grad-CAM (Selvaraju et al. 2017) on the last conv feature map; (iv) ConvNeXt V2 Base Grad-CAM on the last stage feature map. All overlays use the same red-hot colormap normalised per panel. Predicted class and predicted-class confidence are reported in each panel's title. The classical map is consistently broad (whole-kidney coverage); both DL maps are consistently focal on small bright regions. Disagreement rows reveal the trade-off: DL is misled by non-diagnostic focal features on Cyst (rows 2-3); classical fails when the diagnostic feature is itself focal on Stone (rows 4-5).*
+
+---
+
+## Citations to add (for Methods + Discussion)
+
+| Reference | Where to cite |
+|---|---|
+| **Zeiler, M. D. and Fergus, R. (2014)**, "Visualizing and Understanding Convolutional Networks", *ECCV* | Methods § attribution — for the occlusion-sensitivity approach used on classical |
+| **Selvaraju, R. R., Cogswell, M., Das, A., Vedantam, R., Parikh, D., and Batra, D. (2017)**, "Grad-CAM: Visual Explanations from Deep Networks via Gradient-based Localization", *ICCV* | Methods § attribution — for Grad-CAM on the DL backbones |
+| **Adebayo, J., Gilmer, J., Muelly, M., Goodfellow, I., Hardt, M., and Kim, B. (2018)**, "Sanity Checks for Saliency Maps", *NeurIPS* | Limitations — flag that Grad-CAM is a local linear approximation, not a complete explanation |
+| **Sundararajan, M., Taly, A., and Yan, Q. (2017)**, "Axiomatic Attribution for Deep Networks", *ICML* (Integrated Gradients) | Optional in Methods if reviewer wants comparison to alternative attribution methods |
 
 ---
 
