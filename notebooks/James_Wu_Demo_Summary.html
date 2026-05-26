@@ -7796,7 +7796,7 @@ a.anchor-link {
 <!-- End of mermaid configuration --></head>
 <body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
 <main>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=758b7aa0">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=b8b3264b">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7818,7 +7818,7 @@ preprocessing and the leakage diagnostic.</p>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=afa37262">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=a78058ca">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7832,7 +7832,7 @@ system through this function before any pipeline-specific work happens.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=fbff9c63">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=764b3bda">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7840,36 +7840,58 @@ system through this function before any pipeline-specific work happens.</p>
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-python"><pre><span></span><span class="c1"># Shared image loader — used by both classical and deep-learning pipelines</span>
-<span class="c1"># I want to show this because every figure in my notebook ultimately depends</span>
-<span class="c1"># on this one function producing identical inputs for both paradigms.</span>
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Section 1 — shared image loader. Used by both pipelines.</span>
 
+<span class="c1"># `PIL` = Python Imaging Library (fork "Pillow"). `Image` is the submodule</span>
+<span class="c1"># that gives us .open(), .convert(), .crop(), .resize() etc.</span>
 <span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="c1"># `numpy` is aliased as `np`. Used to return the final image as a</span>
+<span class="c1"># uint8 array — downstream pipelines expect numpy, not PIL objects.</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">shared.config</span> <span class="kn">import</span> <span class="n">IMAGE_SIZE</span>   <span class="c1"># (256, 256)</span>
+
+<span class="c1"># `IMAGE_SIZE` is a project-wide constant defined in shared/config.py.</span>
+<span class="c1"># Its value is the tuple (256, 256) — the canonical working resolution.</span>
+<span class="kn">from</span> <span class="nn">shared.config</span> <span class="kn">import</span> <span class="n">IMAGE_SIZE</span>
 
 
+<span class="c1"># `def` defines a function. `load_image` is the function name.</span>
+<span class="c1"># `path` is a positional parameter: filesystem path (str or Path).</span>
 <span class="k">def</span> <span class="nf">load_image</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
-    <span class="c1"># Step 1: open and convert to single-channel grayscale.</span>
-    <span class="c1"># CT is intrinsically 1-channel intensity. The 3-channel replication</span>
-    <span class="c1"># for ImageNet-pretrained CNNs happens later in my dataset code.</span>
+    <span class="c1"># `Image.open(path)` lazily opens the file, returns a PIL Image.</span>
+    <span class="c1"># "Lazy" = pixels not read from disk until .load()/.convert().</span>
+    <span class="c1"># `.convert("L")` converts the image mode to "L" = 8-bit single-channel</span>
+    <span class="c1"># luminance (greyscale). CT scans are intrinsically intensity; we don't</span>
+    <span class="c1"># want to fake RGB at this stage.</span>
     <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">"L"</span><span class="p">)</span>
 
-    <span class="c1"># Step 2: square center crop to min(width, height).</span>
-    <span class="c1"># The kidney is centered in every Islam-dataset slice, so cropping</span>
-    <span class="c1"># to the central square preserves anatomy without introducing</span>
-    <span class="c1"># the black bars that letterboxing would add.</span>
+    <span class="c1"># `.size` is a (width, height) tuple of the PIL Image.</span>
+    <span class="c1"># Tuple-unpacking assigns the two ints to local names `w` and `h`.</span>
     <span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">size</span>
+
+    <span class="c1"># `min(w, h)` is the Python built-in: pick the smaller of the two.</span>
+    <span class="c1"># `m` will become the side length of the square we crop out.</span>
     <span class="n">m</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span>
+
+    <span class="c1"># Compute the (left, top) corner so the crop is centered on the image.</span>
+    <span class="c1"># Integer division `//` gives the floor; `.crop` needs int coords.</span>
     <span class="n">left</span> <span class="o">=</span> <span class="p">(</span><span class="n">w</span> <span class="o">-</span> <span class="n">m</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
     <span class="n">top</span> <span class="o">=</span> <span class="p">(</span><span class="n">h</span> <span class="o">-</span> <span class="n">m</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+
+    <span class="c1"># `.crop((left, top, right, bottom))` returns a new PIL Image with</span>
+    <span class="c1"># the rectangle from (left, top) to (left+m, top+m). 4-tuple is a PIL</span>
+    <span class="c1"># convention; coordinates are pixel positions, not percentages.</span>
     <span class="n">img</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">crop</span><span class="p">((</span><span class="n">left</span><span class="p">,</span> <span class="n">top</span><span class="p">,</span> <span class="n">left</span> <span class="o">+</span> <span class="n">m</span><span class="p">,</span> <span class="n">top</span> <span class="o">+</span> <span class="n">m</span><span class="p">))</span>
 
-    <span class="c1"># Step 3: resize to the canonical 256x256 working resolution</span>
-    <span class="c1"># using bilinear interpolation (smooth, edge-preserving).</span>
+    <span class="c1"># `.resize(size, resample)` returns a PIL Image at the new size.</span>
+    <span class="c1"># `IMAGE_SIZE` = (256, 256). `Image.BILINEAR` is the resampling filter:</span>
+    <span class="c1"># weighted avg of 4 nearest pixels; smooth and edge-preserving;</span>
+    <span class="c1"># standard for medical imaging.</span>
     <span class="n">img</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">IMAGE_SIZE</span><span class="p">,</span> <span class="n">Image</span><span class="o">.</span><span class="n">BILINEAR</span><span class="p">)</span>
 
-    <span class="c1"># Return uint8 numpy. Downstream code does its own float casting.</span>
+    <span class="c1"># `np.asarray(img, dtype=np.uint8)` converts the PIL Image into a numpy</span>
+    <span class="c1"># array with shape (H, W) = (256, 256) and dtype uint8 (values 0-255).</span>
+    <span class="c1"># `asarray` (vs `array`) avoids copying when already an ndarray.</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -7877,7 +7899,7 @@ system through this function before any pipeline-specific work happens.</p>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=7bd8c35d">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=b737036d">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7891,7 +7913,7 @@ of preprocessing.</p>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=f766d74d">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=d6829bf1">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7905,7 +7927,7 @@ same patient stay together.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=66d9a6bc">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=0f37c9a1">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7913,21 +7935,49 @@ same patient stay together.</p>
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-python"><pre><span></span><span class="c1"># Just confirming the split I report against in this notebook.</span>
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Section 2 — confirm the split I report against.</span>
+
+<span class="c1"># `pandas` is aliased as `pd`. Standard tabular-data library; we</span>
+<span class="c1"># use it to read the CSV and build the summary table.</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="c1"># `pathlib.Path` is Python's modern OO path API — replaces os.path string</span>
+<span class="c1"># manipulation with operator-overloaded path objects.</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 
+<span class="c1"># `Path.cwd()` returns the current working directory as a Path object.</span>
 <span class="n">ROOT</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span>
-<span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">ROOT</span> <span class="o">/</span> <span class="s2">"split_full.csv"</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">and</span> <span class="p">(</span><span class="n">ROOT</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">"split_full.csv"</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+
+<span class="c1"># If the notebook is opened from inside notebooks/, hop one level up.</span>
+<span class="c1"># `(ROOT / "split_full.csv")` uses the `/` operator that Path overloads to</span>
+<span class="c1"># join path components — equivalent to os.path.join.</span>
+<span class="c1"># `.exists()` returns True/False without touching the file contents.</span>
+<span class="c1"># `ROOT.parent` is the parent directory (one level up).</span>
+<span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="p">(</span><span class="n">ROOT</span> <span class="o">/</span> <span class="s2">"split_full.csv"</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+        <span class="ow">and</span> <span class="p">(</span><span class="n">ROOT</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">"split_full.csv"</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()):</span>
     <span class="n">ROOT</span> <span class="o">=</span> <span class="n">ROOT</span><span class="o">.</span><span class="n">parent</span>
 
+<span class="c1"># `pd.read_csv(path)` reads a CSV file into a pandas DataFrame.</span>
+<span class="c1"># The DataFrame has columns "filename", "class", "split".</span>
 <span class="n">split</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">ROOT</span> <span class="o">/</span> <span class="s2">"split_full.csv"</span><span class="p">)</span>
+
+<span class="c1"># Build the per-(split, class) count summary.</span>
+<span class="c1"># `.groupby(["split", "class"])` groups rows by both columns (multi-index).</span>
+<span class="c1"># `.size()` returns a Series of counts per group.</span>
+<span class="c1"># `.unstack(fill_value=0)` pivots the "class" level into columns; any</span>
+<span class="c1"># missing (split, class) combination becomes 0 instead of NaN.</span>
+<span class="c1"># `.reindex(columns=[...])` enforces the canonical column order so Cyst</span>
+<span class="c1"># always comes first regardless of pandas's internal alphabetical sort.</span>
 <span class="n">summary</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">split</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">"split"</span><span class="p">,</span> <span class="s2">"class"</span><span class="p">])</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
     <span class="o">.</span><span class="n">unstack</span><span class="p">(</span><span class="n">fill_value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"Cyst"</span><span class="p">,</span> <span class="s2">"Normal"</span><span class="p">,</span> <span class="s2">"Stone"</span><span class="p">,</span> <span class="s2">"Tumor"</span><span class="p">])</span>
 <span class="p">)</span>
+
+<span class="c1"># Add a "Total" column = sum across each row (axis=1 means row-wise sum).</span>
 <span class="n">summary</span><span class="p">[</span><span class="s2">"Total"</span><span class="p">]</span> <span class="o">=</span> <span class="n">summary</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># `print()` writes the DataFrame to stdout. Default formatting is</span>
+<span class="c1"># space-aligned columns, fine for a console demo.</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -7935,7 +7985,7 @@ same patient stay together.</p>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=a58a9bbd">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=5785edfb">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7948,7 +7998,7 @@ pass on the final model.</p>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=8d912646">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=bec893b9">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7969,7 +8019,7 @@ and stronger pretraining help on this benchmark.</li>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=dcd5e8e3">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=237b18a6">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7977,42 +8027,88 @@ and stronger pretraining help on this benchmark.</li>
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-python"><pre><span></span><span class="c1"># My model builders. I keep a single dispatcher so I can swap backbones</span>
-<span class="c1"># with one CLI flag (--model efficientnet_b0  or  --model convnextv2_base).</span>
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Section 3 — model builders. Single dispatcher style so I can swap</span>
+<span class="c1"># backbones with one CLI flag (--model efficientnet_b0 or convnextv2_base).</span>
 
+<span class="c1"># `torch.nn` is the PyTorch submodule for neural-network layers (Linear,</span>
+<span class="c1"># Conv2d, Dropout, Sequential, ...). `nn` is the conventional alias.</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+
+<span class="c1"># `torchvision.models` ships pretrained CNN architectures. We import the</span>
+<span class="c1"># constructor `efficientnet_b0` and weight-enum `EfficientNet_B0_Weights`</span>
+<span class="c1"># that maps a string ("IMAGENET1K_V1") to a pretrained checkpoint.</span>
 <span class="kn">from</span> <span class="nn">torchvision.models</span> <span class="kn">import</span> <span class="n">EfficientNet_B0_Weights</span><span class="p">,</span> <span class="n">efficientnet_b0</span>
+
+<span class="c1"># `timm` (PyTorch Image Models) is the standard library for modern</span>
+<span class="c1"># vision backbones with pretrained weights. We use it for ConvNeXt V2.</span>
 <span class="kn">import</span> <span class="nn">timm</span>
 
 
+<span class="c1"># `def` declares a function. `build_efficientnet_b0` returns a model ready</span>
+<span class="c1"># for fine-tuning. `num_classes=4` is a keyword argument with default 4.</span>
 <span class="k">def</span> <span class="nf">build_efficientnet_b0</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
-    <span class="c1"># Load ImageNet-1k pretrained weights, then swap the 1000-class head</span>
-    <span class="c1"># for a 4-class head with dropout 0.3 for mild regularisation.</span>
+    <span class="c1"># `EfficientNet_B0_Weights.IMAGENET1K_V1` selects the v1 ImageNet-1k</span>
+    <span class="c1"># pretrained weights checkpoint provided by torchvision.</span>
     <span class="n">weights</span> <span class="o">=</span> <span class="n">EfficientNet_B0_Weights</span><span class="o">.</span><span class="n">IMAGENET1K_V1</span>
+
+    <span class="c1"># `efficientnet_b0(weights=weights)` instantiates the architecture and</span>
+    <span class="c1"># downloads/applies the pretrained weights to every layer including the</span>
+    <span class="c1"># original 1000-class ImageNet head.</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">efficientnet_b0</span><span class="p">(</span><span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">)</span>
+
+    <span class="c1"># `model.classifier` is the final classifier head — a Sequential</span>
+    <span class="c1"># containing [Dropout, Linear(in_features, 1000)].</span>
+    <span class="c1"># `[1]` indexes the Linear layer; `.in_features` reads its input dim</span>
+    <span class="c1"># (1280 for EfficientNet-B0).</span>
     <span class="n">in_features</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">classifier</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">in_features</span>
+
+    <span class="c1"># Replace the 1000-class head with our own 4-class head.</span>
+    <span class="c1"># `nn.Sequential` chains layers in order.</span>
+    <span class="c1"># `nn.Dropout(p=0.3)` randomly zeros 30% of activations in training</span>
+    <span class="c1"># for regularisation; turned off automatically during model.eval().</span>
+    <span class="c1"># `nn.Linear(in_features, num_classes)` is the final fully-connected</span>
+    <span class="c1"># layer mapping 1280-dim features to our 4 logits.</span>
     <span class="n">model</span><span class="o">.</span><span class="n">classifier</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
         <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="mf">0.3</span><span class="p">),</span>
         <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">in_features</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">),</span>
     <span class="p">)</span>
+
+    <span class="c1"># Return the modified model (still has the pretrained backbone weights;</span>
+    <span class="c1"># only the head is freshly initialised).</span>
     <span class="k">return</span> <span class="n">model</span>
 
 
+<span class="c1"># Builder for the larger backbone. `image_size=384` is our default because</span>
+<span class="c1"># ConvNeXt V2 was pretrained at 384.</span>
 <span class="k">def</span> <span class="nf">build_convnextv2_base</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">image_size</span><span class="o">=</span><span class="mi">384</span><span class="p">):</span>
-    <span class="c1"># Pick the matching pretrained checkpoint for the requested input size.</span>
-    <span class="c1"># I use the 384 variant because larger inputs give the model more spatial</span>
-    <span class="c1"># detail (important for the small Stone calcifications).</span>
+    <span class="c1"># Pick the matching pretrained checkpoint by name. timm uses dotted</span>
+    <span class="c1"># of the form "&lt;arch&gt;.&lt;pretrain_tag&gt;".</span>
+    <span class="c1"># "fcmae_ft_in22k_in1k_384" decodes as:</span>
+    <span class="c1">#   fcmae        = Fully Conv. Masked AutoEncoder (self-supervised</span>
+    <span class="c1">#                  pretraining used by ConvNeXt V2)</span>
+    <span class="c1">#   ft_in22k     = fine-tuned on ImageNet-22k (~14M imgs, 22k cls)</span>
+    <span class="c1">#   in1k         = fine-tuned on ImageNet-1k (1.28M imgs, 1000 cls)</span>
+    <span class="c1">#   _384         = final input resolution 384x384</span>
     <span class="n">name</span> <span class="o">=</span> <span class="p">(</span>
         <span class="s2">"convnextv2_base.fcmae_ft_in22k_in1k_384"</span>
         <span class="k">if</span> <span class="n">image_size</span> <span class="o">&gt;=</span> <span class="mi">384</span>
         <span class="k">else</span> <span class="s2">"convnextv2_base.fcmae_ft_in22k_in1k"</span>
     <span class="p">)</span>
+
+    <span class="c1"># `timm.create_model(name, pretrained=True, ...)` downloads and applies</span>
+    <span class="c1"># the weights. The remaining kwargs are timm's regularisation options:</span>
+    <span class="c1">#   num_classes=4    -&gt; replace the head with a 4-class Linear</span>
+    <span class="c1">#   drop_path_rate   -&gt; stochastic depth: prob of randomly dropping</span>
+    <span class="c1">#                       a whole residual branch in training. 0.3 is</span>
+    <span class="c1">#                       a standard value for an 89M-parameter model on</span>
+    <span class="c1">#                       ~8k training images.</span>
+    <span class="c1">#   drop_rate        -&gt; head dropout (before the final Linear).</span>
     <span class="k">return</span> <span class="n">timm</span><span class="o">.</span><span class="n">create_model</span><span class="p">(</span>
         <span class="n">name</span><span class="p">,</span>
         <span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">,</span>
-        <span class="n">drop_path_rate</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>   <span class="c1"># stochastic depth — key regularisation for 89M params</span>
-        <span class="n">drop_rate</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>        <span class="c1"># head dropout</span>
+        <span class="n">drop_path_rate</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
+        <span class="n">drop_rate</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
     <span class="p">)</span>
 </pre></div>
 </div>
@@ -8020,7 +8116,7 @@ and stronger pretraining help on this benchmark.</li>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=e9beda79">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=b5bdb78e">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8040,7 +8136,7 @@ anneal to 1e-7). Class-weighted cross-entropy compensates for the imbalance
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=1f0fec01">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=f4e8502d">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8048,41 +8144,115 @@ anneal to 1e-7). Class-weighted cross-entropy compensates for the imbalance
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-python"><pre><span></span><span class="c1"># Skeleton of my two-stage training loop. Full implementation in</span>
-<span class="c1"># deep_learning/train.py — I'm showing only the parts that matter for the demo.</span>
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Section 4 — skeleton of my two-stage training loop.</span>
+<span class="c1"># Full code lives in deep_learning/train.py — this is the demo cut.</span>
 
+<span class="c1"># `Adam` is the original adaptive-moment optimizer. We use it for stage 1</span>
+<span class="c1"># (head only) — Adam works fine when no weight decay is needed.</span>
+<span class="c1"># `AdamW` is Adam with decoupled weight decay (Loshchilov+Hutter 2019),</span>
+<span class="c1"># which is the correct way to apply L2-like regularisation in adaptive</span>
+<span class="c1"># optimizers. We use AdamW for stage 2.</span>
 <span class="kn">from</span> <span class="nn">torch.optim</span> <span class="kn">import</span> <span class="n">Adam</span><span class="p">,</span> <span class="n">AdamW</span>
-<span class="kn">from</span> <span class="nn">torch.optim.lr_scheduler</span> <span class="kn">import</span> <span class="n">CosineAnnealingLR</span><span class="p">,</span> <span class="n">LinearLR</span><span class="p">,</span> <span class="n">SequentialLR</span>
 
-<span class="c1"># Stage 1: freeze everything, train only the head</span>
+<span class="c1"># Learning-rate schedulers.</span>
+<span class="c1"># `CosineAnnealingLR(optimizer, T_max, eta_min)` decays LR from its initial</span>
+<span class="c1">#   value down to `eta_min` along the first half of a cosine curve.</span>
+<span class="c1">#   T_max is the number of epochs in the cosine phase.</span>
+<span class="c1"># `LinearLR(optimizer, start_factor, end_factor, total_iters)` linearly</span>
+<span class="c1">#   ramps LR from start_factor * base_lr up to end_factor * base_lr over</span>
+<span class="c1">#   `total_iters` epochs. We use it for the 5-epoch warmup.</span>
+<span class="c1"># `SequentialLR(optimizer, schedulers, milestones)` chains schedulers — it</span>
+<span class="c1">#   applies the first one until the milestone epoch, then switches to the</span>
+<span class="c1">#   next one. We chain warmup then cosine.</span>
+<span class="kn">from</span> <span class="nn">torch.optim.lr_scheduler</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CosineAnnealingLR</span><span class="p">,</span>
+    <span class="n">LinearLR</span><span class="p">,</span>
+    <span class="n">SequentialLR</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="c1"># ── Stage 1 ────────────────────────────────────────────────────</span>
+<span class="c1"># Freeze every backbone parameter so only the new head trains.</span>
+<span class="c1"># `freeze_backbone(model)` is my helper (deep_learning/model.py) that sets</span>
+<span class="c1"># `requires_grad = False` on backbone layers, `requires_grad = True`</span>
+<span class="c1"># on the head. Frozen tensors have no gradient computation and contribute</span>
+<span class="c1"># zero memory to autograd.</span>
 <span class="n">freeze_backbone</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+<span class="c1"># Build the optimizer only over the parameters that still require gradient.</span>
+<span class="c1"># `model.parameters()` yields ALL parameters (frozen and trainable).</span>
+<span class="c1"># The list comprehension `[p for p in ... if p.requires_grad]` filters to</span>
+<span class="c1"># the head parameters only — Adam shouldn't update frozen weights.</span>
+<span class="c1"># `lr=1e-3` is the head-warmup learning rate (high because we want the</span>
+<span class="c1"># fresh head to reach a sensible starting point quickly).</span>
 <span class="n">optimizer</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span>
     <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">],</span>
     <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span>
 <span class="p">)</span>
+
+<span class="c1"># Train for 5 epochs. `range(5)` produces 0, 1, 2, 3, 4.</span>
 <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+    <span class="c1"># `train_one_epoch(...)` is my helper that runs one full pass over the</span>
+    <span class="c1"># training DataLoader: forward, loss, backward, optimizer.step().</span>
     <span class="n">train_one_epoch</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_fn</span><span class="p">)</span>
+
+    <span class="c1"># `evaluate_macro_f1(...)` is my helper that runs the model on the</span>
+    <span class="c1"># validation DataLoader and returns sklearn macro-F1 over predictions.</span>
     <span class="n">val_f1</span> <span class="o">=</span> <span class="n">evaluate_macro_f1</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">val_loader</span><span class="p">)</span>
+
+    <span class="c1"># Save the checkpoint only if it improved the validation metric.</span>
+    <span class="c1"># `torch.save(state_dict, path)` serialises the model weights (not the</span>
+    <span class="c1"># full nn.Module) to a .pt file. state_dict = dict of tensors.</span>
     <span class="k">if</span> <span class="n">val_f1</span> <span class="o">&gt;</span> <span class="n">best_val_f1</span><span class="p">:</span>
         <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="n">ckpt_path</span><span class="p">)</span>
 
-<span class="c1"># Stage 2: unfreeze the last backbone block, fine-tune with cosine LR</span>
+
+<span class="c1"># ── Stage 2 ────────────────────────────────────────────────────</span>
+<span class="c1"># Unfreeze the last `n_blocks` backbone stages so they get fine-tuned.</span>
+<span class="c1"># n_blocks=1 for ConvNeXt V2 (bigger stages), n_blocks=2 for</span>
+<span class="c1"># EfficientNet-B0 (smaller stages). Earlier stages stay frozen because the</span>
+<span class="c1"># low-level ImageNet features transfer well as-is.</span>
 <span class="n">unfreeze_last_blocks</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">n_blocks</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># Switch to AdamW with stronger weight decay.</span>
+<span class="c1"># `weight_decay=5e-2` is heavy regularisation for ConvNeXt V2's 89M params.</span>
+<span class="c1"># For EfficientNet-B0 (5M params) I use 1e-4 — smaller models need less</span>
+<span class="c1"># decoupled decay to avoid under-fitting.</span>
+<span class="c1"># `lr=1e-5` is the peak LR after warmup; chosen 100x smaller than stage 1</span>
+<span class="c1"># because we're now updating pretrained weights with small nudges.</span>
 <span class="n">optimizer</span> <span class="o">=</span> <span class="n">AdamW</span><span class="p">(</span>
     <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">],</span>
     <span class="n">lr</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span>
-    <span class="n">weight_decay</span><span class="o">=</span><span class="mf">5e-2</span><span class="p">,</span>   <span class="c1"># heavy WD for ConvNeXt (89M params); 1e-4 for EffNet (5M)</span>
+    <span class="n">weight_decay</span><span class="o">=</span><span class="mf">5e-2</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="c1"># Linear warmup for 5 epochs, then cosine anneal for the remaining 55</span>
-<span class="n">warmup</span> <span class="o">=</span> <span class="n">LinearLR</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">start_factor</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">end_factor</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">total_iters</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+<span class="c1"># Linear warmup for 5 epochs: LR ramps from 1% of peak (0.01 * 1e-5 = 1e-7)</span>
+<span class="c1"># up to 100% of peak (1e-5). Without warmup, the first big gradient step on</span>
+<span class="c1"># the still-fragile head can destabilise the pretrained backbone.</span>
+<span class="n">warmup</span> <span class="o">=</span> <span class="n">LinearLR</span><span class="p">(</span>
+    <span class="n">optimizer</span><span class="p">,</span>
+    <span class="n">start_factor</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+    <span class="n">end_factor</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">total_iters</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Cosine anneal over the remaining 55 epochs: LR drops smoothly from peak</span>
+<span class="c1"># 1e-5 down to eta_min=1e-7. Cosine is empirically kinder to pretrained</span>
+<span class="c1"># weights than step decay or constant LR.</span>
 <span class="n">cosine</span> <span class="o">=</span> <span class="n">CosineAnnealingLR</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">T_max</span><span class="o">=</span><span class="mi">55</span><span class="p">,</span> <span class="n">eta_min</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">)</span>
+
+<span class="c1"># `SequentialLR` runs `warmup` first, then switches to `cosine` at epoch 5</span>
+<span class="c1"># (the milestone). The optimizer's LR is updated every time we call</span>
+<span class="c1"># `scheduler.step()` at the end of an epoch.</span>
 <span class="n">scheduler</span> <span class="o">=</span> <span class="n">SequentialLR</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="p">[</span><span class="n">warmup</span><span class="p">,</span> <span class="n">cosine</span><span class="p">],</span> <span class="n">milestones</span><span class="o">=</span><span class="p">[</span><span class="mi">5</span><span class="p">])</span>
 
+<span class="c1"># Train for 60 epochs total in stage 2 (5 warmup + 55 cosine).</span>
 <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">60</span><span class="p">):</span>
     <span class="n">train_one_epoch</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_fn</span><span class="p">)</span>
     <span class="n">val_f1</span> <span class="o">=</span> <span class="n">evaluate_macro_f1</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">val_loader</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">val_f1</span> <span class="o">&gt;</span> <span class="n">best_val_f1</span><span class="p">:</span>
         <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="n">ckpt_path</span><span class="p">)</span>
+    <span class="c1"># Advance the LR schedule one epoch.</span>
     <span class="n">scheduler</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -8090,7 +8260,7 @@ anneal to 1e-7). Class-weighted cross-entropy compensates for the imbalance
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=ae6d02ac">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=5ba6261a">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8110,7 +8280,7 @@ only.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=4b52856c">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=c735aa15">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8118,30 +8288,59 @@ only.</p>
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-python"><pre><span></span><span class="c1"># Inference + TTA. The key idea is that I average softmax distributions,</span>
-<span class="c1"># not argmaxes. Averaging argmaxes throws away the model's confidence.</span>
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Section 5 — inference with horizontal-flip TTA.</span>
+<span class="c1"># Key idea: average softmax distributions, not argmaxes. Argmax-avg</span>
+<span class="c1"># throws away the model's confidence — softmax-averaging keeps it.</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
 
+<span class="c1"># `@torch.no_grad()` is a decorator that disables PyTorch's autograd engine</span>
+<span class="c1"># inside the function. Saves memory + time; no gradient tracking</span>
+<span class="c1"># gradients during inference. Equivalent to wrapping the body in a</span>
+<span class="c1"># `with torch.no_grad():` block.</span>
 <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
 <span class="k">def</span> <span class="nf">predict_with_tta</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">image_uint8</span><span class="p">):</span>
+    <span class="c1"># `model.eval()` switches BatchNorm/Dropout into evaluation mode:</span>
+    <span class="c1">#   - Dropout becomes a no-op (don't zero activations at inference).</span>
+    <span class="c1">#   - BatchNorm uses running statistics instead of batch statistics.</span>
+    <span class="c1"># ConvNeXt uses LayerNorm so the BN part doesn't matter here, but</span>
+    <span class="c1"># calling .eval() is the safe default for any model.</span>
     <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 
-    <span class="c1"># Build two views: original and horizontally flipped</span>
+    <span class="c1"># Build the two TTA views.</span>
+    <span class="c1"># `Image.fromarray(image_uint8, mode='L')` wraps the np array into</span>
+    <span class="c1"># a PIL Image so we can use PIL's .transpose() for flipping. mode='L'</span>
+    <span class="c1"># tells PIL it's single-channel grayscale.</span>
     <span class="n">pil</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">image_uint8</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"L"</span><span class="p">)</span>
+
+    <span class="c1"># `.transpose(Image.FLIP_LEFT_RIGHT)` returns a new PIL Image that is</span>
+    <span class="c1"># the horizontal mirror. PIL's transpose constant FLIP_LEFT_RIGHT does</span>
+    <span class="c1"># exactly what its name suggests — flips along the vertical axis.</span>
     <span class="n">flip</span> <span class="o">=</span> <span class="n">pil</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">Image</span><span class="o">.</span><span class="n">FLIP_LEFT_RIGHT</span><span class="p">)</span>
 
-    <span class="c1"># Pass each through the standard transform + model</span>
+    <span class="c1"># Apply the standard val transform (resize + ImageNet-normalise +</span>
+    <span class="c1"># 3-channel-replicate) to each view, then add a batch dimension with</span>
+    <span class="c1"># `.unsqueeze(0)` so the model sees a (1, 3, H, W) tensor.</span>
+    <span class="c1"># `.to(device)` ships the tensor to the GPU (cuda/mps) if available.</span>
     <span class="n">x_orig</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">pil</span><span class="p">))</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
     <span class="n">x_flip</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">flip</span><span class="p">))</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
-    <span class="c1"># Average softmax probabilities, then argmax</span>
+    <span class="c1"># Forward pass on each view. `model(x)` returns raw logits of shape</span>
+    <span class="c1"># (batch, num_classes) = (1, 4).</span>
+    <span class="c1"># `torch.softmax(logits, dim=1)` converts logits to probabilities along</span>
+    <span class="c1"># the class dimension (each row sums to 1).</span>
     <span class="n">p_orig</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">x_orig</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">p_flip</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">x_flip</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Average the two probability vectors -- heart of soft-vote TTA.</span>
     <span class="n">p_avg</span> <span class="o">=</span> <span class="p">(</span><span class="n">p_orig</span> <span class="o">+</span> <span class="n">p_flip</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
 
+    <span class="c1"># `.argmax(dim=1)` -&gt; class index with the highest averaged prob.</span>
+    <span class="c1"># `.item()` extracts a Python scalar from a 0-dim tensor.</span>
+    <span class="c1"># `.cpu().numpy()` moves the tensor back to CPU and converts</span>
+    <span class="c1"># it to a numpy array so the caller can pickle or use it w/ sklearn.</span>
     <span class="k">return</span> <span class="n">p_avg</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="n">p_avg</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -8149,7 +8348,7 @@ only.</p>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=71cdfbd3">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=c0e94d09">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8160,7 +8359,7 @@ Normal ~41 %) — accuracy would over-weight the easy majority class.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=915a74f2">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=5d56ef3c">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8168,30 +8367,58 @@ Normal ~41 %) — accuracy would over-weight the easy majority class.</p>
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-python"><pre><span></span><span class="c1"># Load the four pre-computed result JSONs and display a compact comparison.</span>
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Section 6 — load the four pre-computed result JSONs and display them.</span>
+
+<span class="c1"># `json` is Python's built-in JSON parser; loads our .json files</span>
+<span class="c1"># my predict scripts saved.</span>
 <span class="kn">import</span> <span class="nn">json</span>
+<span class="c1"># `Path` again for path joining.</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="c1"># `pd` for tabular display.</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
+<span class="c1"># `RESULTS` points at the Results/ directory inside the project root.</span>
+<span class="c1"># (`ROOT` was set in Section 2.)</span>
 <span class="n">RESULTS</span> <span class="o">=</span> <span class="n">ROOT</span> <span class="o">/</span> <span class="s2">"Results"</span>
 
+<span class="c1"># `models` is a dict mapping display name -&gt; relative path to the JSON file</span>
+<span class="c1"># under Results/. Using a dict (vs two parallel lists) makes the loop below</span>
+<span class="c1"># read more naturally.</span>
 <span class="n">models</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">"EfficientNet-B0"</span><span class="p">:</span>              <span class="s2">"dl_run_full/dl_results.json"</span><span class="p">,</span>
-    <span class="s2">"EfficientNet-B0 + hflip TTA"</span><span class="p">:</span>  <span class="s2">"dl_run_full_tta_hflip/dl_results.json"</span><span class="p">,</span>
-    <span class="s2">"ConvNeXt V2 Base"</span><span class="p">:</span>             <span class="s2">"convnextv2_full_run/dl_results.json"</span><span class="p">,</span>
-    <span class="s2">"ConvNeXt V2 Base + hflip TTA"</span><span class="p">:</span> <span class="s2">"convnextv2_full_run_tta_hflip/dl_results.json"</span><span class="p">,</span>
+    <span class="s2">"EfficientNet-B0"</span><span class="p">:</span>
+        <span class="s2">"dl_run_full/dl_results.json"</span><span class="p">,</span>
+    <span class="s2">"EfficientNet-B0 + hflip TTA"</span><span class="p">:</span>
+        <span class="s2">"dl_run_full_tta_hflip/dl_results.json"</span><span class="p">,</span>
+    <span class="s2">"ConvNeXt V2 Base"</span><span class="p">:</span>
+        <span class="s2">"convnextv2_full_run/dl_results.json"</span><span class="p">,</span>
+    <span class="s2">"ConvNeXt V2 Base + hflip TTA"</span><span class="p">:</span>
+        <span class="s2">"convnextv2_full_run_tta_hflip/dl_results.json"</span><span class="p">,</span>
 <span class="p">}</span>
 
+<span class="c1"># `rows` is a list of dicts; each dict becomes one DataFrame row.</span>
 <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="c1"># `.items()` iterates over (key, value) pairs of the dict.</span>
 <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">rel</span> <span class="ow">in</span> <span class="n">models</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="c1"># `(RESULTS / rel)` joins the result-dir Path with the relative path.</span>
+    <span class="c1"># `.read_text()` returns the file contents as a single string.</span>
+    <span class="c1"># `json.loads(s)` parses a JSON string into a Python dict.</span>
     <span class="n">r</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">((</span><span class="n">RESULTS</span> <span class="o">/</span> <span class="n">rel</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+
+    <span class="c1"># Build one row of the table. `.append(dict)` adds to the list.</span>
+    <span class="c1"># `round(x, 4)` truncates the float to 4 decimal places for display.</span>
     <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
         <span class="s2">"Model"</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
         <span class="s2">"Accuracy"</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"accuracy"</span><span class="p">],</span> <span class="mi">4</span><span class="p">),</span>
         <span class="s2">"Macro-F1"</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"macro_f1"</span><span class="p">],</span> <span class="mi">4</span><span class="p">),</span>
+        <span class="c1"># `r["per_class"]["Stone"]["f1"]` is a nested-dict lookup into the</span>
+        <span class="c1"># JSON's per-class breakdown for the Stone class's F1 score.</span>
         <span class="s2">"Stone F1"</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"per_class"</span><span class="p">][</span><span class="s2">"Stone"</span><span class="p">][</span><span class="s2">"f1"</span><span class="p">],</span> <span class="mi">4</span><span class="p">),</span>
     <span class="p">})</span>
 
+<span class="c1"># `pd.DataFrame(rows)` builds a DataFrame from a list of dicts.</span>
+<span class="c1"># In a Jupyter cell, evaluating a DataFrame as the last expression</span>
+<span class="c1"># automatically calls its HTML representation for nice rendering.</span>
 <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -8199,7 +8426,7 @@ Normal ~41 %) — accuracy would over-weight the easy majority class.</p>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=07418d27">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=f816892e">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8213,7 +8440,7 @@ benchmark.</p>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=7f690432">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=f0205215">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8225,7 +8452,7 @@ a whole-slice CNN classifier pools over the entire image.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=b96247ec">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=31ba7d41">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8233,27 +8460,60 @@ a whole-slice CNN classifier pools over the entire image.</p>
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-python"><pre><span></span><span class="c1"># Show the confusion matrix for my best DL model so the marker can see</span>
-<span class="c1"># where it fails.</span>
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Section 7 — confusion matrix for my best DL model.</span>
+
+<span class="c1"># `numpy` for converting JSON list-of-lists to a 2D array.</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="c1"># `matplotlib.pyplot` is the standard plotting API; aliased as `plt`.</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
-<span class="n">r</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">((</span><span class="n">RESULTS</span> <span class="o">/</span> <span class="s2">"convnextv2_full_run_tta_hflip"</span> <span class="o">/</span> <span class="s2">"dl_results.json"</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+<span class="c1"># Load the same result JSON used in Section 6 (just the ConvNeXt+TTA one).</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span>
+    <span class="p">(</span><span class="n">RESULTS</span> <span class="o">/</span> <span class="s2">"convnextv2_full_run_tta_hflip"</span>
+     <span class="o">/</span> <span class="s2">"dl_results.json"</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span>
+<span class="p">)</span>
+<span class="c1"># `r["confusion_matrix"]` is a 4x4 list-of-lists; we convert to numpy so</span>
+<span class="c1"># `.max()`, indexing, and matplotlib's `.imshow()` work cleanly.</span>
 <span class="n">cm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"confusion_matrix"</span><span class="p">])</span>
+
+<span class="c1"># Class labels in the canonical project order.</span>
 <span class="n">classes</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="s2">"classes"</span><span class="p">]</span>
 
+<span class="c1"># `plt.subplots(figsize=(W,H))` creates one figure and one axis. size is</span>
+<span class="c1"># in inches (5 wide x 4 tall).</span>
 <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+
+<span class="c1"># `ax.imshow(cm, cmap="Blues")` draws the confusion matrix as a heatmap.</span>
+<span class="c1"># `cmap="Blues"` maps low values to white, high values to dark blue.</span>
+<span class="c1"># Returns the AxesImage handle (`im`) for an optional colorbar later.</span>
 <span class="n">im</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">cm</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"Blues"</span><span class="p">)</span>
+
+<span class="c1"># Replace the integer tick labels with the class names.</span>
+<span class="c1"># `rotation=35` rotates by 35 degrees; `ha="right"` aligns the label so the</span>
+<span class="c1"># right end sits at the tick (avoids overlap).</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="n">classes</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">35</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s2">"right"</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="n">classes</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"Predicted"</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"True"</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"ConvNeXt V2 + TTA — clean test"</span><span class="p">)</span>
+
+<span class="c1"># Annotate each cell of the matrix with its count.</span>
+<span class="c1"># Outer loop over rows (true class), inner loop over columns (predicted).</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+        <span class="c1"># Choose readable text colour: white on dark cells, black on light.</span>
+        <span class="c1"># `cm.max() * 0.55` is the threshold; &gt;55% of max gets the</span>
+        <span class="c1"># matrix maximum gets white text (so it's visible on dark blue).</span>
         <span class="n">color</span> <span class="o">=</span> <span class="s2">"white"</span> <span class="k">if</span> <span class="n">cm</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">cm</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">*</span> <span class="mf">0.55</span> <span class="k">else</span> <span class="s2">"black"</span>
+
+        <span class="c1"># `ax.text(x, y, s, ...)` places text. Coords are data units</span>
+        <span class="c1"># (column index, row index). `ha`/`va` are horizontal/vertical</span>
+        <span class="c1"># alignment so the text is centered in the cell.</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">cm</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]),</span> <span class="n">ha</span><span class="o">=</span><span class="s2">"center"</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s2">"center"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">)</span>
+
+<span class="c1"># Auto-adjust subplot params to prevent label clipping.</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="c1"># Render the figure inline in the notebook.</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -8261,7 +8521,7 @@ a whole-slice CNN classifier pools over the entire image.</p>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=d09f2ead">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=e6c189e4">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8287,7 +8547,7 @@ features were not. That's the strongest evidence I have that prior reported
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=74784f01">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=6b3069cf">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8295,32 +8555,57 @@ features were not. That's the strongest evidence I have that prior reported
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-python"><pre><span></span><span class="c1"># The actual leakage detection — the heart of my contribution.</span>
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Section 8 — the leakage detection function. This is the heart of my</span>
+<span class="c1"># headline finding.</span>
+
+<span class="c1"># `hashlib` is Python's built-in crypto-hash library; we use MD5</span>
+<span class="c1"># because it's fast and has near-zero collision prob for distinct</span>
+<span class="c1"># (~10^-38), and gives a 32-character hex string per image — perfect for</span>
+<span class="c1"># set-intersection comparisons.</span>
 <span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="c1"># `Counter` from collections counts repeated occurrences of items in a</span>
+<span class="c1"># sequence; used in the actual script to find within-split dups.</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
 
 <span class="k">def</span> <span class="nf">md5_image</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
-    <span class="c1"># Hash the *standardised* 256x256 pixel buffer, not the raw file bytes,</span>
-    <span class="c1"># so JPEG re-encoding and metadata edits don't hide identical content.</span>
-    <span class="n">img</span> <span class="o">=</span> <span class="n">load_image</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>        <span class="c1"># the shared loader from Section 1</span>
+    <span class="c1"># Critical design choice: I hash the STANDARDISED pixel buffer, not the</span>
+    <span class="c1"># raw JPEG bytes. Two JPEGs with different compression settings</span>
+    <span class="c1"># but identical pixel content still collide. Two identical files with</span>
+    <span class="c1"># different EXIF metadata also collide. We're checking *image content</span>
+    <span class="c1"># equality after our preprocessing*, which is what actually matters for</span>
+    <span class="c1"># train/test contamination.</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">load_image</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>   <span class="c1"># the shared loader from Section 1</span>
+
+    <span class="c1"># `img.tobytes()` returns the raw bytes of the underlying numpy buffer.</span>
+    <span class="c1"># For a (256, 256) uint8 array this is exactly 65,536 bytes.</span>
+    <span class="c1"># `hashlib.md5(b)` returns a hash object; `.hexdigest()` returns its</span>
+    <span class="c1"># 32-character lowercase hex representation, e.g. "0c4a9b3e..." .</span>
     <span class="k">return</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">tobytes</span><span class="p">())</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
 
-<span class="c1"># In the actual diagnostic I ran this in parallel over ~12k images, then</span>
-<span class="c1"># intersected the per-split hash sets to count collisions:</span>
+<span class="c1"># In the real diagnostic I ran this in parallel over ~12k images via</span>
+<span class="c1"># joblib.Parallel, then intersected the per-split hash sets to count</span>
+<span class="c1"># collisions. Conceptually:</span>
 <span class="c1">#</span>
-<span class="c1">#     train_hashes = {md5_image(p) for p in train_paths}</span>
+<span class="c1">#     train_hashes = {md5_image(p) for p in train_paths}  # set comp.</span>
 <span class="c1">#     test_hashes  = {md5_image(p) for p in test_paths}</span>
-<span class="c1">#     duplicates   = train_hashes &amp; test_hashes</span>
+<span class="c1">#     duplicates   = train_hashes &amp; test_hashes        # set intersection</span>
+<span class="c1">#                                                       # `&amp;` on sets =</span>
+<span class="c1">#                                                       # common elements</span>
+<span class="c1">#</span>
+<span class="c1"># `{ ... for ... in ... }` is a set comprehension. Sets give O(1) average</span>
+<span class="c1"># membership and intersection.</span>
 <span class="c1">#</span>
 <span class="c1"># Result on the original Islam et al. 2022 release:</span>
-<span class="c1">#   96 / 1,867 test images had a bit-identical training-set sibling (5.1 %)</span>
+<span class="c1">#   96 / 1,867 test images had a bit-identical training-set sibling = 5.1%</span>
+<span class="c1">#</span>
+<span class="c1"># That 5.1% number is what I report as my headline finding.</span>
 </pre></div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=26eb2b12">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=a821361b">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
