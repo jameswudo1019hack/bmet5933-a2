@@ -29,8 +29,15 @@ env/
 
 # Datasets and reference material — too large to version
 Dataset/
+Updated_Dataset/
 Lecture_Slides/
 *.zip
+
+# Editor/scratch backups & per-user vault state
+*.bak
+*.bak2
+.Rhistory
+.obsidian/
 
 # Model checkpoints and large binaries — save these to Drive or a release
 *.pt
